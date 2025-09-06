@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Campus Guide UPH</string>
+    <string name="search_hint">Search faculty, room, or event…</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <color name="uph_navy">#142040</color>
+    <color name="uph_red">#E31E2E</color>
+    <color name="uph_white">#FFFFFF</color>
+    <color name="uph_bg">#F7F8FB</color>
+    <color name="uph_card">#F2F3F7</color>
+    <color name="badge_ongoing_bg">#E0F2FF</color>
+    <color name="badge_upcoming_bg">#EAF7E9</color>
+    <color name="badge_soon_bg">#F7EDE3</color>
+</resources>

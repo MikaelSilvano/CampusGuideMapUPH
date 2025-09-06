@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.CampusGuide" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/uph_navy</item>
+        <item name="colorOnPrimary">@color/uph_white</item>
+        <item name="android:statusBarColor">@color/uph_navy</item>
+    </style>
+</resources>
