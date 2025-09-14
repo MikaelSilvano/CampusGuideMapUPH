@@ -53,7 +53,6 @@ import java.time.ZoneId
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.zIndex
 
-/* ---------- UPH Brand Colors ---------- */
 private val UPH_Navy = Color(0xFF16224C)
 private val UPH_Red  = Color(0xFFE31E2E)
 private val UPH_White = Color(0xFFFFFFFF)
@@ -77,7 +76,6 @@ fun CampusGuideApp() {
             )
         },
         bottomBar = {
-            // Set the selected indicator (pill) to #F58A0A and keep icons/labels white
             val navItemColors = NavigationBarItemDefaults.colors(
                 selectedIconColor   = UPH_White,
                 selectedTextColor   = UPH_White,
@@ -162,7 +160,6 @@ fun CampusGuideApp() {
     }
 }
 
-/* ---------- Top App Bar with UPH logo ---------- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppTopBar(onSearch: () -> Unit) {
@@ -195,16 +192,15 @@ private fun AppTopBar(onSearch: () -> Unit) {
 
 data class Hotspot(val id: String, val x: Float, val y: Float)
 
-/* ---------- Home (map only; optional debug borders) ---------- */
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    debugBorders: Boolean = false   // <— add this
+    debugBorders: Boolean = false
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Map image
+
         Image(
             painter = painterResource(R.drawable.uph_map),
             contentDescription = "UPH Map",
@@ -215,13 +211,12 @@ fun HomeScreen(
                 .graphicsLayer { rotationZ = -90f }
         )
 
-        // Overlay that covers the whole parent
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .zIndex(1f)
         ) {
-            // draw debug border only when requested
+
             if (debugBorders) {
                 Box(
                     Modifier
@@ -230,7 +225,6 @@ fun HomeScreen(
                 )
             }
 
-            // Hotspots layer
             BoxWithConstraints(Modifier.matchParentSize()) {
                 val badge = 32.dp
                 val hs = listOf(
@@ -258,8 +252,6 @@ fun HomeScreen(
     }
 }
 
-
-/* ---------- Building ---------- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
@@ -322,7 +314,6 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     }
 }
 
-/* ---------- Floor Plan ---------- */
 @Composable
 fun FloorPlanScreen(buildingId: String, floor: Int) {
     val resName = "b" + buildingId.lowercase() + "_f" + floor
@@ -342,7 +333,6 @@ fun FloorPlanScreen(buildingId: String, floor: Int) {
     }
 }
 
-/* ---------- Events (filters + badges) ---------- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsScreen(navController: NavHostController) {
@@ -354,7 +344,7 @@ fun EventsScreen(navController: NavHostController) {
     val buildings = listOf("All", "B", "C", "D", "F", "G")
     var buildingExpanded by remember { mutableStateOf(false) }
 
-    var status by remember { mutableStateOf("All") } // All, Ongoing, Upcoming, Soon
+    var status by remember { mutableStateOf("All") }
     val statuses = listOf("All", "Ongoing", "Upcoming", "Soon")
     var statusExpanded by remember { mutableStateOf(false) }
 
@@ -383,7 +373,6 @@ fun EventsScreen(navController: NavHostController) {
         Spacer(Modifier.height(8.dp))
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            // Building
             Box(Modifier.weight(1f)) {
                 OutlinedTextField(
                     value = building ?: "All",
@@ -404,7 +393,6 @@ fun EventsScreen(navController: NavHostController) {
                 }
             }
             Spacer(Modifier.width(8.dp))
-            // Status
             Box(Modifier.weight(1f)) {
                 OutlinedTextField(
                     value = status,
@@ -474,7 +462,6 @@ fun EventsScreen(navController: NavHostController) {
     }
 }
 
-/* ---------- Small Composables ---------- */
 @Composable
 fun FilterPill(text: String, onClick: () -> Unit) {
     Surface(onClick = onClick, shape = RoundedCornerShape(20.dp), tonalElevation = 1.dp) {
@@ -606,8 +593,6 @@ fun currentRoute(navController: NavHostController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination?.route
 }
-
-/* ---------- PREVIEWS (with borders) ---------- */
 
 @Preview(name = "Home Screen (Borders)", showSystemUi = true, showBackground = true)
 @Composable

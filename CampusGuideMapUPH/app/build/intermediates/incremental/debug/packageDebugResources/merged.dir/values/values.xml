@@ -9,6 +9,12 @@
     <color name="uph_red">#E31E2E</color>
     <color name="uph_white">#FFFFFF</color>
     <string name="app_name">Campus Guide UPH</string>
+    <string name="gcm_defaultSenderId" translatable="false">685591421741</string>
+    <string name="google_api_key" translatable="false">AIzaSyCLqDi20oICd3W8qABqyONIXKy4qBqFUwE</string>
+    <string name="google_app_id" translatable="false">1:685591421741:android:fa9a20d84e6949d2b3a9a4</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCLqDi20oICd3W8qABqyONIXKy4qBqFUwE</string>
+    <string name="google_storage_bucket" translatable="false">campus-guide-map-uph.firebasestorage.app</string>
+    <string name="project_id" translatable="false">campus-guide-map-uph</string>
     <string name="search_hint">Search faculty, room, or event…</string>
     <style name="Theme.CampusGuide" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/uph_navy</item>

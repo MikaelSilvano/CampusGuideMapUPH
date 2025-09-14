@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.campusguide.app-mergeDebugResources-63:/values-ldrtl-v17/values-ldrtl-v17.xml",
+            "outputFile": "com.example.campusguide.app-mergeDebugResources-3:/values-ldrtl-v17/values-ldrtl-v17.xml",
             "map": [
                 {
-                    "source": "/Users/vano/.gradle/caches/9.0-milestone-1/transforms/b6cf94462e202bd275c56472ecb91ddf/transformed/material-1.12.0/res/values-ldrtl-v17/values-ldrtl-v17.xml",
+                    "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3e8ea582cdd1c29447a40cf2e0ecbcb4/transformed/material-1.12.0/res/values-ldrtl-v17/values-ldrtl-v17.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
