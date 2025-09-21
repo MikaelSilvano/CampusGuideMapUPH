@@ -279,7 +279,7 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
             ) { open("https://maps.app.goo.gl/rJouzJ585cAuywr96") }
 
             DrawerItem(
-                label = "UPH website",
+                label = "UPH Website",
                 leading = { Icon(Icons.Outlined.Language, null, tint = textPrimary) },
                 trailing = { Icon(Icons.Outlined.KeyboardArrowRight, null, tint = chevron) },
                 container = cardDark
@@ -293,7 +293,7 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
             ) { open("https://www.instagram.com/uphimpactslives/") }
 
             DrawerItem(
-                label = "UPH phone",
+                label = "UPH Phone",
                 leading = { Icon(Icons.Outlined.Phone, null, tint = textPrimary) },
                 trailing = { Icon(Icons.Outlined.KeyboardArrowRight, null, tint = chevron) },
                 container = cardDark
