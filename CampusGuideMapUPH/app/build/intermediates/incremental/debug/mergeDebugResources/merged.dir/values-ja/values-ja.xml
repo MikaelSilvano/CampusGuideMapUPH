@@ -31,6 +31,9 @@
     <string msgid="8875138169939072951" name="abc_shareactionprovider_share_with">"共有"</string>
     <string msgid="9055268688411532828" name="abc_shareactionprovider_share_with_application">"<ns1:g id="APPLICATION_NAME">%s</ns1:g>と共有"</string>
     <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"折りたたむ"</string>
+    <string msgid="8397015543330865059" name="android.credentials.TYPE_PASSWORD_CREDENTIAL">"パスワード"</string>
+    <string msgid="3929015085059320822" name="androidx.credentials.TYPE_PUBLIC_KEY_CREDENTIAL">"パスキー"</string>
+    <string msgid="9020470552698189270" name="autofill">"自動入力"</string>
     <string name="bottomsheet_action_collapse">ボトムシートを閉じる</string>
     <string name="bottomsheet_action_expand">ボトムシートを開く</string>
     <string name="bottomsheet_action_expand_halfway">下半分を展開</string>
@@ -66,12 +69,16 @@
     <string name="common_open_on_phone">スマートフォンで開く</string>
     <string name="common_signin_button_text">ログイン</string>
     <string name="common_signin_button_text_long">Googleにログイン</string>
+    <string msgid="3260749812566568062" name="copy_toast_msg">"リンクをクリップボードにコピーしました"</string>
     <string msgid="8038256446254964252" name="default_error_message">"入力値が無効です"</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"ポップアップウィンドウ"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"プルダウン メニュー"</string>
     <string name="error_a11y_label">エラー: 無効</string>
     <string name="error_icon_content_description">エラー</string>
     <string name="exposed_dropdown_menu_content_description">プルダウン メニューを表示</string>
+    <string msgid="4566929209979330987" name="fallback_menu_item_copy_link">"リンクをコピー"</string>
+    <string msgid="3413186855122069269" name="fallback_menu_item_open_in_browser">"ブラウザで開く"</string>
+    <string msgid="7145444925855055364" name="fallback_menu_item_share_link">"リンクの共有"</string>
     <string name="icon_content_description">ダイアログ アイコン</string>
     <string msgid="6827826412747255547" name="in_progress">"処理しています"</string>
     <string msgid="7933458017204019916" name="indeterminate">"一部 ON"</string>
@@ -115,6 +122,7 @@
     <string msgid="7617233117134790350" name="m3c_dialog">"ダイアログ"</string>
     <string msgid="3177828188723359358" name="m3c_dropdown_menu_collapsed">"閉じています"</string>
     <string msgid="2360841780724299882" name="m3c_dropdown_menu_expanded">"開いています"</string>
+    <string msgid="8687821690726149911" name="m3c_dropdown_menu_toggle">"プルダウン メニューを切り替えます"</string>
     <string msgid="6152806324422087846" name="m3c_search_bar_search">"検索"</string>
     <string msgid="6152755701819882931" name="m3c_snackbar_dismiss">"閉じる"</string>
     <string msgid="7655536806087401899" name="m3c_suggestions_available">"検索候補は次のとおりです"</string>
@@ -192,8 +200,6 @@
     <string name="mtrl_timepicker_confirm">OK</string>
     <string msgid="542007171693138492" name="navigation_menu">"ナビゲーションメニュー"</string>
     <string msgid="6610465462668679431" name="not_selected">"未選択"</string>
-    <string msgid="875452955155264703" name="off">"オフ"</string>
-    <string msgid="8655164131929253426" name="on">"オン"</string>
     <string name="password_toggle_content_description">パスワードを表示</string>
     <string msgid="5941395253238309765" name="range_end">"範囲の末尾"</string>
     <string msgid="7097486360902471446" name="range_start">"範囲の先頭"</string>
@@ -202,6 +208,10 @@
     <string name="searchview_navigation_content_description">戻る</string>
     <string msgid="6043586758067023" name="selected">"選択済み"</string>
     <string name="side_sheet_accessibility_pane_title">サイドシート</string>
+    <string msgid="2792228137354697160" name="snackbar_pane_title">"アラート"</string>
+    <string msgid="4139871816613051306" name="state_empty">"なし"</string>
+    <string msgid="5834637030682409883" name="state_off">"OFF"</string>
+    <string msgid="1490883874751719580" name="state_on">"ON"</string>
     <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
     <string msgid="2561197295334830845" name="switch_role">"切り替える"</string>
     <string msgid="1672349317127674378" name="tab">"タブ"</string>

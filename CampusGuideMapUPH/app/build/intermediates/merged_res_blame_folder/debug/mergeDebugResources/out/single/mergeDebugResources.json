@@ -1,158 +1,26 @@
 [
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f14.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f14.png"
+        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_logo.png.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/uph_logo.png"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f8.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f8.png"
+        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_main_logo.png.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/uph_main_logo.png"
     },
     {
         "merged": "com.example.campusguide.app-debug-5:/drawable_ic_launcher_foreground.xml.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bb_f6.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bb_f6.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bb_f1.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bb_f1.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f16.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f16.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bd_f3.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bd_f3.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f10.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f10.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bb_f3.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bb_f3.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_logo.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/uph_logo.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bc_f3.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bc_f3.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f4.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f4.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f5.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f5.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bd_f5.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bd_f5.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bd_f2.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bd_f2.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f2.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f2.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bc_f5.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bc_f5.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f7.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f7.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bb_f5.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bb_f5.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f13.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f13.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f9.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f9.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f15.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f15.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bc_f7.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bc_f7.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bc_f2.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bc_f2.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f11.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f11.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bb_f2.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bb_f2.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bd_f4.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bd_f4.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bb_f4.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bb_f4.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bc_f4.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bc_f4.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f6.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f6.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f3.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f3.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bc_f1.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bc_f1.png"
-    },
-    {
         "merged": "com.example.campusguide.app-debug-5:/drawable_uph_map.png.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/uph_map.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f12.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f12.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bc_f6.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bc_f6.png"
     },
     {
         "merged": "com.example.campusguide.app-debug-5:/mipmap-anydpi-v26_ic_launcher.xml.flat",
         "source": "com.example.campusguide.app-main-7:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bd_f1.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bd_f1.png"
-    },
-    {
         "merged": "com.example.campusguide.app-debug-5:/drawable_ic_launcher_background.xml.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/ic_launcher_background.xml"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_bf_f1.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/bf_f1.png"
     }
 ]
