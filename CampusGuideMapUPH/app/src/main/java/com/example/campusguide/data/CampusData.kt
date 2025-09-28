@@ -2,7 +2,6 @@ package com.example.campusguide.data
 
 import java.time.*
 import java.util.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 data class Building(val id: String, val name: String, val floors: Int, val notes: String = "")

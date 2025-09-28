@@ -33,7 +33,7 @@
     <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"Minnka"</string>
     <string msgid="8397015543330865059" name="android.credentials.TYPE_PASSWORD_CREDENTIAL">"Aðgangsorð"</string>
     <string msgid="3929015085059320822" name="androidx.credentials.TYPE_PUBLIC_KEY_CREDENTIAL">"Aðgangslykill"</string>
-    <string msgid="9020470552698189270" name="autofill">"Sjálfvirk útfylling"</string>
+    <string msgid="389117264260014992" name="autofill">"Sjálfvirk útfylling"</string>
     <string name="bottomsheet_action_collapse">Minnka blað neðst</string>
     <string name="bottomsheet_action_expand">Stækka blað neðst</string>
     <string name="bottomsheet_action_expand_halfway">Stækka til hálfs</string>

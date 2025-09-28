@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "685591421741",
+    "project_id": "campus-guide-map-uph",
+    "storage_bucket": "campus-guide-map-uph.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685591421741:android:fa9a20d84e6949d2b3a9a4",
+        "android_client_info": {
+          "package_name": "com.example.campusguide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLqDi20oICd3W8qABqyONIXKy4qBqFUwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

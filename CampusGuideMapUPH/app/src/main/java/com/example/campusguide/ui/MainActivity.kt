@@ -40,6 +40,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -66,6 +67,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import com.example.campusguide.ui.admin.*
 
 private val UPH_Navy = Color(0xFF16224C)
 private val UPH_Red  = Color(0xFFE31E2E)
@@ -91,7 +93,7 @@ fun CampusGuideApp() {
         drawerContent = {
             AppDrawer(onAdminLogin = {
                 scope.launch { drawerState.close() }
-                navController.navigate("admin_login")
+                navController.navigate(ROUTE_ADMIN_LOGIN)
             })
         }
     ) {
@@ -104,32 +106,42 @@ fun CampusGuideApp() {
             },
             bottomBar = { BottomBar(navController) }
         ) { padding ->
-            NavHost(navController, startDestination = "home", Modifier.padding(padding)) {
-                composable("home")   { HomeScreen(navController) }
-                composable("events") { EventsScreen(navController) }
-                composable("search") { SearchScreen(navController) }
+            AppBackground(
+                imageAlignment = BiasAlignment(0.4f, 0.7f),
+                overlayAlpha = 0.85f
+            ) {
+                NavHost(
+                    navController = navController,
+                    startDestination = "home",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    composable("home")   { HomeScreen(navController) }
+                    composable("events") { EventsScreen(navController) }
+                    composable("search") { SearchScreen(navController) }
 
-                composable("admin_login") {
-                    AdminLoginScreen(onSuccess = {
-                        navController.navigate("admin_dashboard") { launchSingleTop = true }
-                    })
-                }
-                composable("admin_dashboard") { Text("Admin Dashboard — coming soon") }
+                    composable(ROUTE_ADMIN_LOGIN) {
+                        AdminLoginScreen(onSuccess = {
+                            navController.popBackStack(route = ROUTE_ADMIN_LOGIN, inclusive = true)
+                            navController.navigate(ROUTE_ADMIN_DASH) { launchSingleTop = true }
+                        })
+                    }
+                    adminGraph(navController)
 
-                composable("building/{id}") { backStackEntry ->
-                    val id = backStackEntry.arguments?.getString("id") ?: ""
-                    BuildingDetailScreen(id, navController)
-                }
-
-                composable("floor/{b}/{f}") { backStackEntry ->
-                    val b = backStackEntry.arguments?.getString("b") ?: ""
-                    val f = backStackEntry.arguments?.getString("f")?.toIntOrNull() ?: 1
-                    FloorPlanScreen(navController, b, f)
-                }
-
-                composable("event/{eventId}") { backStackEntry ->
-                    val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
-                    EventDetailScreen(navController, eventId)
+                    composable("building/{id}") {
+                        val id = it.arguments?.getString("id") ?: ""
+                        BuildingDetailScreen(id, navController)
+                    }
+                    composable("floor/{b}/{f}") {
+                        val b = it.arguments?.getString("b") ?: ""
+                        val f = it.arguments?.getString("f")?.toIntOrNull() ?: 1
+                        FloorPlanScreen(navController, b, f)
+                    }
+                    composable("event/{eventId}") {
+                        val eventId = it.arguments?.getString("eventId") ?: ""
+                        EventDetailScreen(navController, eventId)
+                    }
                 }
             }
         }
