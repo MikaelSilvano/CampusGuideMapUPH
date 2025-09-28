@@ -4,7 +4,7 @@
             "outputFile": "com.example.campusguide.app-mergeDebugResources-63:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "/Users/vano/.gradle/caches/9.0-milestone-1/transforms/27f4415111278795152b42d124b0fe0f/transformed/appcompat-1.7.0/res/values-watch-v20/values-watch-v20.xml",
+                    "source": "C:\\Users\\darre\\.gradle\\caches\\9.0-milestone-1\\transforms\\27f4415111278795152b42d124b0fe0f\\transformed\\appcompat-1.7.0\\res\\values-watch-v20\\values-watch-v20.xml",
                     "from": {
                         "startLines": "2,5,8",
                         "startColumns": "4,4,4",
