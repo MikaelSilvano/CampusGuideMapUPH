@@ -1,10 +1,33 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.campusguide.app-mergeDebugResources-63:/values-v28/values-v28.xml",
+            "outputFile": "com.example.campusguide.app-mergeDebugResources-3:/values-v28/values-v28.xml",
             "map": [
                 {
+<<<<<<< HEAD
                     "source": "C:\\Users\\darre\\.gradle\\caches\\9.0-milestone-1\\transforms\\b6cf94462e202bd275c56472ecb91ddf\\transformed\\material-1.12.0\\res\\values-v28\\values-v28.xml",
+=======
+                    "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/5f2fce03e7b708e6ca976ba726bcfbd0/transformed/appcompat-1.7.0/res/values-v28/values-v28.xml",
+                    "from": {
+                        "startLines": "2,3,4,8",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,130,217,397",
+                        "endLines": "2,3,7,11",
+                        "endColumns": "74,86,12,12",
+                        "endOffsets": "125,212,392,584"
+                    },
+                    "to": {
+                        "startLines": "14,15,16,20",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "1141,1216,1303,1483",
+                        "endLines": "14,15,19,23",
+                        "endColumns": "74,86,12,12",
+                        "endOffsets": "1211,1298,1478,1670"
+                    }
+                },
+                {
+                    "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3e8ea582cdd1c29447a40cf2e0ecbcb4/transformed/material-1.12.0/res/values-v28/values-v28.xml",
+>>>>>>> 81c23604badbc8dfe72e9660214c4b64b306d025
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4",

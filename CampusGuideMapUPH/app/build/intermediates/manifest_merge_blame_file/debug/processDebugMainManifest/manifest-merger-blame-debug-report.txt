@@ -6,8 +6,9 @@
 6
 7    <uses-sdk
 8        android:minSdkVersion="24"
-9        android:targetSdkVersion="34" />
+9        android:targetSdkVersion="35" />
 10
+<<<<<<< HEAD
 11    <permission
 11-->[androidx.core:core:1.13.1] C:\Users\darre\.gradle\caches\9.0-milestone-1\transforms\1e8e756d0899c0eb5656fbcd7955e11d\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
 12        android:name="com.example.campusguide.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -130,3 +131,432 @@
 75    </application>
 76
 77</manifest>
+=======
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:2:5-67
+11-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:2:22-64
+12    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+12-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:3:5-78
+12-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:3:22-76
+13    <uses-permission android:name="android.permission.WAKE_LOCK" />
+13-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:25:5-68
+13-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:25:22-65
+14    <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE" />
+14-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:26:5-110
+14-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:26:22-107
+15    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+15-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:25:5-79
+15-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:25:22-76
+16    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" />
+16-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:26:5-88
+16-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:26:22-85
+17    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" />
+17-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:27:5-82
+17-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:27:22-79
+18    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+18-->[com.google.android.recaptcha:recaptcha:18.6.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e2283cf22fa5dfad46bfb6f0b220782e/transformed/jetified-recaptcha-18.6.1/AndroidManifest.xml:9:5-98
+18-->[com.google.android.recaptcha:recaptcha:18.6.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e2283cf22fa5dfad46bfb6f0b220782e/transformed/jetified-recaptcha-18.6.1/AndroidManifest.xml:9:22-95
+19
+20    <permission
+20-->[androidx.core:core:1.15.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/53ee40521a7b6640a8e6028e1c57d156/transformed/core-1.15.0/AndroidManifest.xml:22:5-24:47
+21        android:name="com.example.campusguide.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+21-->[androidx.core:core:1.15.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/53ee40521a7b6640a8e6028e1c57d156/transformed/core-1.15.0/AndroidManifest.xml:23:9-81
+22        android:protectionLevel="signature" />
+22-->[androidx.core:core:1.15.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/53ee40521a7b6640a8e6028e1c57d156/transformed/core-1.15.0/AndroidManifest.xml:24:9-44
+23
+24    <uses-permission android:name="com.example.campusguide.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+24-->[androidx.core:core:1.15.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/53ee40521a7b6640a8e6028e1c57d156/transformed/core-1.15.0/AndroidManifest.xml:26:5-97
+24-->[androidx.core:core:1.15.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/53ee40521a7b6640a8e6028e1c57d156/transformed/core-1.15.0/AndroidManifest.xml:26:22-94
+25
+26    <application
+26-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:4:5-16:19
+27        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+27-->[androidx.core:core:1.15.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/53ee40521a7b6640a8e6028e1c57d156/transformed/core-1.15.0/AndroidManifest.xml:28:18-86
+28        android:debuggable="true"
+29        android:extractNativeLibs="false"
+30        android:label="Campus Guide UPH"
+30-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:5:9-41
+31        android:supportsRtl="true"
+31-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:6:9-35
+32        android:testOnly="true"
+33        android:theme="@style/Theme.CampusGuide" >
+33-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:7:9-49
+34        <activity
+34-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:8:9-15:20
+35            android:name="com.example.campusguide.ui.MainActivity"
+35-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:9:13-44
+36            android:exported="true" >
+36-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:10:13-36
+37            <intent-filter>
+37-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:11:13-14:29
+38                <action android:name="android.intent.action.MAIN" />
+38-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:12:17-69
+38-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:12:25-66
+39
+40                <category android:name="android.intent.category.LAUNCHER" />
+40-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:13:17-77
+40-->/Users/vano/Downloads/CampusGuideMapUPH/app/src/main/AndroidManifest.xml:13:27-74
+41            </intent-filter>
+42        </activity>
+43        <activity
+43-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:29:9-46:20
+44            android:name="com.google.firebase.auth.internal.GenericIdpActivity"
+44-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:30:13-80
+45            android:excludeFromRecents="true"
+45-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:31:13-46
+46            android:exported="true"
+46-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:32:13-36
+47            android:launchMode="singleTask"
+47-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:33:13-44
+48            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+48-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:34:13-72
+49            <intent-filter>
+49-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:35:13-45:29
+50                <action android:name="android.intent.action.VIEW" />
+50-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:36:17-69
+50-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:36:25-66
+51
+52                <category android:name="android.intent.category.DEFAULT" />
+52-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:38:17-76
+52-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:38:27-73
+53                <category android:name="android.intent.category.BROWSABLE" />
+53-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:39:17-78
+53-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:39:27-75
+54
+55                <data
+55-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:41:17-44:51
+56                    android:host="firebase.auth"
+56-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:42:21-49
+57                    android:path="/"
+57-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:43:21-37
+58                    android:scheme="genericidp" />
+58-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:44:21-48
+59            </intent-filter>
+60        </activity>
+61        <activity
+61-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:47:9-64:20
+62            android:name="com.google.firebase.auth.internal.RecaptchaActivity"
+62-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:48:13-79
+63            android:excludeFromRecents="true"
+63-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:49:13-46
+64            android:exported="true"
+64-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:50:13-36
+65            android:launchMode="singleTask"
+65-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:51:13-44
+66            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+66-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:52:13-72
+67            <intent-filter>
+67-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:53:13-63:29
+68                <action android:name="android.intent.action.VIEW" />
+68-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:36:17-69
+68-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:36:25-66
+69
+70                <category android:name="android.intent.category.DEFAULT" />
+70-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:38:17-76
+70-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:38:27-73
+71                <category android:name="android.intent.category.BROWSABLE" />
+71-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:39:17-78
+71-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:39:27-75
+72
+73                <data
+73-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:41:17-44:51
+74                    android:host="firebase.auth"
+74-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:42:21-49
+75                    android:path="/"
+75-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:43:21-37
+76                    android:scheme="recaptcha" />
+76-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:44:21-48
+77            </intent-filter>
+78        </activity>
+79
+80        <service
+80-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:66:9-72:19
+81            android:name="com.google.firebase.components.ComponentDiscoveryService"
+81-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:67:13-84
+82            android:directBootAware="true"
+82-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:32:13-43
+83            android:exported="false" >
+83-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:68:13-37
+84            <meta-data
+84-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:69:13-71:85
+85                android:name="com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar"
+85-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:70:17-109
+86                android:value="com.google.firebase.components.ComponentRegistrar" />
+86-->[com.google.firebase:firebase-auth:24.0.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e157c184f66762c9f0232aedeeb38393/transformed/jetified-firebase-auth-24.0.1/AndroidManifest.xml:71:17-82
+87            <meta-data
+87-->[com.google.firebase:firebase-firestore:26.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e7278ad6b8121f224dd07db40fe75824/transformed/jetified-firebase-firestore-26.0.0/AndroidManifest.xml:17:13-19:85
+88                android:name="com.google.firebase.components:com.google.firebase.firestore.FirebaseFirestoreKtxRegistrar"
+88-->[com.google.firebase:firebase-firestore:26.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e7278ad6b8121f224dd07db40fe75824/transformed/jetified-firebase-firestore-26.0.0/AndroidManifest.xml:18:17-122
+89                android:value="com.google.firebase.components.ComponentRegistrar" />
+89-->[com.google.firebase:firebase-firestore:26.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e7278ad6b8121f224dd07db40fe75824/transformed/jetified-firebase-firestore-26.0.0/AndroidManifest.xml:19:17-82
+90            <meta-data
+90-->[com.google.firebase:firebase-firestore:26.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e7278ad6b8121f224dd07db40fe75824/transformed/jetified-firebase-firestore-26.0.0/AndroidManifest.xml:20:13-22:85
+91                android:name="com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar"
+91-->[com.google.firebase:firebase-firestore:26.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e7278ad6b8121f224dd07db40fe75824/transformed/jetified-firebase-firestore-26.0.0/AndroidManifest.xml:21:17-111
+92                android:value="com.google.firebase.components.ComponentRegistrar" />
+92-->[com.google.firebase:firebase-firestore:26.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/e7278ad6b8121f224dd07db40fe75824/transformed/jetified-firebase-firestore-26.0.0/AndroidManifest.xml:22:17-82
+93            <meta-data
+93-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:33:13-35:85
+94                android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
+94-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:34:17-139
+95                android:value="com.google.firebase.components.ComponentRegistrar" />
+95-->[com.google.android.gms:play-services-measurement-api:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/64da6b830aa888b36ec61144c6d53a94/transformed/jetified-play-services-measurement-api-23.0.0/AndroidManifest.xml:35:17-82
+96            <meta-data
+96-->[com.google.firebase:firebase-storage:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/bfe9f2050939d86ac8bd3863e1830a2f/transformed/jetified-firebase-storage-22.0.0/AndroidManifest.xml:30:13-32:85
+97                android:name="com.google.firebase.components:com.google.firebase.storage.FirebaseStorageKtxRegistrar"
+97-->[com.google.firebase:firebase-storage:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/bfe9f2050939d86ac8bd3863e1830a2f/transformed/jetified-firebase-storage-22.0.0/AndroidManifest.xml:31:17-118
+98                android:value="com.google.firebase.components.ComponentRegistrar" />
+98-->[com.google.firebase:firebase-storage:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/bfe9f2050939d86ac8bd3863e1830a2f/transformed/jetified-firebase-storage-22.0.0/AndroidManifest.xml:32:17-82
+99            <meta-data
+99-->[com.google.firebase:firebase-storage:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/bfe9f2050939d86ac8bd3863e1830a2f/transformed/jetified-firebase-storage-22.0.0/AndroidManifest.xml:33:13-35:85
+100                android:name="com.google.firebase.components:com.google.firebase.storage.StorageRegistrar"
+100-->[com.google.firebase:firebase-storage:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/bfe9f2050939d86ac8bd3863e1830a2f/transformed/jetified-firebase-storage-22.0.0/AndroidManifest.xml:34:17-107
+101                android:value="com.google.firebase.components.ComponentRegistrar" />
+101-->[com.google.firebase:firebase-storage:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/bfe9f2050939d86ac8bd3863e1830a2f/transformed/jetified-firebase-storage-22.0.0/AndroidManifest.xml:35:17-82
+102            <meta-data
+102-->[com.google.firebase:firebase-installations:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/7393477be222806631fe738d07c45f20/transformed/jetified-firebase-installations-19.0.0/AndroidManifest.xml:15:13-17:85
+103                android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar"
+103-->[com.google.firebase:firebase-installations:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/7393477be222806631fe738d07c45f20/transformed/jetified-firebase-installations-19.0.0/AndroidManifest.xml:16:17-130
+104                android:value="com.google.firebase.components.ComponentRegistrar" />
+104-->[com.google.firebase:firebase-installations:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/7393477be222806631fe738d07c45f20/transformed/jetified-firebase-installations-19.0.0/AndroidManifest.xml:17:17-82
+105            <meta-data
+105-->[com.google.firebase:firebase-installations:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/7393477be222806631fe738d07c45f20/transformed/jetified-firebase-installations-19.0.0/AndroidManifest.xml:18:13-20:85
+106                android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar"
+106-->[com.google.firebase:firebase-installations:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/7393477be222806631fe738d07c45f20/transformed/jetified-firebase-installations-19.0.0/AndroidManifest.xml:19:17-127
+107                android:value="com.google.firebase.components.ComponentRegistrar" />
+107-->[com.google.firebase:firebase-installations:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/7393477be222806631fe738d07c45f20/transformed/jetified-firebase-installations-19.0.0/AndroidManifest.xml:20:17-82
+108            <meta-data
+108-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:35:13-37:85
+109                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
+109-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:36:17-109
+110                android:value="com.google.firebase.components.ComponentRegistrar" />
+110-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:37:17-82
+111            <meta-data
+111-->[com.google.firebase:firebase-appcheck:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b34ad00c1475d648bf2492dbcac91eab/transformed/jetified-firebase-appcheck-19.0.0/AndroidManifest.xml:25:13-27:85
+112                android:name="com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckKtxRegistrar"
+112-->[com.google.firebase:firebase-appcheck:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b34ad00c1475d648bf2492dbcac91eab/transformed/jetified-firebase-appcheck-19.0.0/AndroidManifest.xml:26:17-120
+113                android:value="com.google.firebase.components.ComponentRegistrar" />
+113-->[com.google.firebase:firebase-appcheck:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b34ad00c1475d648bf2492dbcac91eab/transformed/jetified-firebase-appcheck-19.0.0/AndroidManifest.xml:27:17-82
+114            <meta-data
+114-->[com.google.firebase:firebase-appcheck:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b34ad00c1475d648bf2492dbcac91eab/transformed/jetified-firebase-appcheck-19.0.0/AndroidManifest.xml:28:13-30:85
+115                android:name="com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckRegistrar"
+115-->[com.google.firebase:firebase-appcheck:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b34ad00c1475d648bf2492dbcac91eab/transformed/jetified-firebase-appcheck-19.0.0/AndroidManifest.xml:29:17-117
+116                android:value="com.google.firebase.components.ComponentRegistrar" />
+116-->[com.google.firebase:firebase-appcheck:19.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b34ad00c1475d648bf2492dbcac91eab/transformed/jetified-firebase-appcheck-19.0.0/AndroidManifest.xml:30:17-82
+117        </service>
+118
+119        <receiver
+119-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:29:9-33:20
+120            android:name="com.google.android.gms.measurement.AppMeasurementReceiver"
+120-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:30:13-85
+121            android:enabled="true"
+121-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:31:13-35
+122            android:exported="false" >
+122-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:32:13-37
+123        </receiver>
+124
+125        <service
+125-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:35:9-38:40
+126            android:name="com.google.android.gms.measurement.AppMeasurementService"
+126-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:36:13-84
+127            android:enabled="true"
+127-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:37:13-35
+128            android:exported="false" />
+128-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:38:13-37
+129        <service
+129-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:39:9-43:72
+130            android:name="com.google.android.gms.measurement.AppMeasurementJobService"
+130-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:40:13-87
+131            android:enabled="true"
+131-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:41:13-35
+132            android:exported="false"
+132-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:42:13-37
+133            android:permission="android.permission.BIND_JOB_SERVICE" />
+133-->[com.google.android.gms:play-services-measurement:23.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/69213768eefa31906daeb7df11355728/transformed/jetified-play-services-measurement-23.0.0/AndroidManifest.xml:43:13-69
+134        <service
+134-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:24:9-32:19
+135            android:name="androidx.credentials.playservices.CredentialProviderMetadataHolder"
+135-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:25:13-94
+136            android:enabled="true"
+136-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:26:13-35
+137            android:exported="false" >
+137-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:27:13-37
+138            <meta-data
+138-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:29:13-31:104
+139                android:name="androidx.credentials.CREDENTIAL_PROVIDER_KEY"
+139-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:30:17-76
+140                android:value="androidx.credentials.playservices.CredentialProviderPlayServicesImpl" />
+140-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:31:17-101
+141        </service>
+142
+143        <activity
+143-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:34:9-41:20
+144            android:name="androidx.credentials.playservices.HiddenActivity"
+144-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:35:13-76
+145            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+145-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:36:13-87
+146            android:enabled="true"
+146-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:37:13-35
+147            android:exported="false"
+147-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:38:13-37
+148            android:fitsSystemWindows="true"
+148-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:39:13-45
+149            android:theme="@style/Theme.Hidden" >
+149-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/08183e85f1eb797b2e52273e212732c6/transformed/jetified-credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:40:13-48
+150        </activity>
+151        <activity
+151-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:23:9-27:75
+152            android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+152-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:24:13-93
+153            android:excludeFromRecents="true"
+153-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:25:13-46
+154            android:exported="false"
+154-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:26:13-37
+155            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+155-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:27:13-72
+156        <!--
+157            Service handling Google Sign-In user revocation. For apps that do not integrate with
+158            Google Sign-In, this service will never be started.
+159        -->
+160        <service
+160-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:33:9-37:51
+161            android:name="com.google.android.gms.auth.api.signin.RevocationBoundService"
+161-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:34:13-89
+162            android:exported="true"
+162-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:35:13-36
+163            android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"
+163-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:36:13-107
+164            android:visibleToInstantApps="true" />
+164-->[com.google.android.gms:play-services-auth:20.7.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/AndroidManifest.xml:37:13-48
+165
+166        <provider
+166-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:23:9-28:39
+167            android:name="com.google.firebase.provider.FirebaseInitProvider"
+167-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:24:13-77
+168            android:authorities="com.example.campusguide.firebaseinitprovider"
+168-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:25:13-72
+169            android:directBootAware="true"
+169-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:26:13-43
+170            android:exported="false"
+170-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:27:13-37
+171            android:initOrder="100" />
+171-->[com.google.firebase:firebase-common:22.0.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9045492b48b7e49975b982b3348221e7/transformed/jetified-firebase-common-22.0.0/AndroidManifest.xml:28:13-36
+172
+173        <activity
+173-->[androidx.compose.ui:ui-test-manifest:1.9.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b20721bf07db49106628f3ba8dc3591e/transformed/jetified-ui-test-manifest-1.9.1/AndroidManifest.xml:23:9-26:79
+174            android:name="androidx.activity.ComponentActivity"
+174-->[androidx.compose.ui:ui-test-manifest:1.9.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b20721bf07db49106628f3ba8dc3591e/transformed/jetified-ui-test-manifest-1.9.1/AndroidManifest.xml:24:13-63
+175            android:exported="true"
+175-->[androidx.compose.ui:ui-test-manifest:1.9.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b20721bf07db49106628f3ba8dc3591e/transformed/jetified-ui-test-manifest-1.9.1/AndroidManifest.xml:25:13-36
+176            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+176-->[androidx.compose.ui:ui-test-manifest:1.9.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b20721bf07db49106628f3ba8dc3591e/transformed/jetified-ui-test-manifest-1.9.1/AndroidManifest.xml:26:13-76
+177
+178        <provider
+178-->[androidx.emoji2:emoji2:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/162ee6ef412d8dde2cb49e6cf094eded/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:24:9-32:20
+179            android:name="androidx.startup.InitializationProvider"
+179-->[androidx.emoji2:emoji2:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/162ee6ef412d8dde2cb49e6cf094eded/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:25:13-67
+180            android:authorities="com.example.campusguide.androidx-startup"
+180-->[androidx.emoji2:emoji2:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/162ee6ef412d8dde2cb49e6cf094eded/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:26:13-68
+181            android:exported="false" >
+181-->[androidx.emoji2:emoji2:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/162ee6ef412d8dde2cb49e6cf094eded/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:27:13-37
+182            <meta-data
+182-->[androidx.emoji2:emoji2:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/162ee6ef412d8dde2cb49e6cf094eded/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:29:13-31:52
+183                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+183-->[androidx.emoji2:emoji2:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/162ee6ef412d8dde2cb49e6cf094eded/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:30:17-75
+184                android:value="androidx.startup" />
+184-->[androidx.emoji2:emoji2:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/162ee6ef412d8dde2cb49e6cf094eded/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:31:17-49
+185            <meta-data
+185-->[androidx.lifecycle:lifecycle-process:2.9.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/d195743b7ae5a1bcade0fa092b5c8485/transformed/jetified-lifecycle-process-2.9.0/AndroidManifest.xml:29:13-31:52
+186                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+186-->[androidx.lifecycle:lifecycle-process:2.9.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/d195743b7ae5a1bcade0fa092b5c8485/transformed/jetified-lifecycle-process-2.9.0/AndroidManifest.xml:30:17-78
+187                android:value="androidx.startup" />
+187-->[androidx.lifecycle:lifecycle-process:2.9.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/d195743b7ae5a1bcade0fa092b5c8485/transformed/jetified-lifecycle-process-2.9.0/AndroidManifest.xml:31:17-49
+188            <meta-data
+188-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:29:13-31:52
+189                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+189-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:30:17-85
+190                android:value="androidx.startup" />
+190-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:31:17-49
+191        </provider>
+192
+193        <activity
+193-->[com.google.android.gms:play-services-base:18.5.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b4bc3c38f94aef45d513dbbb3382be38/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:9-173
+194            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+194-->[com.google.android.gms:play-services-base:18.5.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b4bc3c38f94aef45d513dbbb3382be38/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:19-85
+195            android:exported="false"
+195-->[com.google.android.gms:play-services-base:18.5.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b4bc3c38f94aef45d513dbbb3382be38/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:146-170
+196            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+196-->[com.google.android.gms:play-services-base:18.5.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/b4bc3c38f94aef45d513dbbb3382be38/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:86-145
+197
+198        <uses-library
+198-->[androidx.privacysandbox.ads:ads-adservices:1.1.0-beta11] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9857f46acc2e0d7772bcc6e1f5131ac2/transformed/jetified-ads-adservices-1.1.0-beta11/AndroidManifest.xml:23:9-25:40
+199            android:name="android.ext.adservices"
+199-->[androidx.privacysandbox.ads:ads-adservices:1.1.0-beta11] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9857f46acc2e0d7772bcc6e1f5131ac2/transformed/jetified-ads-adservices-1.1.0-beta11/AndroidManifest.xml:24:13-50
+200            android:required="false" />
+200-->[androidx.privacysandbox.ads:ads-adservices:1.1.0-beta11] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/9857f46acc2e0d7772bcc6e1f5131ac2/transformed/jetified-ads-adservices-1.1.0-beta11/AndroidManifest.xml:25:13-37
+201
+202        <activity
+202-->[androidx.compose.ui:ui-tooling-android:1.9.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/5bed818f8f49f815c2c9114ebb97e4fc/transformed/jetified-ui-tooling/AndroidManifest.xml:23:9-25:39
+203            android:name="androidx.compose.ui.tooling.PreviewActivity"
+203-->[androidx.compose.ui:ui-tooling-android:1.9.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/5bed818f8f49f815c2c9114ebb97e4fc/transformed/jetified-ui-tooling/AndroidManifest.xml:24:13-71
+204            android:exported="true" />
+204-->[androidx.compose.ui:ui-tooling-android:1.9.1] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/5bed818f8f49f815c2c9114ebb97e4fc/transformed/jetified-ui-tooling/AndroidManifest.xml:25:13-36
+205
+206        <meta-data
+206-->[com.google.android.gms:play-services-basement:18.5.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/86ae025c64d346ce77f87019708b7838/transformed/jetified-play-services-basement-18.5.0/AndroidManifest.xml:21:9-23:69
+207            android:name="com.google.android.gms.version"
+207-->[com.google.android.gms:play-services-basement:18.5.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/86ae025c64d346ce77f87019708b7838/transformed/jetified-play-services-basement-18.5.0/AndroidManifest.xml:22:13-58
+208            android:value="@integer/google_play_services_version" />
+208-->[com.google.android.gms:play-services-basement:18.5.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/86ae025c64d346ce77f87019708b7838/transformed/jetified-play-services-basement-18.5.0/AndroidManifest.xml:23:13-66
+209
+210        <receiver
+210-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:34:9-52:20
+211            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+211-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:35:13-76
+212            android:directBootAware="false"
+212-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:36:13-44
+213            android:enabled="true"
+213-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:37:13-35
+214            android:exported="true"
+214-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:38:13-36
+215            android:permission="android.permission.DUMP" >
+215-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:39:13-57
+216            <intent-filter>
+216-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:40:13-42:29
+217                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+217-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:41:17-91
+217-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:41:25-88
+218            </intent-filter>
+219            <intent-filter>
+219-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:43:13-45:29
+220                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+220-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:44:17-85
+220-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:44:25-82
+221            </intent-filter>
+222            <intent-filter>
+222-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:46:13-48:29
+223                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+223-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:47:17-88
+223-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:47:25-85
+224            </intent-filter>
+225            <intent-filter>
+225-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:49:13-51:29
+226                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+226-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:50:17-95
+226-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/22e0e486171f5af804ad433122205528/transformed/jetified-profileinstaller-1.4.0/AndroidManifest.xml:50:25-92
+227            </intent-filter>
+228        </receiver> <!-- The activities will be merged into the manifest of the hosting app. -->
+229        <activity
+229-->[com.google.android.play:core-common:2.0.3] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3d9e9e6a4054ec5a6c6f9650b93c31de/transformed/jetified-core-common-2.0.3/AndroidManifest.xml:14:9-18:65
+230            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+230-->[com.google.android.play:core-common:2.0.3] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3d9e9e6a4054ec5a6c6f9650b93c31de/transformed/jetified-core-common-2.0.3/AndroidManifest.xml:15:13-93
+231            android:exported="false"
+231-->[com.google.android.play:core-common:2.0.3] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3d9e9e6a4054ec5a6c6f9650b93c31de/transformed/jetified-core-common-2.0.3/AndroidManifest.xml:16:13-37
+232            android:stateNotNeeded="true"
+232-->[com.google.android.play:core-common:2.0.3] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3d9e9e6a4054ec5a6c6f9650b93c31de/transformed/jetified-core-common-2.0.3/AndroidManifest.xml:17:13-42
+233            android:theme="@style/Theme.PlayCore.Transparent" />
+233-->[com.google.android.play:core-common:2.0.3] /Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3d9e9e6a4054ec5a6c6f9650b93c31de/transformed/jetified-core-common-2.0.3/AndroidManifest.xml:18:13-62
+234    </application>
+235
+236</manifest>
+>>>>>>> 81c23604badbc8dfe72e9660214c4b64b306d025
