@@ -9,66 +9,63 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.AdminPanelSettings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.campusguide.data.*
-import kotlinx.coroutines.launch
-import java.time.ZoneId
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.campusguide.R
+import com.example.campusguide.data.*
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.AdminPanelSettings
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.outlined.Map
-import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material.icons.outlined.Public
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import java.time.ZoneId
 
 private val UPH_Navy = Color(0xFF16224C)
 private val UPH_Red  = Color(0xFFE31E2E)
@@ -82,6 +79,99 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CampusGuideApp() {
+    val navController = rememberNavController()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            AppDrawer(onAdminLogin = {
+                scope.launch { drawerState.close() }
+                navController.navigate("admin_login")
+            })
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                AppTopBar(
+                    onSearch = { navController.navigate("search") },
+                    onMenu = { scope.launch { drawerState.open() } }
+                )
+            },
+            bottomBar = { BottomBar(navController) }
+        ) { padding ->
+            NavHost(navController, startDestination = "home", Modifier.padding(padding)) {
+                composable("home")   { HomeScreen(navController) }
+                composable("events") { EventsScreen(navController) }
+                composable("search") { SearchScreen(navController) }
+
+                composable("admin_login") {
+                    AdminLoginScreen(onSuccess = {
+                        navController.navigate("admin_dashboard") { launchSingleTop = true }
+                    })
+                }
+                composable("admin_dashboard") { Text("Admin Dashboard — coming soon") }
+
+                composable("building/{id}") { backStackEntry ->
+                    val id = backStackEntry.arguments?.getString("id") ?: ""
+                    BuildingDetailScreen(id, navController)
+                }
+
+                composable("floor/{b}/{f}") { backStackEntry ->
+                    val b = backStackEntry.arguments?.getString("b") ?: ""
+                    val f = backStackEntry.arguments?.getString("f")?.toIntOrNull() ?: 1
+                    FloorPlanScreen(navController, b, f)
+                }
+
+                composable("event/{eventId}") { backStackEntry ->
+                    val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+                    EventDetailScreen(navController, eventId)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppTopBar(
+    onSearch: () -> Unit,
+    onMenu: () -> Unit
+) {
+    TopAppBar(
+        navigationIcon = {
+            IconButton(onClick = onMenu) {
+                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = UPH_White)
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = UPH_Navy,
+            titleContentColor = UPH_White,
+            actionIconContentColor = UPH_White,
+            navigationIconContentColor = UPH_White
+        ),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.uph_logo),
+                    contentDescription = "UPH",
+                    modifier = Modifier.height(28.dp).padding(end = 8.dp)
+                )
+                Text("Campus Map")
+            }
+        },
+        actions = {
+            IconButton(onClick = onSearch) {
+                Icon(Icons.Default.Search, contentDescription = "Search")
+            }
+        }
+    )
+}
+
 @Composable
 private fun BottomBar(navController: NavHostController) {
     val navItemColors = NavigationBarItemDefaults.colors(
@@ -91,7 +181,6 @@ private fun BottomBar(navController: NavHostController) {
         unselectedTextColor = UPH_White.copy(alpha = 0.75f),
         indicatorColor      = UPH_Orange
     )
-
     NavigationBar(containerColor = UPH_Navy) {
         NavigationBarItem(
             selected = currentRoute(navController) == "home",
@@ -135,97 +224,99 @@ private fun BottomBar(navController: NavHostController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+data class Spot(
+    val id: String,
+    val x: Float,
+    val y: Float,
+    val color: Color
+)
+
 @Composable
-fun CampusGuideApp() {
-    val navController = rememberNavController()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
+fun HomeScreen(
+    navController: NavHostController,
+    debugBorders: Boolean = false
+) {
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            AppDrawer(onAdminLogin = {
-                scope.launch { drawerState.close() }
-                navController.navigate("admin_login")
-            })
-        }
+    val hotspots = listOf(
+        Spot("F", 0.23f,  0.36f, Color(0xFF2ECC71)),
+        Spot("B", 0.665f, 0.73f, UPH_Orange),
+        Spot("H", 0.55f,  0.77f, Color(0xFFFFC27A)),
+        Spot("C", 0.35f,  0.78f, Color(0xFFFFD54F)),
+        Spot("D", 0.46f,  0.46f, Color(0xFF1E88E5)),
+        Spot("G", 0.35f,  0.06f, Color(0xFFEF5350))
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Scaffold(
-            topBar = {
-                AppTopBar(
-                    onSearch = { navController.navigate("search") },
-                    onMenu = { scope.launch { drawerState.open() } }
-                )
-            },
-            bottomBar = { BottomBar(navController) }
-        ) { padding ->
-            NavHost(navController, startDestination = "home", Modifier.padding(padding)) {
-                composable("home")   { HomeScreen(navController) }
-                composable("events") { EventsScreen(navController) }
-                composable("search") { SearchScreen(navController) }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+        ) {
+            Image(
+                painter = painterResource(R.drawable.uph_map),
+                contentDescription = "UPH Map",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                composable("admin_login") {
-                    AdminLoginScreen(onSuccess = {
-                        navController.navigate("admin_dashboard") { launchSingleTop = true }
-                    })
+            BoxWithConstraints(
+                modifier = Modifier
+                    .matchParentSize()
+                    .zIndex(1f)
+            ) {
+                if (debugBorders) {
+                    Box(Modifier.matchParentSize().border(2.dp, Color.Red))
                 }
-                composable("admin_dashboard") { Text("Admin Dashboard — coming soon") }
-                composable(
-                    route = "building/{id}"
-                ) { backStackEntry ->
-                    val id = backStackEntry.arguments?.getString("id") ?: ""
-                    BuildingDetailScreen(id, navController)
-                }
-
-                composable(
-                    route = "floor/{b}/{f}"
-                ) { backStackEntry ->
-                    val b = backStackEntry.arguments?.getString("b") ?: ""
-                    val f = backStackEntry.arguments?.getString("f")?.toIntOrNull() ?: 1
-                    FloorPlanScreen(b, f)
-                }
-
-                composable(
-                    route = "event/{eventId}"
-                ) { backStackEntry ->
-                    val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
-                    EventDetailScreen(eventId)
+                val badge = 34.dp
+                hotspots.forEach { s ->
+                    val xOff = (maxWidth * s.x) - (badge / 2)
+                    val yOff = (maxHeight * s.y) - (badge / 2)
+                    BuildingDot(
+                        id = s.id,
+                        color = s.color,
+                        size = badge,
+                        modifier = Modifier
+                            .offset(x = xOff, y = yOff)
+                            .clickable { navController.navigate("building/${s.id}") }
+                    )
                 }
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+        Text("Tap bulatan pada peta untuk membuka detail.", color = Color.Gray)
+        Spacer(Modifier.height(24.dp))
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppTopBar(onSearch: () -> Unit, onMenu: () -> Unit) {
-    TopAppBar(
-        navigationIcon = {
-            IconButton(onClick = onMenu) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = UPH_White)
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = UPH_Navy,
-            titleContentColor = UPH_White,
-            actionIconContentColor = UPH_White,
-            navigationIconContentColor = UPH_White
-        ),
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(painter = painterResource(id = R.drawable.uph_logo),
-                    contentDescription = "UPH",
-                    modifier = Modifier.height(28.dp).padding(end = 8.dp))
-                Text("Campus Map")
-            }
-        },
-        actions = {
-            IconButton(onClick = onSearch) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
-            }
+fun BuildingDot(
+    id: String,
+    color: Color,
+    size: Dp,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = color,
+        shape = CircleShape,
+        shadowElevation = 4.dp,
+        modifier = modifier.size(size)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .border(2.dp, UPH_White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(id, color = UPH_White, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
         }
-    )
+    }
 }
 
 @Composable
@@ -287,7 +378,7 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
 
             DrawerItem(
                 label = "UPH Instagram",
-                leading = { Icon(Icons.Outlined.CameraAlt, null, tint = textPrimary) }, // swap to your IG vector if you have one
+                leading = { Icon(Icons.Outlined.CameraAlt, null, tint = textPrimary) },
                 trailing = { Icon(Icons.Outlined.KeyboardArrowRight, null, tint = chevron) },
                 container = cardDark
             ) { open("https://www.instagram.com/uphimpactslives/") }
@@ -345,99 +436,80 @@ private fun DrawerItem(
 }
 
 @Composable
-private fun DrawerItem(
-    label: String,
-    icon: ImageVector,
-    iconTint: Color,
-    textColor: Color,
-    containerColor: Color,
-    onClick: () -> Unit
-) {
-    Surface(
-        color = Color.Transparent,
-        shape = RoundedCornerShape(14.dp),
-        modifier = Modifier
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-    ) {
-        Row(
-            Modifier
-                .background(containerColor)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
-            Spacer(Modifier.width(16.dp))
-            Text(label, color = textColor, style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.weight(1f))
-            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = textColor.copy(alpha = .6f))
+fun SearchScreen(navController: NavHostController) {
+    val ctx = LocalContext.current
+    val repo = remember { CampusRepoProvider.provide(ctx) }
+    var q by remember { mutableStateOf("") }
+    var results by remember { mutableStateOf<List<SearchResult>>(emptyList()) }
+    val scope = rememberCoroutineScope()
+
+    Column(Modifier.fillMaxSize().padding(12.dp)) {
+        OutlinedTextField(
+            value = q,
+            onValueChange = { newQ ->
+                q = newQ
+                scope.launch { results = repo.search(newQ) }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search faculty, room, or event…") }
+        )
+        LazyColumn {
+            items(results) { r ->
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            when (r) {
+                                is SearchResult.FacultyResult -> navController.navigate("building/${r.buildingId}")
+                                is SearchResult.RoomResult -> navController.navigate("floor/${r.buildingId}/${r.floor}")
+                                is SearchResult.EventResult -> navController.navigate("event/${r.eventId}")
+                            }
+                        }
+                        .padding(12.dp)
+                ) {
+                    Text(r.title, fontWeight = FontWeight.Bold)
+                    Text(r.subtitle)
+                }
+                Divider()
+            }
         }
     }
 }
-
-data class Hotspot(val id: String, val x: Float, val y: Float)
 
 @Composable
-fun HomeScreen(
-    navController: NavHostController,
-    debugBorders: Boolean = false
-) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+fun EventDetailScreen(navController: NavHostController, eventId: String) {
+    val ctx = LocalContext.current
+    val repo = remember { CampusRepoProvider.provide(ctx) }
+    val events by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
+    val e = events.firstOrNull { it.id == eventId }
 
-        Image(
-            painter = painterResource(R.drawable.uph_map),
-            contentDescription = "UPH Map",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxHeight()
-                .align(Alignment.Center)
-                .graphicsLayer { rotationZ = -90f }
-        )
+    if (e == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Event not found") }
+        return
+    }
 
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .zIndex(1f)
-        ) {
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        BackToMapButton(navController, modifier = Modifier.padding(bottom = 8.dp))
 
-            if (debugBorders) {
-                Box(
-                    Modifier
-                        .matchParentSize()
-                        .border(2.dp, Color.Red)
-                )
+        Text(e.name, style = MaterialTheme.typography.headlineSmall)
+        Text("Held by: ${e.heldBy}")
+        Text("Building ${e.buildingId} • Room ${e.room}")
+        Text("Starts: ${e.start}")
+        Text("Ends: ${e.end}")
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = {
+            val intent = Intent(Intent.ACTION_INSERT).apply {
+                data = CalendarContract.Events.CONTENT_URI
+                putExtra(CalendarContract.Events.TITLE, e.name)
+                putExtra(CalendarContract.Events.EVENT_LOCATION, "Building ${e.buildingId} • ${e.room}")
+                putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, e.start.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                putExtra(CalendarContract.EXTRA_EVENT_END_TIME, e.end.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
             }
-
-            BoxWithConstraints(Modifier.matchParentSize()) {
-                val badge = 32.dp
-                val hs = listOf(
-                    Hotspot("B", 0.20f, 0.75f),
-                    Hotspot("C", 0.18f, 0.85f),
-                    Hotspot("D", 0.55f, 0.62f),
-                    Hotspot("F", 0.35f, 0.55f),
-                    Hotspot("G", 0.12f, 0.15f),
-                )
-                hs.forEach { h ->
-                    Box(
-                        Modifier
-                            .size(badge)
-                            .offset(
-                                x = (maxWidth * h.x) - (badge / 2),
-                                y = (maxHeight * h.y) - (badge / 2)
-                            )
-                            .background(UPH_Navy, RoundedCornerShape(8.dp))
-                            .clickable { navController.navigate("building/${h.id}") },
-                        contentAlignment = Alignment.Center
-                    ) { Text(h.id, color = UPH_White, fontWeight = FontWeight.Bold) }
-                }
-            }
-        }
+            ctx.startActivity(intent)
+        }) { Text("Add to Calendar") }
     }
 }
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -454,11 +526,12 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
             floors = repo.getFloors(buildingId)
         }
     }
-
     val events by remember(buildingId) { repo.streamEventsForBuilding(buildingId) }
         .collectAsState(initial = emptyList())
 
     Column(Modifier.fillMaxSize().padding(12.dp)) {
+        BackToMapButton(navController, Modifier.padding(bottom = 8.dp))
+
         Text("Building ${building?.id ?: buildingId}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
         Text("List of Faculties", style = MaterialTheme.typography.titleMedium)
@@ -502,7 +575,7 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
 }
 
 @Composable
-fun FloorPlanScreen(buildingId: String, floor: Int) {
+fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor: Int) {
     val resName = "b" + buildingId.lowercase() + "_f" + floor
     val storagePath = "maps/$buildingId/$resName.png"
     val ctx = LocalContext.current
@@ -513,8 +586,7 @@ fun FloorPlanScreen(buildingId: String, floor: Int) {
     LaunchedEffect(storagePath) {
         tried = false
         try {
-            val ref = FirebaseStorage.getInstance()
-                .reference.child(storagePath)
+            val ref = FirebaseStorage.getInstance().reference.child(storagePath)
             url = ref.downloadUrl.await().toString()
         } catch (_: Exception) {
             url = null
@@ -522,35 +594,36 @@ fun FloorPlanScreen(buildingId: String, floor: Int) {
             tried = true
         }
     }
-
     val drawableId = remember(resName) {
         ctx.resources.getIdentifier(resName, "drawable", ctx.packageName)
     }
 
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        when {
-            url != null -> {
-                AsyncImage(
-                    model = url,
-                    contentDescription = "Floor plan",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
+    Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            when {
+                url != null -> {
+                    AsyncImage(
+                        model = url,
+                        contentDescription = "Floor plan",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+                tried && drawableId != 0 -> {
+                    Image(
+                        painter = painterResource(drawableId),
+                        contentDescription = "Floor plan",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+                tried -> Text("No floor plan image for Building $buildingId Floor $floor")
+                else -> CircularProgressIndicator()
             }
-            tried && drawableId != 0 -> {
-                Image(
-                    painter = painterResource(drawableId),
-                    contentDescription = "Floor plan",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
-            }
-            tried -> Text("No floor plan image for Building $buildingId Floor $floor")
-            else -> CircularProgressIndicator()
         }
+        BackToMapButton(navController, Modifier.align(Alignment.TopStart).padding(8.dp))
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -734,75 +807,33 @@ fun EventRow(e: CampusEvent, onClick: () -> Unit) {
     }
 }
 
-@Composable
-fun EventDetailScreen(eventId: String) {
-    val ctx = LocalContext.current
-    val repo = remember { CampusRepoProvider.provide(ctx) }
-    val events by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
-    val e = events.firstOrNull { it.id == eventId }
-
-    if (e == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Event not found") }
-        return
-    }
-
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text(e.name, style = MaterialTheme.typography.headlineSmall)
-        Text("Held by: ${e.heldBy}")
-        Text("Building ${e.buildingId} • Room ${e.room}")
-        Text("Starts: ${e.start}")
-        Text("Ends: ${e.end}")
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = {
-            val intent = Intent(Intent.ACTION_INSERT).apply {
-                data = CalendarContract.Events.CONTENT_URI
-                putExtra(CalendarContract.Events.TITLE, e.name)
-                putExtra(CalendarContract.Events.EVENT_LOCATION, "Building ${e.buildingId} • ${e.room}")
-                putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, e.start.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                putExtra(CalendarContract.EXTRA_EVENT_END_TIME, e.end.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-            }
-            ctx.startActivity(intent)
-        }) { Text("Add to Calendar") }
-    }
-}
 
 @Composable
-fun SearchScreen(navController: NavHostController) {
-    val ctx = LocalContext.current
-    val repo = remember { CampusRepoProvider.provide(ctx) }
-    var q by remember { mutableStateOf("") }
-    var results by remember { mutableStateOf<List<SearchResult>>(emptyList()) }
-    val scope = rememberCoroutineScope()
-
-    Column(Modifier.fillMaxSize().padding(12.dp)) {
-        OutlinedTextField(
-            value = q,
-            onValueChange = { newQ ->
-                q = newQ
-                scope.launch { results = repo.search(newQ) }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search faculty, room, or event…") }
-        )
-        LazyColumn {
-            items(results) { r ->
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            when (r) {
-                                is SearchResult.FacultyResult -> navController.navigate("building/${r.buildingId}")
-                                is SearchResult.RoomResult -> navController.navigate("floor/${r.buildingId}/${r.floor}")
-                                is SearchResult.EventResult -> navController.navigate("event/${r.eventId}")
-                            }
-                        }
-                        .padding(12.dp)
-                ) {
-                    Text(r.title, fontWeight = FontWeight.Bold)
-                    Text(r.subtitle)
+fun BackToMapButton(navController: NavHostController, modifier: Modifier = Modifier) {
+    Surface(
+        shape = CircleShape,
+        color = Color(0x2216224C),
+        shadowElevation = 2.dp,
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .clickable {
+                val popped = navController.popBackStack(route = "home", inclusive = false)
+                if (!popped) {
+                    navController.navigate("home") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
-                Divider()
             }
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBack,
+                contentDescription = "Back to Map",
+                tint = UPH_White
+            )
         }
     }
 }
