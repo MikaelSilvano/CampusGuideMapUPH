@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.provider.CalendarContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,6 +69,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import com.example.campusguide.ui.admin.*
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
 
 private val UPH_Navy = Color(0xFF16224C)
 private val UPH_Red  = Color(0xFFE31E2E)
@@ -480,7 +486,11 @@ fun SearchScreen(navController: NavHostController) {
                         .padding(12.dp)
                 ) {
                     Text(r.title, fontWeight = FontWeight.Bold)
-                    Text(r.subtitle)
+                    val subtitle = when (r) {
+                        is SearchResult.EventResult -> prettyEventSubtitle(r.subtitle)
+                        else -> r.subtitle
+                    }
+                    Text(subtitle)
                 }
                 Divider()
             }
@@ -505,20 +515,26 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
 
         Text(e.name, style = MaterialTheme.typography.headlineSmall)
         Text("Held by: ${e.heldBy}")
-        Text("Building ${e.buildingId} • Room ${e.room}")
-        Text("Starts: ${e.start}")
-        Text("Ends: ${e.end}")
+        Text("Building ${e.buildingId} • ${roomLabel(e.room)}")
+        Text("Starts: ${e.start.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))}")
+        Text("Ends: ${e.end.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))}")
         Spacer(Modifier.height(16.dp))
-        Button(onClick = {
-            val intent = Intent(Intent.ACTION_INSERT).apply {
-                data = CalendarContract.Events.CONTENT_URI
-                putExtra(CalendarContract.Events.TITLE, e.name)
-                putExtra(CalendarContract.Events.EVENT_LOCATION, "Building ${e.buildingId} • ${e.room}")
-                putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, e.start.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                putExtra(CalendarContract.EXTRA_EVENT_END_TIME, e.end.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-            }
-            ctx.startActivity(intent)
-        }) { Text("Add to Calendar") }
+        Button(
+            onClick = {
+                val intent = Intent(Intent.ACTION_INSERT).apply {
+                    data = CalendarContract.Events.CONTENT_URI
+                    putExtra(CalendarContract.Events.TITLE, e.name)
+                    putExtra(CalendarContract.Events.EVENT_LOCATION, "Building ${e.buildingId} • ${e.room}")
+                    putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, e.start.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                    putExtra(CalendarContract.EXTRA_EVENT_END_TIME, e.end.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                }
+                ctx.startActivity(intent)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = UPH_Navy,
+                contentColor = UPH_White
+            )
+        ) { Text("Add to Calendar") }
     }
 }
 
@@ -637,85 +653,137 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun EventsScreen(navController: NavHostController) {
     val ctx = LocalContext.current
     val repo = remember { CampusRepoProvider.provide(ctx) }
     val allEvents by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
 
-    var building by remember { mutableStateOf<String?>(null) }
+    var building by remember { mutableStateOf("All") }
     val buildings = listOf("All", "B", "C", "D", "F", "G")
-    var buildingExpanded by remember { mutableStateOf(false) }
 
     var status by remember { mutableStateOf("All") }
-    val statuses = listOf("All", "Ongoing", "Upcoming", "Soon")
-    var statusExpanded by remember { mutableStateOf(false) }
+    val statuses = listOf("All", "Ongoing", "Upcoming", "Coming Soon")
 
-    var showDatePickerStart by remember { mutableStateOf(false) }
-    var showDatePickerEnd by remember { mutableStateOf(false) }
     var startDate by remember { mutableStateOf(LocalDate.now()) }
     var endDate by remember { mutableStateOf(LocalDate.now().plusDays(7)) }
 
+    var showDatePickerStart by remember { mutableStateOf(false) }
+    var showDatePickerEnd by remember { mutableStateOf(false) }
+
     val today = LocalDate.now()
 
-    val filtered = allEvents.filter { e ->
-        val inBuilding = building == null || building == "All" || e.buildingId == building
-        val inRange = !e.start.toLocalDate().isBefore(startDate) && !e.start.toLocalDate().isAfter(endDate)
-        val now = LocalDateTime.now()
-        val inStatus = when (status) {
-            "Ongoing" -> now.isAfter(e.start) && now.isBefore(e.end)
-            "Upcoming" -> now.isBefore(e.start) && e.start.isAfter(now.plusDays(3))
-            "Soon" -> e.start.isAfter(now) && e.start.isBefore(now.plusDays(3))
-            else -> true
-        }
-        inBuilding && inRange && inStatus
-    }.sortedBy { it.start }
+    val now = LocalDateTime.now()
+    val filtered = remember(allEvents, building, status, startDate, endDate, now) {
+        allEvents.filter { e ->
+            val inBuilding = (building == "All") || (e.buildingId == building)
+            val date = e.start.toLocalDate()
+            val inRange = !date.isBefore(startDate) && !date.isAfter(endDate)
+            val inStatus = when (status) {
+                "Ongoing"      -> now.isAfter(e.start) && now.isBefore(e.end)
+                "Upcoming"     -> e.start.isAfter(now) && e.start.isAfter(now.plusDays(3))
+                "Coming Soon"  -> e.start.isAfter(now) && e.start.isBefore(now.plusDays(3))
+                else -> true
+            }
+            inBuilding && inRange && inStatus
+        }.sortedBy { it.start }
+    }
 
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Text("Events — $today", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            var buildingExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = buildingExpanded,
+                onExpandedChange = { buildingExpanded = !buildingExpanded },
+                modifier = Modifier.weight(1f)
+            ) {
                 OutlinedTextField(
-                    value = building ?: "All",
+                    value = building,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Building") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { buildingExpanded = true }
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = UPH_Navy,
+                        focusedLabelColor = UPH_Navy,
+                        cursorColor = UPH_Navy,
+                        focusedTrailingIconColor = UPH_Navy,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
+                    )
                 )
-                DropdownMenu(expanded = buildingExpanded, onDismissRequest = { buildingExpanded = false }) {
+                ExposedDropdownMenu(
+                    expanded = buildingExpanded,
+                    onDismissRequest = { buildingExpanded = false },
+                    containerColor = UPH_Navy,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     buildings.forEach { b ->
                         DropdownMenuItem(
-                            text = { Text(b) },
-                            onClick = { building = if (b == "All") null else b; buildingExpanded = false }
+                            text = { Text(b, color = UPH_White) },
+                            onClick = {
+                                building = b
+                                buildingExpanded = false
+                            },
+                            colors = MenuDefaults.itemColors(textColor = UPH_White)
                         )
                     }
                 }
             }
-            Spacer(Modifier.width(8.dp))
-            Box(Modifier.weight(1f)) {
+
+            var statusExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = statusExpanded,
+                onExpandedChange = { statusExpanded = !statusExpanded },
+                modifier = Modifier.weight(1f)
+            ) {
                 OutlinedTextField(
                     value = status,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Status") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { statusExpanded = true }
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = UPH_Navy,
+                        focusedLabelColor = UPH_Navy,
+                        cursorColor = UPH_Navy,
+                        focusedTrailingIconColor = UPH_Navy,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
+                    )
                 )
-                DropdownMenu(expanded = statusExpanded, onDismissRequest = { statusExpanded = false }) {
+                ExposedDropdownMenu(
+                    expanded = statusExpanded,
+                    onDismissRequest = { statusExpanded = false },
+                    containerColor = UPH_Navy,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     statuses.forEach { s ->
-                        DropdownMenuItem(text = { Text(s) }, onClick = { status = s; statusExpanded = false })
+                        DropdownMenuItem(
+                            text = { Text(s, color = UPH_White) },
+                            onClick = {
+                                status = s
+                                statusExpanded = false
+                            },
+                            colors = MenuDefaults.itemColors(textColor = UPH_White)
+                        )
                     }
                 }
             }
         }
 
         Spacer(Modifier.height(8.dp))
+
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             FilterPill("From: $startDate") { showDatePickerStart = true }
             Spacer(Modifier.width(8.dp))
@@ -724,36 +792,98 @@ fun EventsScreen(navController: NavHostController) {
 
         if (showDatePickerStart) {
             val dpState = rememberDatePickerState(
-                initialSelectedDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                initialSelectedDateMillis = startDate
+                    .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             )
             DatePickerDialog(
                 onDismissRequest = { showDatePickerStart = false },
                 confirmButton = {
-                    TextButton(onClick = {
-                        dpState.selectedDateMillis?.let { millis ->
-                            startDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
-                        }
-                        showDatePickerStart = false
-                    }) { Text("OK") }
+                    TextButton(
+                        onClick = {
+                            dpState.selectedDateMillis?.let { millis ->
+                                val picked = Instant.ofEpochMilli(millis)
+                                    .atZone(ZoneId.systemDefault()).toLocalDate()
+                                startDate = picked
+                                if (startDate.isAfter(endDate)) endDate = startDate
+                            }
+                            showDatePickerStart = false
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                    ) { Text("OK") }
                 }
-            ) { DatePicker(state = dpState) }
+            ) {
+                DatePicker(
+                    state = dpState,
+                    colors = DatePickerDefaults.colors(
+                        containerColor = Color(0xFFF8F9FD),
+                        titleContentColor = UPH_Navy,
+                        headlineContentColor = UPH_Navy,
+                        weekdayContentColor = UPH_Navy,
+                        subheadContentColor = UPH_Navy,
+                        dayContentColor = UPH_Navy,
+                        disabledDayContentColor = UPH_Navy.copy(alpha = 0.35f),
+                        todayDateBorderColor = UPH_Navy,
+                        todayContentColor = UPH_Navy,
+                        selectedDayContainerColor = UPH_Orange,
+                        selectedDayContentColor = UPH_White,
+                        dayInSelectionRangeContainerColor = UPH_Orange.copy(alpha = 0.18f),
+                        dayInSelectionRangeContentColor = UPH_Navy,
+                        yearContentColor = UPH_Navy,
+                        currentYearContentColor = UPH_Navy,
+                        selectedYearContainerColor = UPH_Orange,
+                        selectedYearContentColor = UPH_White,
+                        navigationContentColor = UPH_Navy
+                    )
+                )
+            }
         }
 
         if (showDatePickerEnd) {
             val dpState2 = rememberDatePickerState(
-                initialSelectedDateMillis = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                initialSelectedDateMillis = endDate
+                    .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             )
             DatePickerDialog(
                 onDismissRequest = { showDatePickerEnd = false },
                 confirmButton = {
-                    TextButton(onClick = {
-                        dpState2.selectedDateMillis?.let { millis ->
-                            endDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
-                        }
-                        showDatePickerEnd = false
-                    }) { Text("OK") }
+                    TextButton(
+                        onClick = {
+                            dpState2.selectedDateMillis?.let { millis ->
+                                val picked = Instant.ofEpochMilli(millis)
+                                    .atZone(ZoneId.systemDefault()).toLocalDate()
+                                endDate = picked
+                                if (endDate.isBefore(startDate)) startDate = endDate
+                            }
+                            showDatePickerEnd = false
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                    ) { Text("OK") }
                 }
-            ) { DatePicker(state = dpState2) }
+            ) {
+                DatePicker(
+                    state = dpState2,
+                    colors = DatePickerDefaults.colors(
+                        containerColor = Color(0xFFF8F9FD),
+                        titleContentColor = UPH_Navy,
+                        headlineContentColor = UPH_Navy,
+                        weekdayContentColor = UPH_Navy,
+                        subheadContentColor = UPH_Navy,
+                        dayContentColor = UPH_Navy,
+                        disabledDayContentColor = UPH_Navy.copy(alpha = 0.35f),
+                        todayDateBorderColor = UPH_Navy,
+                        todayContentColor = UPH_Navy,
+                        selectedDayContainerColor = UPH_Orange,
+                        selectedDayContentColor = UPH_White,
+                        dayInSelectionRangeContainerColor = UPH_Orange.copy(alpha = 0.18f),
+                        dayInSelectionRangeContentColor = UPH_Navy,
+                        yearContentColor = UPH_Navy,
+                        currentYearContentColor = UPH_Navy,
+                        selectedYearContainerColor = UPH_Orange,
+                        selectedYearContentColor = UPH_White,
+                        navigationContentColor = UPH_Navy
+                    )
+                )
+            }
         }
 
         Spacer(Modifier.height(8.dp))
@@ -767,25 +897,37 @@ fun EventsScreen(navController: NavHostController) {
 }
 
 @Composable
-fun FilterPill(text: String, onClick: () -> Unit) {
-    Surface(onClick = onClick, shape = RoundedCornerShape(20.dp), tonalElevation = 1.dp) {
-        Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(text)
-        }
-    }
-}
-
-@Composable
 fun StatusBadge(e: CampusEvent): Pair<String, Color> {
     val now = LocalDateTime.now()
     return when {
-        now.isAfter(e.start) && now.isBefore(e.end) -> "Ongoing" to Color(0xFFE0F2FF)
-        e.start.isAfter(now) && e.start.isBefore(now.plusDays(3)) -> "Coming Soon" to Color(0xFFF7EDE3)
-        e.start.isAfter(now) -> "Upcoming" to Color(0xFFEAF7E9)
+        now.isAfter(e.start) && now.isBefore(e.end) ->
+            "Ongoing" to Color(0xFFE0F2FF)
+        e.start.isAfter(now) && e.start.isBefore(now.plusDays(3)) ->
+            "Coming Soon" to Color(0xFFF7EDE3)
+        e.start.isAfter(now) ->
+            "Upcoming" to Color(0xFFEAF7E9)
         else -> "Past" to Color.LightGray
     }
 }
 
+@Composable
+fun FilterPill(text: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        color = UPH_Navy,
+        contentColor = UPH_White,
+        tonalElevation = 0.dp,
+        border = BorderStroke(1.dp, UPH_White)
+    ) {
+        Row(
+            Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text, color = UPH_White)
+        }
+    }
+}
 @Composable
 fun EventCard(e: CampusEvent) {
     val (label, bg) = StatusBadge(e)
@@ -801,7 +943,7 @@ fun EventCard(e: CampusEvent) {
             Text("Held By: ${e.heldBy}")
             Text("Date: ${e.start.toLocalDate()}")
             Text("Time: ${e.start.toLocalTime()} – ${e.end.toLocalTime()}")
-            Text("Room: ${e.room}")
+            Text("Room: ${cleanRoom(e.room)}")
         }
     }
 }
@@ -881,4 +1023,18 @@ private fun PreviewEventsScreen() {
 @Composable
 private fun PreviewApp() {
     CampusGuideApp()
+}
+
+private fun cleanRoom(room: String): String {
+    val t = room.trim()
+    return if (t.startsWith("Room", ignoreCase = true)) t.removePrefix("Room").trimStart() else t
+}
+
+private fun roomLabel(room: String): String = "Room ${cleanRoom(room)}"
+
+private fun prettyEventSubtitle(s: String): String {
+    var t = s.replace("•", "• ")
+    t = t.replace(Regex("""\b([A-Z])\s*Room\b"""), "$1 • Room")
+    t = t.replace(Regex("""\s{2,}"""), " ")
+    return t.trim()
 }
