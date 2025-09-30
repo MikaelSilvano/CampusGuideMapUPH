@@ -12,6 +12,10 @@
         "source": "com.example.campusguide.app-main-7:/drawable/ic_launcher_foreground.xml"
     },
     {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_building_background.jpg.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/uph_building_background.jpg"
+    },
+    {
         "merged": "com.example.campusguide.app-debug-5:/drawable_uph_map.png.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/uph_map.png"
     },

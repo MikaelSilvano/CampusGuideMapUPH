@@ -33,7 +33,7 @@
     <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"کوچک کردن"</string>
     <string msgid="8397015543330865059" name="android.credentials.TYPE_PASSWORD_CREDENTIAL">"گذرواژه"</string>
     <string msgid="3929015085059320822" name="androidx.credentials.TYPE_PUBLIC_KEY_CREDENTIAL">"گذرکلید"</string>
-    <string msgid="9020470552698189270" name="autofill">"تکمیل خودکار"</string>
+    <string msgid="389117264260014992" name="autofill">"تکمیل خودکار"</string>
     <string name="bottomsheet_action_collapse">جمع کردن برگ زیرین</string>
     <string name="bottomsheet_action_expand">ازهم بازکردن برگ زیرین</string>
     <string name="bottomsheet_action_expand_halfway">گسترده کردن تا نیمه</string>

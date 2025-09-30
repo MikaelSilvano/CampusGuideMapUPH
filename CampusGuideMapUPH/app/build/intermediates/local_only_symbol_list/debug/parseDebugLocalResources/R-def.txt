@@ -10,6 +10,7 @@ color uph_red
 color uph_white
 drawable ic_launcher_background
 drawable ic_launcher_foreground
+drawable uph_building_background
 drawable uph_logo
 drawable uph_main_logo
 drawable uph_map

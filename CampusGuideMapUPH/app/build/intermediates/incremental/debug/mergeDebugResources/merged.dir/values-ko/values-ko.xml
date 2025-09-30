@@ -33,7 +33,7 @@
     <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"접기"</string>
     <string msgid="8397015543330865059" name="android.credentials.TYPE_PASSWORD_CREDENTIAL">"비밀번호"</string>
     <string msgid="3929015085059320822" name="androidx.credentials.TYPE_PUBLIC_KEY_CREDENTIAL">"패스키"</string>
-    <string msgid="9020470552698189270" name="autofill">"자동 완성"</string>
+    <string msgid="389117264260014992" name="autofill">"자동 완성"</string>
     <string name="bottomsheet_action_collapse">하단 시트 접기</string>
     <string name="bottomsheet_action_expand">하단 시트 펼치기</string>
     <string name="bottomsheet_action_expand_halfway">반만 펼치기</string>

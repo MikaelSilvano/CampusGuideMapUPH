@@ -4,9 +4,6 @@
             "outputFile": "com.example.campusguide.app-mergeDebugResources-3:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-<<<<<<< HEAD
-                    "source": "C:\\Users\\darre\\.gradle\\caches\\9.0-milestone-1\\transforms\\27f4415111278795152b42d124b0fe0f\\transformed\\appcompat-1.7.0\\res\\values-watch-v20\\values-watch-v20.xml",
-=======
                     "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/2826d7d298d6a806cc29c3b9e6bdabda/transformed/jetified-play-services-auth-20.7.0/res/values-watch-v20/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
@@ -25,7 +22,6 @@
                 },
                 {
                     "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/5f2fce03e7b708e6ca976ba726bcfbd0/transformed/appcompat-1.7.0/res/values-watch-v20/values-watch-v20.xml",
->>>>>>> 81c23604badbc8dfe72e9660214c4b64b306d025
                     "from": {
                         "startLines": "2,5,8",
                         "startColumns": "4,4,4",

@@ -4,11 +4,7 @@
             "outputFile": "com.example.campusguide.app-mergeDebugResources-3:/values-h320dp-port-v13/values-h320dp-port-v13.xml",
             "map": [
                 {
-<<<<<<< HEAD
-                    "source": "C:\\Users\\darre\\.gradle\\caches\\9.0-milestone-1\\transforms\\b6cf94462e202bd275c56472ecb91ddf\\transformed\\material-1.12.0\\res\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
-=======
                     "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/caches/9.0-milestone-1/transforms/3e8ea582cdd1c29447a40cf2e0ecbcb4/transformed/material-1.12.0/res/values-h320dp-port-v13/values-h320dp-port-v13.xml",
->>>>>>> 81c23604badbc8dfe72e9660214c4b64b306d025
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

@@ -12,5 +12,11 @@ interface CampusRepository {
 }
 
 object CampusRepoProvider {
-    fun provide(context: Context): CampusRepository = InMemoryCampusRepository
+    @Volatile private var instance: CampusRepository? = null
+
+    fun provide(@Suppress("UNUSED_PARAMETER") ctx: android.content.Context): CampusRepository {
+        return instance ?: synchronized(this) {
+            instance ?: FirestoreCampusRepository().also { instance = it }
+        }
+    }
 }
