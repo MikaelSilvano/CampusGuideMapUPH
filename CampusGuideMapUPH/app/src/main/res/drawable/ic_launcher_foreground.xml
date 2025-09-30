@@ -1,5 +1,15 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#FFFFFF" android:pathData="M54,18 L72,54 L54,90 L36,54 Z"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M30,42 h48 v6 h-48 z"/>
-</vector>
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- PAD besar supaya aman dari mask bulat -->
+    <item>
+        <inset
+            android:insetLeft="32dp"
+            android:insetTop="32dp"
+            android:insetRight="32dp"
+            android:insetBottom="32dp">
+            <bitmap
+                android:src="@drawable/logo_kampus"
+                android:gravity="center"/>
+        </inset>
+    </item>
+</layer-list>

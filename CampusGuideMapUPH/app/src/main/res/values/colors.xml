@@ -7,4 +7,6 @@
     <color name="badge_ongoing_bg">#E0F2FF</color>
     <color name="badge_upcoming_bg">#EAF7E9</color>
     <color name="badge_soon_bg">#F7EDE3</color>
+    <color name="uph_blue_bg">#AFC8FF</color>
+    <color name="uph_green">#C8F6A5</color>
 </resources>

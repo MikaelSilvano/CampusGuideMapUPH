@@ -4,7 +4,10 @@
     <application
         android:label="Campus Guide UPH"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CampusGuide">
+        android:theme="@style/Theme.CampusGuide"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher">
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true">
