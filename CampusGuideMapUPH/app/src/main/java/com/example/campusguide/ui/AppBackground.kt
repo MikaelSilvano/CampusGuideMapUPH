@@ -13,6 +13,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.campusguide.R
 
+// Komponen latar belakang untuk menampilkan gambar kampus dan overlay putih dan slot konten
 @Composable
 fun AppBackground(
     modifier: Modifier = Modifier,

@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.campusguide.data.Event
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import java.util.Calendar
 
 private val UPH_Navy   = Color(0xFF16224C)
@@ -25,12 +27,14 @@ private val ChipSand   = Color(0xFFFAEEDF)
 
 private val UPH_Orange = Color(0xFFF58A0A)
 
+// Admin dashboard
 @Composable
 fun DashboardScreen(
     vm: EventsViewModel,
     onAdd: ()->Unit,
     onEdit: (String)->Unit,
-    onRemove: (String)->Unit
+    onRemove: (String)->Unit,
+    onHistory: ()->Unit
 ) {
     val state by vm.state.collectAsState()
     LaunchedEffect(Unit) { vm.refresh() }
@@ -52,10 +56,10 @@ fun DashboardScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        .padding(horizontal = 5.dp, vertical = 5.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically
-                ) {
+                )  {
                     ActionButton(
                         text = "Add",
                         container = UPH_Navy,
@@ -76,6 +80,13 @@ fun DashboardScreen(
                         content = Color.White,
                         enabled = selectedId != null,
                         onClick = { selectedId?.let(onRemove) }
+                    )
+                    ActionButton(
+                        text = "History",
+                        container = Color(0xFF6C757D),
+                        content = Color.White,
+                        enabled = true,
+                        onClick = { onHistory() }
                     )
                 }
             }
@@ -131,6 +142,7 @@ fun DashboardScreen(
     }
 }
 
+// Komponen tabel daftar event
 @Composable
 private fun EventTable(
     events: List<Event>,
@@ -152,10 +164,11 @@ private fun EventTable(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HeadCell("No.", 0.8f)
-                HeadCell("Event Name", 2.2f)
-                HeadCell("Held By", 1.6f)
-                HeadCell("Time", 1.4f)
-                HeadCell("Date", 1.4f)
+                HeadCell("Event Name", 1.8f)
+                HeadCell("Held By", 1.2f)
+                HeadCell("Time", 2.0f)
+                Spacer(Modifier.width(5.dp))
+                HeadCell("Date", 1.2f)
             }
 
             LazyColumn(
@@ -180,7 +193,7 @@ private fun EventTable(
     }
 }
 
-
+// Tombol aksi di bar bawah
 @Composable
 private fun RowScope.ActionButton(
     text: String,
@@ -203,19 +216,25 @@ private fun RowScope.ActionButton(
         modifier = Modifier
             .height(52.dp)
             .weight(1f)
-    ) { Text(text, fontWeight = FontWeight.SemiBold) }
+    ) {
+        Text(
+            text,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 12.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
 
-@Composable private fun CountChip(label: String, value: Int, bg: Color) {
+// Menampilkan jumlah event per kategori
+@Composable
+private fun CountChip(label: String, value: Int, bg: Color) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .widthIn(min = 96.dp)
+        modifier = Modifier.widthIn(min = 96.dp)
     ) {
-        Surface(
-            color = bg,
-            shape = MaterialTheme.shapes.large
-        ) {
+        Surface(color = bg, shape = MaterialTheme.shapes.large) {
             Text(
                 text = label,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -223,12 +242,17 @@ private fun RowScope.ActionButton(
             )
         }
         Spacer(Modifier.height(8.dp))
-        Text("$value", color = Color.White, fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "$value",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineMedium
+        )
     }
 }
 
-@Composable private fun TableHeader() {
+@Composable
+private fun TableHeader() {
     Row(
         Modifier
             .fillMaxWidth()
@@ -240,16 +264,20 @@ private fun RowScope.ActionButton(
         HeadCell("Event Name", 2.2f)
         HeadCell("Held By", 1.6f)
         HeadCell("Time", 1.4f)
+        Spacer(Modifier.width(12.dp))
         HeadCell("Date", 1.4f)
     }
 }
+
 @Composable
 private fun RowScope.HeadCell(text: String, weight: Float) {
     Text(
-        text,
+        text = text,
         color = Color.White,
         modifier = Modifier.weight(weight),
-        fontWeight = FontWeight.SemiBold
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 12.sp,
+        maxLines = 1
     )
 }
 
@@ -268,10 +296,11 @@ private fun TableRow(index: Int, e: Event, selected: Boolean, onClick: () -> Uni
         verticalAlignment = Alignment.CenterVertically
     ) {
         BodyCell(index.toString(), 0.8f, FontWeight.SemiBold)
-        BodyCell(e.name, 2.2f)
-        BodyCell(e.heldBy, 1.6f)
-        BodyCell("${fmtTime(e.startTimeMinutes)}–${fmtTime(e.endTimeMinutes)}", 1.4f)
-        BodyCell(fmtDate(e.date), 1.4f)
+        BodyCell(e.name, 1.8f)
+        BodyCell(e.heldBy, 1.2f)
+        BodyCell("${fmtTime(e.startTimeMinutes)}–${fmtTime(e.endTimeMinutes)}", 2.0f)
+        Spacer(Modifier.width(5.dp))
+        BodyCell(fmtDate(e.date), 1.2f)
     }
 }
 
@@ -280,10 +309,14 @@ private fun RowScope.BodyCell(text: String, weight: Float, weightBold: FontWeigh
     Text(
         text = text,
         modifier = Modifier.weight(weight),
-        fontWeight = weightBold ?: FontWeight.Normal
+        fontWeight = weightBold ?: FontWeight.Normal,
+        fontSize = 12.sp,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
+// Utility function
 private fun fmtTime(min: Int): String = "%02d:%02d".format(min / 60, min % 60)
 
 private fun fmtDate(ts: com.google.firebase.Timestamp): String {

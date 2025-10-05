@@ -2,6 +2,7 @@ package com.example.campusguide.data
 
 import com.google.firebase.Timestamp
 
+// Model data Event yang disimpan di Firestore
 data class Event(
     val id: String = "",
     val name: String = "",
@@ -13,9 +14,11 @@ data class Event(
     val room: String = "",
     val heldBy: String = "",
     val posterUrl: String? = null,
+    val published: Boolean = true,
     val createdAt: Timestamp = Timestamp.now(),
     val updatedAt: Timestamp = Timestamp.now()
 ) {
+    // Mengecek apakah event sedang berlangsung
     fun isOngoing(nowTs: Timestamp = Timestamp.now()): Boolean {
         val now = nowTs.toDate()
         val d = date.toDate()

@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 private val UPH_Navy  = Color(0xFF16224C)
 private val UPH_White = Color(0xFFFFFFFF)
 
+// Admin login screen
 @Composable
 fun AdminLoginScreen(onSuccess: () -> Unit) {
     val ctx = LocalContext.current
@@ -33,6 +34,7 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
+    // Jika pernah disimpan, maka isi password otomatis
     LaunchedEffect(Unit) {
         if (creds.isSaved()) {
             email = creds.email()
@@ -122,6 +124,7 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
 
                 Spacer(Modifier.height(10.dp))
 
+                // Tombol login: validasi input, loading screen, dan simpan kredensial (optional)
                 Button(
                     onClick = {
                         if (email.isBlank() || pass.isBlank()) {
@@ -138,15 +141,25 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
                         }
                     },
                     enabled = !loading,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = UPH_White)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = UPH_White,
+                        contentColor = UPH_Navy,
+                        disabledContainerColor = UPH_White,
+                        disabledContentColor = UPH_Navy.copy(alpha = 0.6f)
+                    )
                 ) {
                     if (loading) {
                         CircularProgressIndicator(
-                            strokeWidth = 2.dp, modifier = Modifier.size(18.dp), color = UPH_Navy
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(18.dp),
+                            color = UPH_Navy
                         )
                     } else {
-                        Text("Login", color = UPH_Navy)
+                        Text("Login")
                     }
                 }
                 Spacer(Modifier.height(8.dp))

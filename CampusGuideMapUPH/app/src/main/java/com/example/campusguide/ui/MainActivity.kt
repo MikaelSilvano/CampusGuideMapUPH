@@ -81,6 +81,7 @@ private val UPH_White = Color(0xFFFFFFFF)
 private val UPH_Orange = Color(0xFFF58A0A)
 
 class MainActivity : ComponentActivity() {
+    // Dipanggil saat activity dibuat untuk set konten ke composable utama
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { CampusGuideApp() }
@@ -88,6 +89,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+// Setup drawer, top bar, bottom bar, dan NavHost
 @Composable
 fun CampusGuideApp() {
     val navController = rememberNavController()
@@ -97,6 +99,7 @@ fun CampusGuideApp() {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
+            // Konten drawer dan navigasi ke admin login
             AppDrawer(onAdminLogin = {
                 scope.launch { drawerState.close() }
                 navController.navigate(ROUTE_ADMIN_LOGIN)
@@ -105,17 +108,20 @@ fun CampusGuideApp() {
     ) {
         Scaffold(
             topBar = {
+                // App bar atas
                 AppTopBar(
                     onSearch = { navController.navigate("search") },
                     onMenu = { scope.launch { drawerState.open() } }
                 )
             },
-            bottomBar = { BottomBar(navController) }
+            bottomBar = { BottomBar(navController) } // Bottom navigation
         ) { padding ->
+            // Latar belakang bergambar + overlay
             AppBackground(
                 imageAlignment = BiasAlignment(0.4f, 0.7f),
                 overlayAlpha = 0.85f
             ) {
+                // NavHost untuk semua screen
                 NavHost(
                     navController = navController,
                     startDestination = "home",
@@ -123,10 +129,11 @@ fun CampusGuideApp() {
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    composable("home")   { HomeScreen(navController) }
-                    composable("events") { EventsScreen(navController) }
-                    composable("search") { SearchScreen(navController) }
+                    composable("home")   { HomeScreen(navController) }     // Beranda
+                    composable("events") { EventsScreen(navController) }    // Daftar event
+                    composable("search") { SearchScreen(navController) }    // Pencarian
 
+                    // Halaman login admin, dan graph admin
                     composable(ROUTE_ADMIN_LOGIN) {
                         AdminLoginScreen(onSuccess = {
                             navController.popBackStack(route = ROUTE_ADMIN_LOGIN, inclusive = true)
@@ -135,15 +142,18 @@ fun CampusGuideApp() {
                     }
                     adminGraph(navController)
 
+                    // Detail building
                     composable("building/{id}") {
                         val id = it.arguments?.getString("id") ?: ""
                         BuildingDetailScreen(id, navController)
                     }
+                    // Denah lantai
                     composable("floor/{b}/{f}") {
                         val b = it.arguments?.getString("b") ?: ""
                         val f = it.arguments?.getString("f")?.toIntOrNull() ?: 1
                         FloorPlanScreen(navController, b, f)
                     }
+                    // Detail event
                     composable("event/{eventId}") {
                         val eventId = it.arguments?.getString("eventId") ?: ""
                         EventDetailScreen(navController, eventId)
@@ -155,6 +165,7 @@ fun CampusGuideApp() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+// App bar bagian atas
 @Composable
 private fun AppTopBar(
     onSearch: () -> Unit,
@@ -190,6 +201,7 @@ private fun AppTopBar(
     )
 }
 
+// Bottom navigation bar
 @Composable
 private fun BottomBar(navController: NavHostController) {
     val navItemColors = NavigationBarItemDefaults.colors(
@@ -242,7 +254,7 @@ private fun BottomBar(navController: NavHostController) {
     }
 }
 
-
+// Data untuk hotspot
 data class Spot(
     val id: String,
     val x: Float,
@@ -250,6 +262,7 @@ data class Spot(
     val color: Color
 )
 
+// Home page (map UPH)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -313,6 +326,7 @@ fun HomeScreen(
     }
 }
 
+// Pin bulat untuk menandai bangunan di peta
 @Composable
 fun BuildingDot(
     id: String,
@@ -337,6 +351,7 @@ fun BuildingDot(
     }
 }
 
+// Menu bar (drawer)
 @Composable
 fun AppDrawer(onAdminLogin: () -> Unit) {
     val ctx = LocalContext.current
@@ -419,6 +434,7 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
     }
 }
 
+// Item komponen baris di dalam drawer
 @Composable
 private fun DrawerItem(
     label: String,
@@ -453,6 +469,7 @@ private fun DrawerItem(
     }
 }
 
+// Search tab
 @Composable
 fun SearchScreen(navController: NavHostController) {
     val ctx = LocalContext.current
@@ -498,6 +515,7 @@ fun SearchScreen(navController: NavHostController) {
     }
 }
 
+// Detail event
 @Composable
 fun EventDetailScreen(navController: NavHostController, eventId: String) {
     val ctx = LocalContext.current
@@ -538,8 +556,8 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
     }
 }
 
-
 @OptIn(ExperimentalLayoutApi::class)
+// Detail bangunan
 @Composable
 fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     val ctx = LocalContext.current
@@ -595,13 +613,14 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
         Spacer(Modifier.height(6.dp))
         LazyColumn(Modifier.fillMaxSize()) {
             items(events) { e ->
-                EventCard(e)
+                EventCard(e) { navController.navigate("event/${e.id}") }
                 Spacer(Modifier.height(8.dp))
             }
         }
     }
 }
 
+// Layar denah lantai yang memuat gambar dari Firebase Storage
 @Composable
 fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor: Int) {
     val resName = "b" + buildingId.lowercase() + "_f" + floor
@@ -654,6 +673,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+// Layar daftar event
 @Composable
 fun EventsScreen(navController: NavHostController) {
     val ctx = LocalContext.current
@@ -785,9 +805,9 @@ fun EventsScreen(navController: NavHostController) {
         Spacer(Modifier.height(8.dp))
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            FilterPill("From: $startDate") { showDatePickerStart = true }
+            FilterPill("From: $startDate") { showDatePickerStart = true } // Filter tanggal mulai
             Spacer(Modifier.width(8.dp))
-            FilterPill("To: $endDate") { showDatePickerEnd = true }
+            FilterPill("To: $endDate") { showDatePickerEnd = true }       // Filter tanggal akhir
         }
 
         if (showDatePickerStart) {
@@ -889,13 +909,14 @@ fun EventsScreen(navController: NavHostController) {
         Spacer(Modifier.height(8.dp))
         LazyColumn(Modifier.fillMaxSize()) {
             items(filtered) { e ->
-                EventCard(e)
+                EventCard(e) { navController.navigate("event/${e.id}") }
                 Spacer(Modifier.height(8.dp))
             }
         }
     }
 }
 
+// Mengembalikan label status event dan warna badge
 @Composable
 fun StatusBadge(e: CampusEvent): Pair<String, Color> {
     val now = LocalDateTime.now()
@@ -928,14 +949,31 @@ fun FilterPill(text: String, onClick: () -> Unit) {
         }
     }
 }
+
+// Event card untuk membuka detailed event
 @Composable
-fun EventCard(e: CampusEvent) {
+fun EventCard(e: CampusEvent, onClick: () -> Unit = {}) {
     val (label, bg) = StatusBadge(e)
-    Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFFF2F3F7), tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFF2F3F7),
+        tonalElevation = 1.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
         Column(Modifier.padding(16.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(e.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Box(Modifier.background(bg, shape = RoundedCornerShape(12.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Box(
+                    Modifier
+                        .background(bg, shape = RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
                     Text(label)
                 }
             }
@@ -961,7 +999,7 @@ fun EventRow(e: CampusEvent, onClick: () -> Unit) {
     }
 }
 
-
+// Tombol bulat untuk kembali ke halaman peta/home
 @Composable
 fun BackToMapButton(navController: NavHostController, modifier: Modifier = Modifier) {
     Surface(
@@ -1025,6 +1063,7 @@ private fun PreviewApp() {
     CampusGuideApp()
 }
 
+// Utility function
 private fun cleanRoom(room: String): String {
     val t = room.trim()
     return if (t.startsWith("Room", ignoreCase = true)) t.removePrefix("Room").trimStart() else t

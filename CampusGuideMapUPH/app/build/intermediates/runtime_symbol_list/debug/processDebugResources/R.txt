@@ -1382,6 +1382,7 @@ int color foreground_material_dark 0x7f05006d
 int color foreground_material_light 0x7f05006e
 int color highlighted_text_material_dark 0x7f05006f
 int color highlighted_text_material_light 0x7f050070
+int color ic_launcher_background 0x7f05031e
 int color m3_appbar_overlay_color 0x7f050071
 int color m3_assist_chip_icon_tint_color 0x7f050072
 int color m3_assist_chip_stroke_color 0x7f050073
@@ -2061,7 +2062,9 @@ int color switch_thumb_normal_material_light 0x7f050314
 int color tooltip_background_dark 0x7f050315
 int color tooltip_background_light 0x7f050316
 int color uph_bg 0x7f050317
+int color uph_blue_bg 0x7f05031f
 int color uph_card 0x7f050318
+int color uph_green 0x7f050320
 int color uph_navy 0x7f050319
 int color uph_red 0x7f05031a
 int color uph_white 0x7f05031b
@@ -3011,6 +3014,7 @@ int drawable ic_passkey 0x7f0700af
 int drawable ic_password 0x7f0700b0
 int drawable ic_search_black_24 0x7f0700b1
 int drawable indeterminate_static 0x7f0700b2
+int drawable logo_kampus 0x7f070102
 int drawable m3_avd_hide_password 0x7f0700b3
 int drawable m3_avd_show_password 0x7f0700b4
 int drawable m3_bottom_sheet_drag_handle 0x7f0700b5
@@ -3765,6 +3769,8 @@ int layout select_dialog_multichoice_material 0x7f0b006a
 int layout select_dialog_singlechoice_material 0x7f0b006b
 int layout support_simple_spinner_dropdown_item 0x7f0b006c
 int mipmap ic_launcher 0x7f0d0000
+int mipmap ic_launcher_foreground 0x7f0d0001
+int mipmap ic_launcher_round 0x7f0d0002
 int plurals mtrl_badge_content_description 0x7f0e0000
 int raw firebase_common_keep 0x7f0f0000
 int string abc_action_bar_home_description 0x7f100000

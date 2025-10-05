@@ -11,15 +11,18 @@ const val ROUTE_ADMIN_DASH   = "admin/dashboard"
 const val ROUTE_ADMIN_ADD    = "admin/add"
 const val ROUTE_ADMIN_EDIT   = "admin/edit/{eventId}"
 const val ROUTE_ADMIN_REMOVE = "admin/remove"
+const val ROUTE_ADMIN_HISTORY = "admin/history"
 
+// Menambahkan seluruh rute/halaman admin ke NavGraph aplikasi
 fun NavGraphBuilder.adminGraph(nav: NavController) {
     composable(ROUTE_ADMIN_DASH) {
         val vm: EventsViewModel = viewModel()
         DashboardScreen(
             vm = vm,
-            onAdd = { nav.navigate(ROUTE_ADMIN_ADD) },
-            onEdit = { id -> nav.navigate("admin/edit/$id") },
-            onRemove = { nav.navigate(ROUTE_ADMIN_REMOVE) }
+            onAdd = { nav.navigate(ROUTE_ADMIN_ADD) },          // Menuju form add
+            onEdit = { id -> nav.navigate("admin/edit/$id") },  // Menuju form edit
+            onRemove = { nav.navigate(ROUTE_ADMIN_REMOVE) },    // Menuju form remove
+            onHistory = { nav.navigate(ROUTE_ADMIN_HISTORY) }   // Menuju form history
         )
     }
     composable(ROUTE_ADMIN_ADD) {
@@ -44,6 +47,13 @@ fun NavGraphBuilder.adminGraph(nav: NavController) {
     composable(ROUTE_ADMIN_REMOVE) {
         val vm: EventsViewModel = viewModel()
         RemoveEventScreen(
+            vm = vm,
+            onBack = { nav.popBackStack() }
+        )
+    }
+    composable(ROUTE_ADMIN_HISTORY) {
+        val vm: EventsViewModel = viewModel()
+        HistoryScreen(
             vm = vm,
             onBack = { nav.popBackStack() }
         )

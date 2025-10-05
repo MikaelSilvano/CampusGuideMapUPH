@@ -27,7 +27,9 @@
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:debuggable="true"
         android:extractNativeLibs="false"
+        android:icon="@mipmap/ic_launcher"
         android:label="Campus Guide UPH"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:testOnly="true"
         android:theme="@style/Theme.CampusGuide" >
@@ -40,6 +42,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <activity
+            android:name="androidx.compose.ui.tooling.PreviewActivity"
+            android:exported="true" />
         <activity
             android:name="com.google.firebase.auth.internal.GenericIdpActivity"
             android:excludeFromRecents="true"
@@ -170,10 +179,9 @@
             android:exported="false"
             android:initOrder="100" />
 
-        <activity
-            android:name="androidx.activity.ComponentActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <uses-library
+            android:name="android.ext.adservices"
+            android:required="false" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"
@@ -194,14 +202,6 @@
             android:name="com.google.android.gms.common.api.GoogleApiActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-
-        <uses-library
-            android:name="android.ext.adservices"
-            android:required="false" />
-
-        <activity
-            android:name="androidx.compose.ui.tooling.PreviewActivity"
-            android:exported="true" />
 
         <meta-data
             android:name="com.google.android.gms.version"

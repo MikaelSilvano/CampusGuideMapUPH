@@ -4,8 +4,13 @@ import java.time.*
 import java.util.*
 import kotlinx.coroutines.flow.flow
 
+// Model bangunan: id, nama, jumlah lantai, dan catatan opsional
 data class Building(val id: String, val name: String, val floors: Int, val notes: String = "")
+
+// Model ruangan kampus: referensi building, lantai, kode ruangan, dan fakultas
 data class CampusRoom(val buildingId: String, val floor: Int, val code: String, val faculty: String)
+
+// Model event: jadwal lengkap dan kategori
 data class CampusEvent(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
@@ -17,14 +22,17 @@ data class CampusEvent(
     val category: String
 )
 
+// Hasil pencarian gabungan
 sealed class SearchResult(val title: String, val subtitle: String) {
     class FacultyResult(val faculty: String, val buildingId: String): SearchResult(faculty, "Faculty located in Building $buildingId")
     class RoomResult(val buildingId: String, val floor: Int, val room: String): SearchResult(room, "Room at Building $buildingId • Floor $floor")
     class EventResult(val eventId: String, val display: String): SearchResult("Event", display)
 }
 
+// Filter daftar event
 enum class EventFilter { All, Ongoing, Upcoming, Soon }
 
+// Implementasi repository untuk data kampus.
 object InMemoryCampusRepository: CampusRepository {
     val buildings = listOf(
         Building("B", "Building B", 6),
@@ -52,6 +60,7 @@ object InMemoryCampusRepository: CampusRepository {
         "Faculty of Nursing"
     )
 
+    // Pemetaan fakultas
     val facultyInBuilding = mapOf(
         "Faculty of Information Technology" to "B",
         "Faculty of Artificial Intelligence" to "B",
@@ -64,6 +73,7 @@ object InMemoryCampusRepository: CampusRepository {
         "Faculty of Nursing" to "F"
     )
 
+    // Daftar ruangan contoh per building/floor
     val rooms: List<CampusRoom> = buildList {
         buildings.forEach { b ->
             (1..b.floors).forEach { f ->
@@ -79,6 +89,8 @@ object InMemoryCampusRepository: CampusRepository {
     }
 
     private val now = LocalDateTime.now()
+
+    // Event dummy
     val events: MutableList<CampusEvent> = mutableListOf(
         CampusEvent(name="Workshop Android", buildingId="F", room="F201", heldBy="Faculty of IT", start= now.plusHours(1), end= now.plusHours(3), category="Workshop"),
         CampusEvent(name="Open Rehearsal Orchestra", buildingId="C", room="C301", heldBy="Faculty of Music", start= now.plusDays(1).withHour(17), end= now.plusDays(1).withHour(19), category="Performance"),
@@ -90,11 +102,15 @@ object InMemoryCampusRepository: CampusRepository {
     override suspend fun getFloors(buildingId: String): List<Int> =
         buildings.find { it.id == buildingId }?.let { (1..it.floors).toList() } ?: emptyList()
 
+    // Stream event khusus satu building
     override fun streamEventsForBuilding(buildingId: String) = flow {
         emit(events.filter { it.buildingId == buildingId })
     }
+
+    // Stream seluruh event
     override fun streamAllEvents() = flow { emit(events.toList()) }
 
+    // Searching
     override suspend fun search(query: String): List<SearchResult> {
         val q = query.trim()
         if (q.isEmpty()) return emptyList()
@@ -111,6 +127,7 @@ object InMemoryCampusRepository: CampusRepository {
         return fac + room + ev
     }
 
+    // Utility function
     fun eventsFiltered(filter: EventFilter): List<CampusEvent> {
         val now = LocalDateTime.now()
         return when(filter) {

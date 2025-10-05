@@ -7,10 +7,12 @@ import kotlinx.coroutines.flow.*
 import java.time.LocalDateTime
 import java.time.ZoneId
 
+// Repository berbasis Firestore untuk membaca data kampus & event secara real-time
 class FirestoreCampusRepository(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : CampusRepository {
 
+    // StateFlow semua event (dipublish)
     private val _events = MutableStateFlow<List<CampusEvent>>(emptyList())
     val eventsFlow: StateFlow<List<CampusEvent>> = _events.asStateFlow()
 
@@ -20,6 +22,7 @@ class FirestoreCampusRepository(
         startGlobalListener()
     }
 
+    // Snapshot listener Firestore untuk koleksi events
     private fun startGlobalListener() {
         if (globalReg != null) return
 
@@ -41,24 +44,30 @@ class FirestoreCampusRepository(
                 }
                 val list = snap?.documents.orEmpty().mapNotNull { d ->
                     val ev = d.toObject(Event::class.java) ?: return@mapNotNull null
-                    ev.copy(id = d.id).toCampusEvent()
+                    val e = ev.copy(id = d.id)
+                    if (e.published) e.toCampusEvent() else null
                 }
                 _events.value = list
             }
     }
 
+    // Mengalirkan semua event
     override fun streamAllEvents(): Flow<List<CampusEvent>> = eventsFlow
 
+    // Mengalirkan event untuk building tertentu
     override fun streamEventsForBuilding(buildingId: String): Flow<List<CampusEvent>> =
         eventsFlow.map { list -> list.filter { it.buildingId == buildingId } }
             .distinctUntilChanged()
 
+    // Mengambil daftar bangunan dari repository
     override suspend fun getBuildings(): List<Building> =
         InMemoryCampusRepository.getBuildings()
 
+    // Mengambil daftar lantai untuk building tertentu dari repository
     override suspend fun getFloors(buildingId: String): List<Int> =
         InMemoryCampusRepository.getFloors(buildingId)
 
+    // Gabungan search
     override suspend fun search(q: String): List<SearchResult> {
         val base: List<SearchResult> =
             try { InMemoryCampusRepository.search(q) } catch (_: Throwable) { emptyList() }
@@ -80,6 +89,8 @@ class FirestoreCampusRepository(
         return base + fromEvents
     }
 }
+
+// Konversi model Firestore Event menjadi model UI CampusEvent
 private fun Event.toCampusEvent(): CampusEvent {
     val zone = ZoneId.systemDefault()
     val day = date.toDate().toInstant().atZone(zone).toLocalDate()

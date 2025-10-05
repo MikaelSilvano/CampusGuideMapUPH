@@ -1,19 +1,83 @@
 [
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_logo.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/uph_logo.png"
-    },
-    {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_main_logo.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/uph_main_logo.png"
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_round.webp"
     },
     {
         "merged": "com.example.campusguide.app-debug-5:/drawable_ic_launcher_foreground.xml.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/ic_launcher_foreground.xml"
     },
     {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_logo.png.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/uph_logo.png"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_main_logo.png.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/uph_main_logo.png"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher_foreground.webp"
+    },
+    {
         "merged": "com.example.campusguide.app-debug-5:/drawable_uph_building_background.jpg.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/uph_building_background.jpg"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_logo_kampus.png.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/logo_kampus.png"
     },
     {
         "merged": "com.example.campusguide.app-debug-5:/drawable_uph_map.png.flat",
@@ -26,5 +90,9 @@
     {
         "merged": "com.example.campusguide.app-debug-5:/drawable_ic_launcher_background.xml.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher_foreground.webp"
     }
 ]

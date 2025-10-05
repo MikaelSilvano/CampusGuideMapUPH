@@ -9,7 +9,6 @@ import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 data class AdminState(
@@ -21,6 +20,7 @@ data class AdminState(
     val countComingSoon: Int = 0
 )
 
+// ViewModel antara UI admin dan repository event
 class EventsViewModel(
     private val repo: EventsRepository = EventsRepository()
 ) : ViewModel() {
@@ -28,6 +28,7 @@ class EventsViewModel(
     private val _state = MutableStateFlow(AdminState())
     val state: StateFlow<AdminState> = _state
 
+    // Mengambil ulang daftar event dan membuat statistik
     fun refresh() {
         viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
@@ -48,6 +49,7 @@ class EventsViewModel(
         }
     }
 
+    // Membuat event baru
     fun create(event: Event, posterUri: Uri?, onDone: (String)->Unit, onError: (String)->Unit) {
         viewModelScope.launch {
             try {
@@ -60,6 +62,7 @@ class EventsViewModel(
         }
     }
 
+    // Memperbarui data event
     fun update(event: Event, posterUri: Uri?, onDone: ()->Unit, onError: (String)->Unit) {
         viewModelScope.launch {
             try {
@@ -72,6 +75,20 @@ class EventsViewModel(
         }
     }
 
+    // Mengubah status event published/unpublished
+    fun setPublished(id: String, published: Boolean, onDone: ()->Unit, onError: (String)->Unit) {
+        viewModelScope.launch {
+            try {
+                repo.setPublished(id, published)
+                refresh()
+                onDone()
+            } catch (e: Exception) {
+                onError(e.message ?: "Failed to update visibility")
+            }
+        }
+    }
+
+    // Menghapus event dari database
     fun delete(id: String, onDone: ()->Unit, onError: (String)->Unit) {
         viewModelScope.launch {
             try {
@@ -80,6 +97,17 @@ class EventsViewModel(
                 onDone()
             } catch (e: Exception) {
                 onError(e.message ?: "Failed to delete")
+            }
+        }
+    }
+
+    fun loadPastEvents(onDone: (List<Event>) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val list = repo.listPast()
+                onDone(list)
+            } catch (e: Exception) {
+                onError(e.message ?: "Failed to load history")
             }
         }
     }
