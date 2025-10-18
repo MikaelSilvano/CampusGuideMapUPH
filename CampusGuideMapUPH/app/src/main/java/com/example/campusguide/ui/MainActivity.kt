@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import com.example.campusguide.BuildConfig
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Map
@@ -121,48 +122,52 @@ fun CampusGuideApp() {
                 imageAlignment = BiasAlignment(0.4f, 0.7f),
                 overlayAlpha = 0.85f
             ) {
-                // NavHost untuk semua screen
-                NavHost(
-                    navController = navController,
-                    startDestination = "home",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                ) {
-                    composable("home")   { HomeScreen(navController) }     // Beranda
-                    composable("events") { EventsScreen(navController) }    // Daftar event
-                    composable("search") { SearchScreen(navController) }    // Pencarian
+                // NEW wrapper so we can overlay the button
+                Box(Modifier.fillMaxSize() .padding(padding) ) {
 
-                    // Halaman login admin, dan graph admin
-                    composable(ROUTE_ADMIN_LOGIN) {
-                        AdminLoginScreen(onSuccess = {
-                            navController.popBackStack(route = ROUTE_ADMIN_LOGIN, inclusive = true)
-                            navController.navigate(ROUTE_ADMIN_DASH) { launchSingleTop = true }
-                        })
-                    }
-                    adminGraph(navController)
+                    // your existing NavHost (unchanged)
+                    NavHost(
+                        navController = navController,
+                        startDestination = "home",
+                        modifier = Modifier
+                            .matchParentSize()      // was fillMaxSize(); matchParentSize works better here
+                    ) {
+                        composable("home")   { HomeScreen(navController) }
+                        composable("events") { EventsScreen(navController) }
+                        composable("search") { SearchScreen(navController) }
 
-                    // Detail building
-                    composable("building/{id}") {
-                        val id = it.arguments?.getString("id") ?: ""
-                        BuildingDetailScreen(id, navController)
+                        composable(ROUTE_ADMIN_LOGIN) {
+                            AdminLoginScreen(onSuccess = {
+                                navController.popBackStack(route = ROUTE_ADMIN_LOGIN, inclusive = true)
+                                navController.navigate(ROUTE_ADMIN_DASH) { launchSingleTop = true }
+                            })
+                        }
+                        adminGraph(navController)
+
+                        composable("building/{id}") {
+                            val id = it.arguments?.getString("id") ?: ""
+                            BuildingDetailScreen(id, navController)
+                        }
+                        composable("floor/{b}/{f}") {
+                            val b = it.arguments?.getString("b") ?: ""
+                            val f = it.arguments?.getString("f")?.toIntOrNull() ?: 1
+                            FloorPlanScreen(navController, b, f)
+                        }
+                        composable("event/{eventId}") {
+                            val eventId = it.arguments?.getString("eventId") ?: ""
+                            EventDetailScreen(navController, eventId)
+                        }
                     }
-                    // Denah lantai
-                    composable("floor/{b}/{f}") {
-                        val b = it.arguments?.getString("b") ?: ""
-                        val f = it.arguments?.getString("f")?.toIntOrNull() ?: 1
-                        FloorPlanScreen(navController, b, f)
-                    }
-                    // Detail event
-                    composable("event/{eventId}") {
-                        val eventId = it.arguments?.getString("eventId") ?: ""
-                        EventDetailScreen(navController, eventId)
-                    }
+
+                    // >>> ADD THIS UNDER THE NavHost <<<
+                    DebugSeedButton()
                 }
             }
+
+        }
         }
     }
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 // App bar bagian atas
@@ -253,6 +258,38 @@ private fun BottomBar(navController: NavHostController) {
         )
     }
 }
+
+@Composable
+fun DebugSeedButton() {
+    if (!BuildConfig.DEBUG) return // hide in release builds
+
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+
+    Box(Modifier.fillMaxSize()) {
+        SnackbarHost(hostState = snackbar, modifier = Modifier.align(Alignment.BottomCenter))
+
+        Button(
+            onClick = {
+                scope.launch {
+                    try {
+                        EventsSeeder.seed(ctx)
+                        snackbar.showSnackbar("Seeding done (600 events)")
+                    } catch (e: Exception) {
+                        snackbar.showSnackbar("Seeding failed: ${e.message}")
+                    }
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Text("Seed Events")
+        }
+    }
+}
+
 
 // Data untuk hotspot
 data class Spot(
@@ -687,7 +724,7 @@ fun EventsScreen(navController: NavHostController) {
     val statuses = listOf("All", "Ongoing", "Upcoming", "Coming Soon")
 
     var startDate by remember { mutableStateOf(LocalDate.now()) }
-    var endDate by remember { mutableStateOf(LocalDate.now().plusDays(7)) }
+    var endDate by remember { mutableStateOf(LocalDate.now().plusDays(20)) }
 
     var showDatePickerStart by remember { mutableStateOf(false) }
     var showDatePickerEnd by remember { mutableStateOf(false) }
