@@ -159,8 +159,6 @@ fun CampusGuideApp() {
                         }
                     }
 
-                    // >>> ADD THIS UNDER THE NavHost <<<
-                    DebugSeedButton()
                 }
             }
 
@@ -724,7 +722,7 @@ fun EventsScreen(navController: NavHostController) {
     val statuses = listOf("All", "Ongoing", "Upcoming", "Coming Soon")
 
     var startDate by remember { mutableStateOf(LocalDate.now()) }
-    var endDate by remember { mutableStateOf(LocalDate.now().plusDays(20)) }
+    var endDate   by remember { mutableStateOf(LocalDate.now().plusDays(7)) }
 
     var showDatePickerStart by remember { mutableStateOf(false) }
     var showDatePickerEnd by remember { mutableStateOf(false) }
@@ -732,18 +730,16 @@ fun EventsScreen(navController: NavHostController) {
     val today = LocalDate.now()
 
     val now = LocalDateTime.now()
-    val filtered = remember(allEvents, building, status, startDate, endDate, now) {
+    val filtered = remember(allEvents, building, status, now) {
         allEvents.filter { e ->
             val inBuilding = (building == "All") || (e.buildingId == building)
-            val date = e.start.toLocalDate()
-            val inRange = !date.isBefore(startDate) && !date.isAfter(endDate)
             val inStatus = when (status) {
-                "Ongoing"      -> now.isAfter(e.start) && now.isBefore(e.end)
-                "Upcoming"     -> e.start.isAfter(now) && e.start.isAfter(now.plusDays(3))
-                "Coming Soon"  -> e.start.isAfter(now) && e.start.isBefore(now.plusDays(3))
+                "Ongoing"     -> now.isAfter(e.start) && now.isBefore(e.end)
+                "Upcoming"    -> e.start.isAfter(now) && e.start.isAfter(now.plusDays(3))
+                "Coming Soon" -> e.start.isAfter(now) && e.start.isBefore(now.plusDays(3))
                 else -> true
             }
-            inBuilding && inRange && inStatus
+            inBuilding && inStatus
         }.sortedBy { it.start }
     }
 
@@ -951,6 +947,7 @@ fun EventsScreen(navController: NavHostController) {
             }
         }
     }
+    DebugSeedButton()
 }
 
 // Mengembalikan label status event dan warna badge
