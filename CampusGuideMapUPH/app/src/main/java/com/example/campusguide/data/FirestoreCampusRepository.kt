@@ -35,8 +35,7 @@ class FirestoreCampusRepository(
         val todayStart = Timestamp(cal.time)
 
         globalReg = db.collection("events")
-            .whereGreaterThanOrEqualTo("date", todayStart)
-            .orderBy("date")
+            .orderBy("date") // ← just order, no where filter
             .addSnapshotListener { snap, err ->
                 if (err != null) {
                     _events.value = emptyList()
@@ -45,6 +44,7 @@ class FirestoreCampusRepository(
                 val list = snap?.documents.orEmpty().mapNotNull { d ->
                     val ev = d.toObject(Event::class.java) ?: return@mapNotNull null
                     val e = ev.copy(id = d.id)
+                    // If you truly want *all 600*, including unpublished, drop the check below:
                     if (e.published) e.toCampusEvent() else null
                 }
                 _events.value = list
