@@ -4,6 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.CalendarContract
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.res.colorResource
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -12,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Language
@@ -64,6 +67,8 @@ import com.example.campusguide.R
 import com.example.campusguide.data.*
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import java.time.LocalDate
@@ -81,13 +86,47 @@ private val UPH_Red  = Color(0xFFE31E2E)
 private val UPH_White = Color(0xFFFFFFFF)
 private val UPH_Orange = Color(0xFFF58A0A)
 
+val routeColor = Color(0xFFA64AEF)
+
 class MainActivity : ComponentActivity() {
     // Dipanggil saat activity dibuat untuk set konten ke composable utama
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize graph once
+        com.example.campusguide.path.PathRepository.init(this, R.raw.campus_graph)
+
         setContent { CampusGuideApp() }
     }
 }
+
+// ---- Entrance model + simple data source (MVP) ----
+data class EntranceUI(
+    val id: String,
+    val label: String,
+    val buildingId: String
+)
+
+private fun entrancesFor(buildingId: String): List<EntranceUI> = when (buildingId) {
+    "B" -> listOf(
+        EntranceUI("B_West",  "West Entrance",  "B"),
+        EntranceUI("B_South", "South Entrance", "B"),
+        EntranceUI("B_East",  "East Entrance",  "B")
+    )
+    "C" -> listOf(
+        EntranceUI("C_South", "South Entrance", "C"),
+        EntranceUI("C_East",  "East Entrance",  "C")
+    )
+    "D" -> listOf(
+        EntranceUI("D_West", "West Entrance", "D"),
+        EntranceUI("D_East", "East Entrance", "D")
+    )
+    "F" -> listOf(EntranceUI("F_Main", "Main Entrance", "F"))
+    "G" -> listOf(EntranceUI("G_Main", "Main Entrance", "G"))
+    "H" -> listOf(EntranceUI("H_Main", "Main Entrance", "H"))
+    else -> emptyList()
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 // Setup drawer, top bar, bottom bar, dan NavHost
@@ -303,9 +342,25 @@ fun HomeScreen(
     navController: NavHostController,
     debugBorders: Boolean = false
 ) {
+    // ---- Path Mode & selection state ----
+    var isPathMode by rememberSaveable { mutableStateOf(false) }
 
+    var startBuildingId by rememberSaveable { mutableStateOf<String?>(null) }
+    var endBuildingId   by rememberSaveable { mutableStateOf<String?>(null) }
+    var startEntrance   by rememberSaveable { mutableStateOf<EntranceUI?>(null) }
+    var endEntrance     by rememberSaveable { mutableStateOf<EntranceUI?>(null) }
+
+    // Which entrance sheet is open: "start", "end", or null
+    var showPickerFor by remember { mutableStateOf<String?>(null) }
+
+    // ---- Pathfinding graph & rendered path ----
+    val pathRepo = remember { com.example.campusguide.path.PathRepository.get() }
+    val graph = remember { pathRepo.graph() }
+    var pathNodeIds by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    // ---- Map pins (default colors; F is NOT green anymore) ----
     val hotspots = listOf(
-        Spot("F", 0.23f,  0.36f, Color(0xFF2ECC71)),
+        Spot("F", 0.23f,  0.36f, UPH_Navy),
         Spot("B", 0.665f, 0.73f, UPH_Orange),
         Spot("H", 0.55f,  0.77f, Color(0xFFFFC27A)),
         Spot("C", 0.35f,  0.78f, Color(0xFFFFD54F)),
@@ -324,6 +379,7 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
         ) {
+            // --- Base map ---
             Image(
                 painter = painterResource(R.drawable.uph_map),
                 contentDescription = "UPH Map",
@@ -331,6 +387,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // --- Pins layer (INSIDE this Box) ---
             BoxWithConstraints(
                 modifier = Modifier
                     .matchParentSize()
@@ -339,27 +396,237 @@ fun HomeScreen(
                 if (debugBorders) {
                     Box(Modifier.matchParentSize().border(2.dp, Color.Red))
                 }
-                val badge = 34.dp
+
+                val base = 34.dp
                 hotspots.forEach { s ->
-                    val xOff = (maxWidth * s.x) - (badge / 2)
-                    val yOff = (maxHeight * s.y) - (badge / 2)
+                    val xOff = (maxWidth * s.x) - (base / 2)
+                    val yOff = (maxHeight * s.y) - (base / 2)
+
+                    val isSelected = isPathMode && (s.id == startBuildingId || s.id == endBuildingId)
+
                     BuildingDot(
                         id = s.id,
-                        color = s.color,
-                        size = badge,
+                        color = if (isSelected) colorResource(id = R.color.selected_purple) else s.color,
+                        size = base,
                         modifier = Modifier
                             .offset(x = xOff, y = yOff)
-                            .clickable { navController.navigate("building/${s.id}") }
+                            .clickable {
+                                if (!isPathMode) {
+                                    navController.navigate("building/${s.id}")
+                                } else {
+                                    // selection flow
+                                    when {
+                                        startBuildingId == null || (startBuildingId != null && endBuildingId != null) -> {
+                                            // Start or restart
+                                            startBuildingId = s.id
+                                            endBuildingId = null
+                                            startEntrance = null
+                                            endEntrance = null
+                                            pathNodeIds = emptyList()
+
+                                            val es = entrancesFor(s.id)
+                                            if (es.size <= 1) {
+                                                startEntrance = es.firstOrNull()
+                                                if (startEntrance != null && endEntrance != null) {
+                                                    pathNodeIds = com.example.campusguide.path.Router.shortestPath(
+                                                        graph = graph,
+                                                        startId = startEntrance!!.id,
+                                                        endId = endEntrance!!.id
+                                                    )
+                                                }
+                                            } else {
+                                                showPickerFor = "start"
+                                            }
+                                        }
+                                        endBuildingId == null -> {
+                                            // Destination
+                                            endBuildingId = s.id
+                                            val es = entrancesFor(s.id)
+                                            if (es.size <= 1) {
+                                                endEntrance = es.firstOrNull()
+                                                if (startEntrance != null && endEntrance != null) {
+                                                    pathNodeIds = com.example.campusguide.path.Router.shortestPath(
+                                                        graph = graph,
+                                                        startId = startEntrance!!.id,
+                                                        endId = endEntrance!!.id
+                                                    )
+                                                }
+                                            } else {
+                                                showPickerFor = "end"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                     )
                 }
             }
+
+            // --- Route overlay (above pins) ---
+            Canvas(
+                modifier = Modifier
+                    .matchParentSize()
+                    .zIndex(2f)
+            ) {
+                if (pathNodeIds.size >= 2) {
+                    // force Offset from Compose and compute in this DrawScope
+                    val pts: List<Offset> = pathRepo
+                        .toNormalizedOffsets(pathNodeIds)
+                        .map { (nx, ny) -> Offset(nx * size.width, ny * size.height) }
+
+                    for (i in 0 until (pts.size - 1)) {
+                        drawLine(
+                            brush = SolidColor(routeColor),    // <— brush overload is very safe
+                            start = pts[i],
+                            end   = pts[i + 1],
+                            strokeWidth = 10f
+                        )
+                    }
+                }
+            }
+
+            // --- Path Mode toggle button (ONLY this one) ---
+            PathModeButton(
+                enabled = isPathMode,
+                onToggle = {
+                    isPathMode = !isPathMode
+                    if (!isPathMode) {
+                        startBuildingId = null
+                        endBuildingId = null
+                        startEntrance = null
+                        endEntrance = null
+                        showPickerFor = null
+                        pathNodeIds = emptyList()
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 88.dp)
+                    .zIndex(10f)
+            )
         }
 
         Spacer(Modifier.height(16.dp))
-        Text("Tap bulatan pada peta untuk membuka detail.", color = Color.Gray)
+
+        // Helper text
+        val help = when {
+            !isPathMode -> "Tap bulatan pada peta untuk membuka detail."
+            startBuildingId == null -> "Path Mode: choose a START building."
+            endBuildingId == null -> "Path Mode: choose a DESTINATION building."
+            else -> "Path Mode: path shown. Toggle button to reset."
+        }
+        Text(help, color = Color.Gray)
+
         Spacer(Modifier.height(24.dp))
     }
+
+    // ---- Entrance pickers (keep INSIDE HomeScreen) ----
+    when (showPickerFor) {
+        "start" -> {
+            val list = entrancesFor(startBuildingId ?: "")
+            EntrancePickerSheet(
+                title = "Choose starting entrance — Building $startBuildingId",
+                items = list,
+                onPick = { e ->
+                    startEntrance = e
+                    showPickerFor = null
+                    if (startEntrance != null && endEntrance != null) {
+                        pathNodeIds = com.example.campusguide.path.Router.shortestPath(
+                            graph = graph,
+                            startId = startEntrance!!.id,
+                            endId = endEntrance!!.id
+                        )
+                    }
+                },
+                onDismiss = { showPickerFor = null }
+            )
+        }
+        "end" -> {
+            val list = entrancesFor(endBuildingId ?: "")
+            EntrancePickerSheet(
+                title = "Choose destination entrance — Building $endBuildingId",
+                items = list,
+                onPick = { e ->
+                    endEntrance = e
+                    showPickerFor = null
+                    if (startEntrance != null && endEntrance != null) {
+                        pathNodeIds = com.example.campusguide.path.Router.shortestPath(
+                            graph = graph,
+                            startId = startEntrance!!.id,
+                            endId = endEntrance!!.id
+                        )
+                    }
+                },
+                onDismiss = { showPickerFor = null }
+            )
+        }
+    }
 }
+
+@Composable
+fun PathModeButton(
+    enabled: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = CircleShape,
+        color = if (enabled) Color(0xFF20315C) else Color(0xCC16224C),
+        shadowElevation = 6.dp,
+        modifier = modifier
+            .size(56.dp)
+            .clip(CircleShape)
+            .clickable { onToggle() }
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            val iconRes = if (enabled) R.drawable.path_mode_button_invert
+            else R.drawable.path_mode_button
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = if (enabled) "Exit Path Mode" else "Enter Path Mode"
+            )
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EntrancePickerSheet(
+    title: String,
+    items: List<EntranceUI>,
+    onPick: (EntranceUI) -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (items.isEmpty()) return
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color.White) {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(12.dp))
+            items.forEach { e ->
+                Surface(
+                    onClick = { onPick(e) },
+                    shape = RoundedCornerShape(12.dp),
+                    tonalElevation = 0.dp,
+                    color = Color(0xFFF2F3F7),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+                ) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("${e.label} • ${e.id}")
+                        Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = null)
+                    }
+                }
+            }
+            Spacer(Modifier.height(18.dp))
+        }
+    }
+}
+
+
 
 // Pin bulat untuk menandai bangunan di peta
 @Composable
