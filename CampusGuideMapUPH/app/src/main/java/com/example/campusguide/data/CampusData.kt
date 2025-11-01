@@ -137,4 +137,76 @@ object InMemoryCampusRepository: CampusRepository {
             EventFilter.Soon -> events.filter { it.start.isAfter(now) && it.start.isBefore(now.plusDays(3)) }
         }
     }
+
+    override suspend fun setPublished(id: String, published: Boolean) {
+
+    }
+
+    override suspend fun createEvent(e: CampusEventInput): String {
+        val zone = ZoneId.systemDefault()
+        val day = Instant.ofEpochMilli(e.dateMillis).atZone(zone).toLocalDate()
+        val start = LocalDateTime.of(day, LocalTime.of(e.startTimeMinutes / 60, e.startTimeMinutes % 60))
+        val end   = LocalDateTime.of(day, LocalTime.of(e.endTimeMinutes / 60, e.endTimeMinutes % 60))
+
+        val newId = UUID.randomUUID().toString()
+        val added = CampusEvent(
+            id = newId,
+            name = e.name,
+            buildingId = e.buildingId,
+            room = e.room,
+            heldBy = e.heldBy,
+            start = start,
+            end = end,
+            category = "Event"
+        )
+        events.add(added)
+        return newId
+    }
+
+    override suspend fun updateEvent(id: String, patch: Map<String, Any?>) {
+        val idx = events.indexOfFirst { it.id == id }
+        if (idx < 0) return
+        val cur = events[idx]
+
+        fun <T> Map<String, Any?>.opt(key: String, cast: Class<T>): T? =
+            this[key]?.let { if (cast.isInstance(it)) cast.cast(it) else null }
+
+        val name = patch.opt("name", String::class.java) ?: cur.name
+        val buildingId = patch.opt("building", String::class.java) ?: cur.buildingId
+        val room = patch.opt("room", String::class.java) ?: cur.room
+        val heldBy = patch.opt("heldBy", String::class.java) ?: cur.heldBy
+
+        val dateMillis = (patch["date"] as? Number)?.toLong()
+        val sMin = (patch["startTimeMinutes"] as? Number)?.toInt()
+        val eMin = (patch["endTimeMinutes"] as? Number)?.toInt()
+
+        val zone = ZoneId.systemDefault()
+        val day = when {
+            dateMillis != null -> Instant.ofEpochMilli(dateMillis).atZone(zone).toLocalDate()
+            else -> cur.start.toLocalDate()
+        }
+        val newStart = when {
+            sMin != null -> LocalDateTime.of(day, LocalTime.of(sMin / 60, sMin % 60))
+            dateMillis != null -> LocalDateTime.of(day, cur.start.toLocalTime())
+            else -> cur.start
+        }
+        val newEnd = when {
+            eMin != null -> LocalDateTime.of(day, LocalTime.of(eMin / 60, eMin % 60))
+            dateMillis != null -> LocalDateTime.of(day, cur.end.toLocalTime())
+            else -> cur.end
+        }
+
+        events[idx] = cur.copy(
+            name = name,
+            buildingId = buildingId,
+            room = room,
+            heldBy = heldBy,
+            start = newStart,
+            end = newEnd
+        )
+    }
+
+    override suspend fun deleteEvent(id: String) {
+        events.removeAll { it.id == id }
+    }
 }

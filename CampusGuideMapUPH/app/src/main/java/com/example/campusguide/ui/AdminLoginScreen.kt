@@ -17,6 +17,12 @@ import com.example.campusguide.R
 import com.example.campusguide.data.AdminAuth
 import com.example.campusguide.data.CredentialStore
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.KeyboardType
 
 private val UPH_Navy  = Color(0xFF16224C)
 private val UPH_White = Color(0xFFFFFFFF)
@@ -33,6 +39,7 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    var passVisible by remember { mutableStateOf(false) }
 
     // Jika pernah disimpan, maka isi password otomatis
     LaunchedEffect(Unit) {
@@ -81,10 +88,19 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
                 )
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
-                    value = pass, onValueChange = { pass = it },
+                    value = pass,
+                    onValueChange = { pass = it },
                     label = { Text("Password", color = UPH_White) },
                     singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                        IconButton(onClick = { passVisible = !passVisible }) {
+                            val icon = if (passVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility
+                            val desc = if (passVisible) "Hide password" else "Show password"
+                            Icon(icon, contentDescription = desc, tint = UPH_White)
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor   = Color.Transparent,

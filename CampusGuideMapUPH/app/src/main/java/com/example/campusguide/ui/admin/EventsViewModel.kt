@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.update
 
 data class AdminState(
     val events: List<Event> = emptyList(),
@@ -31,23 +32,42 @@ class EventsViewModel(
     // Mengambil ulang daftar event dan membuat statistik
     fun refresh() {
         viewModelScope.launch {
-            _state.value = _state.value.copy(loading = true, error = null)
+            _state.update { it.copy(loading = true, error = null) }
             try {
-                val list = repo.listAllFuture()
-                val now = Timestamp.now()
-                val in7 = Timestamp(now.seconds + TimeUnit.DAYS.toSeconds(7), 0)
-                val ongoing = list.count { it.isOngoing(now) }
-                val upcoming = list.count { !it.isOngoing(now) && it.date <= in7 }
-                val coming = list.count { it.date > in7 }
-                _state.value = _state.value.copy(
-                    events = list, loading = false,
-                    countOngoing = ongoing, countUpcoming = upcoming, countComingSoon = coming
-                )
+                val all = repo.listAllAdmin()
+
+                val nowMs = System.currentTimeMillis()
+                fun Event.isPast(): Boolean {
+                    val startOfDayMs = this.date.toDate().time
+                    val endMs = startOfDayMs + this.endTimeMinutes * 60_000L
+                    return endMs < nowMs
+                }
+
+                val active = all.filter { !it.isPast() }
+
+                val nowTs = com.google.firebase.Timestamp.now()
+                val in7  = com.google.firebase.Timestamp(nowTs.seconds + java.util.concurrent.TimeUnit.DAYS.toSeconds(7), 0)
+
+                val visible = active.filter { it.published }
+                val ongoing = visible.count { it.isOngoing(nowTs) }
+                val upcoming = visible.count { !it.isOngoing(nowTs) && it.date <= in7 }
+                val coming = visible.count { it.date > in7 }
+
+                _state.update {
+                    it.copy(
+                        events = active,
+                        loading = false,
+                        countOngoing = ongoing,
+                        countUpcoming = upcoming,
+                        countComingSoon = coming
+                    )
+                }
             } catch (e: Exception) {
-                _state.value = _state.value.copy(loading = false, error = e.message)
+                _state.update { it.copy(loading = false, error = e.message) }
             }
         }
     }
+
 
     // Membuat event baru
     fun create(event: Event, posterUri: Uri?, onDone: (String)->Unit, onError: (String)->Unit) {
@@ -78,11 +98,16 @@ class EventsViewModel(
     // Mengubah status event published/unpublished
     fun setPublished(id: String, published: Boolean, onDone: ()->Unit, onError: (String)->Unit) {
         viewModelScope.launch {
+            _state.update { st ->
+                st.copy(events = st.events.map { if (it.id == id) it.copy(published = published) else it })
+            }
             try {
                 repo.setPublished(id, published)
-                refresh()
                 onDone()
             } catch (e: Exception) {
+                _state.update { st ->
+                    st.copy(events = st.events.map { if (it.id == id) it.copy(published = !published) else it })
+                }
                 onError(e.message ?: "Failed to update visibility")
             }
         }
@@ -104,7 +129,7 @@ class EventsViewModel(
     fun loadPastEvents(onDone: (List<Event>) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
-                val list = repo.listPast()
+                val list = repo.listPastAdmin()
                 onDone(list)
             } catch (e: Exception) {
                 onError(e.message ?: "Failed to load history")

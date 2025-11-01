@@ -80,6 +80,8 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
+import coil.compose.AsyncImage
+import kotlinx.coroutines.tasks.await
 
 private val UPH_Navy = Color(0xFF16224C)
 private val UPH_Red  = Color(0xFFE31E2E)
@@ -311,7 +313,7 @@ fun DebugSeedButton() {
             onClick = {
                 scope.launch {
                     try {
-                        EventsSeeder.seed(ctx)
+                        EventsSeeder.seedFromRaw(ctx)
                         snackbar.showSnackbar("Seeding done (600 events)")
                     } catch (e: Exception) {
                         snackbar.showSnackbar("Seeding failed: ${e.message}")
@@ -379,7 +381,6 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
         ) {
-            // --- Base map ---
             Image(
                 painter = painterResource(R.drawable.uph_map),
                 contentDescription = "UPH Map",
@@ -387,7 +388,6 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // --- Pins layer (INSIDE this Box) ---
             BoxWithConstraints(
                 modifier = Modifier
                     .matchParentSize()
@@ -484,7 +484,6 @@ fun HomeScreen(
                     }
                 }
             }
-
             // --- Path Mode toggle button (ONLY this one) ---
             PathModeButton(
                 enabled = isPathMode,
@@ -588,7 +587,6 @@ fun PathModeButton(
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -825,6 +823,38 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
     val events by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
     val e = events.firstOrNull { it.id == eventId }
 
+    var posterUrl by remember(eventId) { mutableStateOf<String?>(null) }
+    LaunchedEffect(eventId, e) {
+        val fromModel = try {
+            @Suppress("UNCHECKED_CAST")
+            (e as? Any)?.javaClass?.getDeclaredField("posterUrl")?.let { f ->
+                f.isAccessible = true
+                (f.get(e) as? String)?.takeIf { it.isNotBlank() }
+            }
+        } catch (_: Exception) {
+            null
+        }
+
+        if (fromModel != null) {
+            posterUrl = fromModel
+            return@LaunchedEffect
+        }
+
+        val storage = FirebaseStorage.getInstance().reference
+        val candidates = listOf(
+            "posters/$eventId.jpg",
+            "posters/$eventId.png"
+        )
+        posterUrl = null
+        for (path in candidates) {
+            try {
+                posterUrl = storage.child(path).downloadUrl.await().toString()
+                if (posterUrl != null) break
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     if (e == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Event not found") }
         return
@@ -855,6 +885,24 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
                 contentColor = UPH_White
             )
         ) { Text("Add to Calendar") }
+        Spacer(Modifier.height(12.dp))
+        posterUrl?.let { url ->
+            AsyncImage(
+                model = coil.request.ImageRequest.Builder(ctx)
+                    .data(url)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Event Poster",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 160.dp, max = 420.dp)
+                    .clip(RoundedCornerShape(30.dp))
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(Modifier.height(12.dp))
+        }
     }
 }
 

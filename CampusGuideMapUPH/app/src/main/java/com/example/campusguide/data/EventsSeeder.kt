@@ -3,93 +3,71 @@ package com.example.campusguide.data
 import android.content.Context
 import androidx.annotation.RawRes
 import com.example.campusguide.R
-import com.example.campusguide.utils.isoToTimestamp
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.WriteBatch
-import kotlinx.coroutines.tasks.await
+import com.example.campusguide.data.remote.EventDto
+import com.example.campusguide.data.remote.RetrofitProvider
+import com.example.campusguide.data.remote.getIdTokenOrThrow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
-import java.io.BufferedReader
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 object EventsSeeder {
 
-    /**
-     * Seeds Firestore with events from a raw JSON file.
-     * It FIRST deletes all existing docs in "events", then inserts the new ones.
-     *
-     * Call with your new file:
-     * EventsSeeder.seed(context, R.raw.events_after_2025_10_21_600)
-     */
-    suspend fun seed(context: Context, @RawRes resId: Int = R.raw.events_seed_600) {
-        val db = FirebaseFirestore.getInstance()
-        val eventsCol = db.collection("events")
-
-        // 1) DELETE everything currently in "events"
-        run {
-            val snap = eventsCol.get().await()
-            if (!snap.isEmpty) {
-                val delBatches = mutableListOf<WriteBatch>()
-                var batch = db.batch()
-                var n = 0
-                val MAX_OPS = 450 // keep < 500 per batch
-
-                for (doc in snap.documents) {
-                    batch.delete(doc.reference)
-                    n++
-                    if (n >= MAX_OPS) {
-                        delBatches.add(batch)
-                        batch = db.batch()
-                        n = 0
-                    }
-                }
-                if (n > 0) delBatches.add(batch)
-
-                for (b in delBatches) b.commit().await()
-            }
+    private fun isoToMillis(iso: String): Long {
+        return try {
+            OffsetDateTime.parse(iso, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                .toInstant().toEpochMilli()
+        } catch (_: Throwable) {
+            Instant.parse(iso).toEpochMilli()
         }
+    }
 
-        // 2) LOAD the new JSON
+    suspend fun seedFromRaw(
+        context: Context,
+        @RawRes resId: Int = R.raw.events_seed_600,
+        delayMsPerItem: Long = 120
+    ) = withContext(Dispatchers.IO) {
+        val api = RetrofitProvider.api
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
+
         val json = context.resources.openRawResource(resId)
-            .bufferedReader().use(BufferedReader::readText)
+            .bufferedReader().use { it.readText() }
         val arr = JSONArray(json)
-
-        // 3) INSERT the new 600 docs
-        val insBatches = mutableListOf<WriteBatch>()
-        var batch = db.batch()
-        var countInBatch = 0
-        val MAX_OPS = 450 // Firestore hard limit is 500; stay safely under
 
         for (i in 0 until arr.length()) {
             val o = arr.getJSONObject(i)
-            val id = o.getString("id")
-            val docRef = eventsCol.document(id) // same IDs -> overwrite if they exist
 
-            val data = hashMapOf(
-                "id" to id,
-                "name" to o.getString("name"),
-                "date" to isoToTimestamp(o.getString("date")),
-                "startTimeMinutes" to o.getInt("startTimeMinutes"),
-                "endTimeMinutes" to o.getInt("endTimeMinutes"),
-                "building" to o.getString("building"),
-                "floor" to o.getInt("floor"),
-                "room" to o.getString("room"),
-                "heldBy" to o.getString("heldBy"),
-                "posterUrl" to (if (o.isNull("posterUrl")) null else o.getString("posterUrl")),
-                "published" to o.getBoolean("published"),
-                "createdAt" to isoToTimestamp(o.getString("createdAt")),
-                "updatedAt" to isoToTimestamp(o.getString("updatedAt"))
+            val dto = EventDto(
+                name = o.getString("name"),
+                building = o.getString("building"),
+                floor = o.optInt("floor", 0),
+                room = o.getString("room"),
+                heldBy = o.getString("heldBy"),
+                date = isoToMillis(o.getString("date")),
+                startTimeMinutes = o.getInt("startTimeMinutes"),
+                endTimeMinutes = o.getInt("endTimeMinutes"),
+                posterUrl = if (o.isNull("posterUrl")) "" else o.getString("posterUrl"),
+                published = o.getBoolean("published")
             )
 
-            batch.set(docRef, data)
-            countInBatch++
+            runCatching { api.createEvent(bearer, dto) }
+                .onFailure { e -> throw IllegalStateException("Gagal insert index=$i: ${e.message}", e) }
 
-            if (countInBatch >= MAX_OPS) {
-                insBatches.add(batch)
-                batch = db.batch()
-                countInBatch = 0
-            }
+            delay(delayMsPerItem)
         }
-        if (countInBatch > 0) insBatches.add(batch)
+    }
 
-        for (b in insBatches) b.commit().await()
+    suspend fun deleteAllEvents() = withContext(Dispatchers.IO) {
+        val api = RetrofitProvider.api
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
+        val items = api.listEvents()
+        for (e in items) {
+            val id = e.id ?: continue
+            runCatching { api.deleteEvent(bearer, id) }
+            delay(60)
+        }
     }
 }

@@ -4,6 +4,7 @@ color badge_ongoing_bg
 color badge_soon_bg
 color badge_upcoming_bg
 color ic_launcher_background
+color selected_purple
 color uph_bg
 color uph_blue_bg
 color uph_card
@@ -14,6 +15,8 @@ color uph_white
 drawable ic_launcher_background
 drawable ic_launcher_foreground
 drawable logo_kampus
+drawable path_mode_button
+drawable path_mode_button_invert
 drawable uph_building_background
 drawable uph_logo
 drawable uph_main_logo
@@ -21,6 +24,8 @@ drawable uph_map
 mipmap ic_launcher
 mipmap ic_launcher_foreground
 mipmap ic_launcher_round
+raw campus_graph
+raw events_seed_600
 string app_name
 string gcm_defaultSenderId
 string google_api_key

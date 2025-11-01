@@ -1,126 +1,126 @@
 package com.example.campusguide.data
 
 import android.net.Uri
+import com.example.campusguide.data.remote.EventDto
+import com.example.campusguide.data.remote.FunctionsApi
+import com.example.campusguide.data.remote.RetrofitProvider
+import com.example.campusguide.data.remote.getIdTokenOrThrow
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.Date
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
-import com.google.firebase.storage.StorageException
 
-// Repository untuk operasi CRUD event + upload poster di Firebase Storage
 class EventsRepository(
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
-    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
+    private val api: FunctionsApi = RetrofitProvider.api
 ) {
-    private val col = db.collection("events")
-
-    suspend fun listAllFuture(): List<Event> {
-        val cal = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        val todayStart = com.google.firebase.Timestamp(cal.time)
-
-        val snap = col
-            .whereGreaterThanOrEqualTo("date", todayStart)
-            .orderBy("date")
-            .get()
-            .await()
-
-        return snap.documents.mapNotNull { d ->
-            d.toObject<Event>()?.copy(id = d.id)
-        }
-    }
-
-    // Membuat event baru
-    suspend fun create(event: Event, posterUri: Uri?): String {
-        val id = col.document().id
-        val posterUrl = posterUri?.let { uploadPoster(id, it) }
-        val now = Timestamp.now()
-        val payload = event.copy(
+    private fun EventDto.toEvent(): Event =
+        Event(
+            id = id.orEmpty(),
+            name = name,
+            building = building,
+            floor = floor ?: 1,
+            room = room,
+            heldBy = heldBy,
+            date = Timestamp(Date(date)),
+            startTimeMinutes = startTimeMinutes,
+            endTimeMinutes = endTimeMinutes,
             posterUrl = posterUrl,
-            createdAt = now,
-            updatedAt = now
+            published = published
         )
-        col.document(id).set(payload).await()
-        return id
+
+    private fun Event.toDto(): EventDto =
+        EventDto(
+            id = id,
+            name = name,
+            building = building,
+            floor = floor,
+            room = room,
+            heldBy = heldBy,
+            date = date.toDate().time,
+            startTimeMinutes = startTimeMinutes,
+            endTimeMinutes = endTimeMinutes,
+            posterUrl = posterUrl.orEmpty(),
+            published = published
+        )
+
+    suspend fun listAllAdmin(): List<Event> {
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
+        return api.listAllEvents(bearer)
+            .map { it.toEvent() }
+            .sortedBy { it.date.toDate().time }
     }
 
-    // Memperbarui event
-    suspend fun update(id: String, event: Event, newPosterUri: Uri?) {
-        val posterUrl = when {
-            newPosterUri != null -> uploadPoster(id, newPosterUri)
-            else -> event.posterUrl
-        }
-        col.document(id).update(
-            mapOf(
-                "name" to event.name,
-                "date" to event.date,
-                "startTimeMinutes" to event.startTimeMinutes,
-                "endTimeMinutes" to event.endTimeMinutes,
-                "building" to event.building,
-                "floor" to event.floor,
-                "room" to event.room,
-                "heldBy" to event.heldBy,
-                "posterUrl" to posterUrl,
-                "published" to event.published,
-                "updatedAt" to Timestamp.now()
-            )
-        ).await()
+    suspend fun listPastAdmin(): List<Event> = withContext(Dispatchers.IO) {
+        val nowMs = System.currentTimeMillis()
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
+        api.listAllEvents(bearer)
+            .map { it.toEvent() }
+            .filter { it.date.toDate().time < nowMs }
+            .sortedByDescending { it.date.toDate().time }
     }
 
-    // Mengubah status publish/unpublish event
-    suspend fun setPublished(id: String, published: Boolean) {
-        col.document(id).update(
-            mapOf(
-                "published" to published,
-                "updatedAt" to Timestamp.now()
-            )
-        ).await()
-    }
-
-    // Menghapus event
-    suspend fun delete(id: String) {
-        col.document(id).delete().await()
-
-        try {
-            storage.reference.child("posters/$id.jpg").delete().await()
-        } catch (e: Exception) {
-            val se = e as? StorageException
-            if (se?.errorCode != StorageException.ERROR_OBJECT_NOT_FOUND) {
-                throw e
-            }
-        }
-    }
-
-    // Upload poster ke path
-    private suspend fun uploadPoster(id: String, uri: Uri): String {
-        val ref = storage.reference.child("posters/$id.jpg")
+    private suspend fun uploadPosterAndGetUrl(eventId: String, uri: Uri): String {
+        val ref = FirebaseStorage.getInstance()
+            .reference.child("posters/$eventId.jpg")   // konsisten: posters/{id}.jpg
         ref.putFile(uri).await()
         return ref.downloadUrl.await().toString()
     }
 
-    // Past events
-    suspend fun listPast(): List<Event> {
-        val cal = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        val todayStart = com.google.firebase.Timestamp(cal.time)
+    suspend fun create(e: Event, posterUri: Uri?): String = withContext(Dispatchers.IO) {
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
 
-        val snap = col
-            .whereLessThan("date", todayStart)
-            .orderBy("date")
-            .get()
-            .await()
+        val created = api.createEvent(bearer, e.toDto().copy(posterUrl = ""))
+        val newId = created.id.orEmpty()
 
-        return snap.documents.mapNotNull { d ->
-            d.toObject(Event::class.java)?.copy(id = d.id)
+        if (posterUri != null && newId.isNotBlank()) {
+            val url = uploadPosterAndGetUrl(newId, posterUri)
+            api.updateEvent(bearer, newId, mapOf("posterUrl" to url))
         }
+
+        newId
+    }
+
+    suspend fun update(id: String, e: Event, posterUri: Uri?) = withContext(Dispatchers.IO) {
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
+
+        val patch = linkedMapOf<String, Any?>(
+            "name"             to e.name.trim(),
+            "building"         to e.building.trim(),
+            "floor"            to e.floor,
+            "room"             to e.room.trim(),
+            "heldBy"           to e.heldBy.trim(),
+            "date"             to e.date.toDate().time,
+            "startTimeMinutes" to e.startTimeMinutes,
+            "endTimeMinutes"   to e.endTimeMinutes,
+            "published"        to e.published
+        )
+
+        if (posterUri != null) {
+            val url = uploadPosterAndGetUrl(id, posterUri)
+            patch["posterUrl"] = url
+        } else if (!e.posterUrl.isNullOrBlank()) {
+            patch["posterUrl"] = e.posterUrl
+        }
+
+        patch.entries.removeIf { it.value == null }
+
+        try {
+            api.updateEvent(bearer, id, patch)
+        } catch (ex: retrofit2.HttpException) {
+            val body = ex.response()?.errorBody()?.string()
+            throw IllegalStateException("HTTP ${ex.code()} – ${body ?: ex.message()}")
+        }
+    }
+
+    suspend fun setPublished(id: String, published: Boolean) = withContext(Dispatchers.IO) {
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
+        api.updateEvent(bearer, id, mapOf("published" to published))
+    }
+
+    suspend fun delete(id: String) = withContext(Dispatchers.IO) {
+        val bearer = "Bearer ${getIdTokenOrThrow()}"
+        api.deleteEvent(bearer, id)
     }
 }

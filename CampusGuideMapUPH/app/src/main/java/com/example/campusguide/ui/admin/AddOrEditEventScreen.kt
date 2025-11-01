@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.example.campusguide.data.Event
 import com.google.firebase.Timestamp
 import java.util.Calendar
+import androidx.compose.runtime.produceState
 
 // Mode form, yaitu tambah baru atau edit
 sealed interface FormMode { data object Add : FormMode; data class Edit(val id: String): FormMode }
@@ -41,14 +42,13 @@ sealed interface FormMode { data object Add : FormMode; data class Edit(val id: 
 fun AddOrEditEventScreen(
     mode: FormMode,
     vm: EventsViewModel,
-    onDone: ()->Unit,
-    onCancel: ()->Unit
+    onDone: () -> Unit,
+    onCancel: () -> Unit
 ) {
     val state by vm.state.collectAsState()
     val eventId = (mode as? FormMode.Edit)?.id
     val editing = eventId?.let { id -> state.events.firstOrNull { it.id == id } }
 
-    // Jika mode edit tapi data belum ada di state, refresh dahulu
     LaunchedEffect(eventId) {
         if (eventId != null && editing == null) vm.refresh()
     }
@@ -62,13 +62,9 @@ fun AddOrEditEventScreen(
 
     val eventKey = eventId ?: "ADD"
 
-    val buildings = listOf("B","C","D","F")
-    val floorsByBuilding = mapOf("B" to 6, "C" to 7, "D" to 5, "F" to 16)
-
-    var name by remember(eventKey) { mutableStateOf(TextFieldValue(editing?.name ?: "")) }
+    var name   by remember(eventKey) { mutableStateOf(TextFieldValue(editing?.name ?: "")) }
     var heldBy by remember(eventKey) { mutableStateOf(TextFieldValue(editing?.heldBy ?: "")) }
 
-    // Field tanggal dikosongkan saat Add dan saat Edit di-prefill sesuai data
     var date by remember(eventKey) {
         mutableStateOf<Calendar?>(
             editing?.date?.toDate()?.let { Calendar.getInstance().apply { time = it } }
@@ -77,31 +73,40 @@ fun AddOrEditEventScreen(
     var startMin by remember(eventKey) { mutableStateOf<Int?>(editing?.startTimeMinutes) }
     var endMin   by remember(eventKey) { mutableStateOf<Int?>(editing?.endTimeMinutes) }
 
-    var building by remember(eventKey) { mutableStateOf<String?>(editing?.building?.takeIf { it in buildings }) }
+    var building by remember(eventKey) { mutableStateOf<String?>(editing?.building) }
+    var floor    by remember(eventKey) { mutableStateOf<Int?>(editing?.floor) }
+    var room     by remember(eventKey) { mutableStateOf<String?>(editing?.room?.takeIf { it.isNotBlank() }) }
 
-    fun roomsFor(b: String, f: Int): List<String> = (1..12).map { n -> "Room ${b}${f}${"%02d".format(n)}" }
+    val campusRepo = com.example.campusguide.data.InMemoryCampusRepository
 
-    val floors by remember(building) {
-        derivedStateOf { building?.let { (1..(floorsByBuilding[it] ?: 1)).toList() } ?: emptyList() }
+    val buildingItems by produceState(initialValue = emptyList<com.example.campusguide.data.Building>()) {
+        value = campusRepo.getBuildings()
     }
-    var floor by remember(eventKey) { mutableStateOf<Int?>(editing?.floor) }
-    // Reset/validasi floor saat building berubah
+    val buildingIds = remember(buildingItems) { buildingItems.map { it.id } }
+
+    val floors by produceState(initialValue = emptyList<Int>(), key1 = building) {
+        value = building?.let { campusRepo.getFloors(it) } ?: emptyList()
+    }
+
+    val rooms by produceState(initialValue = emptyList<String>(), key1 = building, key2 = floor) {
+        value = if (building != null && floor != null) {
+            campusRepo.rooms
+                .filter { it.buildingId == building && it.floor == floor }
+                .map { it.code }
+        } else emptyList()
+    }
+
     LaunchedEffect(building) {
         if (building == null) {
             floor = null
-        } else {
-            val max = floorsByBuilding[building] ?: 1
-            if (floor !in 1..max) floor = null
+            room = null
+        } else if (floor !in floors) {
+            floor = null
+            room = null
         }
     }
-
-    val rooms by remember(building, floor) {
-        derivedStateOf { if (building != null && floor != null) roomsFor(building!!, floor!!) else emptyList() }
-    }
-    var room by remember(eventKey) { mutableStateOf<String?>(editing?.room?.takeIf { it.isNotBlank() }) }
-    // Reset/validasi room saat building/floor berubah
     LaunchedEffect(building, floor) {
-        room = if (building != null && floor != null && room in rooms) room else null
+        if (building == null || floor == null || room !in rooms) room = null
     }
 
     var poster: Uri? by remember { mutableStateOf(null) }
@@ -110,18 +115,17 @@ fun AddOrEditEventScreen(
     }
 
     var askConfirm by remember { mutableStateOf(false) }
-    var success by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var success    by remember { mutableStateOf(false) }
+    var error      by remember { mutableStateOf<String?>(null) }
 
-    // Validasi sebelum tombol Confirm aktif
-    val isValid = name.text.isNotBlank()
-            && heldBy.text.isNotBlank()
-            && date != null
-            && startMin != null
-            && endMin != null
-            && building != null
-            && floor != null
-            && room != null
+    val isValid = name.text.isNotBlank() &&
+            heldBy.text.isNotBlank() &&
+            date != null &&
+            startMin != null &&
+            endMin != null &&
+            building != null &&
+            floor != null &&
+            room != null
 
     Scaffold(
         bottomBar = {
@@ -167,7 +171,9 @@ fun AddOrEditEventScreen(
                 building = building, onBuilding = { building = it },
                 floor = floor, onFloor = { floor = it },
                 room = room, onRoom = { room = it },
-                buildings = buildings, floors = floors, rooms = rooms
+                buildings = buildingIds,
+                floors = floors,
+                rooms = rooms
             )
 
             Row {
@@ -183,7 +189,6 @@ fun AddOrEditEventScreen(
         }
     }
 
-    // Dialog konfirmasi simpan
     if (askConfirm) {
         AlertDialog(
             onDismissRequest = { askConfirm = false },
@@ -198,22 +203,35 @@ fun AddOrEditEventScreen(
                         set(Calendar.MILLISECOND, 0)
                     }
                     val ts = Timestamp(normalized.time)
-                    val ev = Event(
-                        id = eventId ?: "",
-                        name = name.text.trim(),
-                        heldBy = heldBy.text.trim(),
-                        date = ts,
-                        startTimeMinutes = startMin!!,
-                        endTimeMinutes = endMin!!,
-                        building = building!!,
-                        floor = floor!!,
-                        room = room!!,
-                        posterUrl = editing?.posterUrl
-                    )
+
                     if (eventId == null) {
-                        vm.create(ev, poster, onDone = { success = true }, onError = { error = it })
+                        val toCreate = Event(
+                            id = "",
+                            name = name.text.trim(),
+                            heldBy = heldBy.text.trim(),
+                            date = ts,
+                            startTimeMinutes = startMin!!,
+                            endTimeMinutes   = endMin!!,
+                            building = building!!,
+                            floor    = floor!!,
+                            room     = room!!,
+                            posterUrl = editing?.posterUrl
+                        )
+                        vm.create(toCreate, poster, onDone = { success = true }, onError = { error = it })
                     } else {
-                        vm.update(ev.copy(id = eventId), poster, onDone = { success = true }, onError = { error = it })
+                        val original = editing!!
+                        val updated = original.copy(
+                            name = name.text.trim(),
+                            heldBy = heldBy.text.trim(),
+                            date = ts,
+                            startTimeMinutes = startMin!!,
+                            endTimeMinutes   = endMin!!,
+                            building = building!!,
+                            floor    = floor!!,
+                            room     = room!!,
+                            posterUrl = original.posterUrl
+                        )
+                        vm.update(updated, poster, onDone = { success = true }, onError = { error = it })
                     }
                 }) { Text("Yes") }
             },
@@ -221,7 +239,6 @@ fun AddOrEditEventScreen(
         )
     }
 
-    // Dialog sukses
     if (success) {
         AlertDialog(
             onDismissRequest = { success = false; onDone() },

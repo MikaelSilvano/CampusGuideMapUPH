@@ -1,5 +1,9 @@
 [
     {
+        "merged": "com.example.campusguide.app-debug-5:/raw_campus_graph.json.flat",
+        "source": "com.example.campusguide.app-main-7:/raw/campus_graph.json"
+    },
+    {
         "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
         "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_round.webp"
     },
@@ -16,6 +20,10 @@
         "source": "com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher.webp"
     },
     {
+        "merged": "com.example.campusguide.app-debug-5:/raw_events_seed_600.json.flat",
+        "source": "com.example.campusguide.app-main-7:/raw/events_seed_600.json"
+    },
+    {
         "merged": "com.example.campusguide.app-debug-5:/drawable_uph_logo.png.flat",
         "source": "com.example.campusguide.app-main-7:/drawable/uph_logo.png"
     },
@@ -24,12 +32,20 @@
         "source": "com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher.webp"
     },
     {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_path_mode_button_invert.jpg.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/path_mode_button_invert.jpg"
+    },
+    {
         "merged": "com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher.webp.flat",
         "source": "com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher.webp"
     },
     {
         "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
         "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_path_mode_button.jpg.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/path_mode_button.jpg"
     },
     {
         "merged": "com.example.campusguide.app-debug-5:/drawable_uph_main_logo.png.flat",
