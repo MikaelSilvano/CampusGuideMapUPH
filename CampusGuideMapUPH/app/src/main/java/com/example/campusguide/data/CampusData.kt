@@ -39,7 +39,6 @@ object InMemoryCampusRepository: CampusRepository {
         Building("C", "Building C", 7, "2–4 Library; 3 Global Partnerships & International Office; 4 Rectorate; 5 Visionet; 6–7 Grand Chapel"),
         Building("D", "Building D", 5),
         Building("F", "Building F", 16),
-        Building("G", "Building G (Dormitory)", 0)
     )
 
     val faculties = listOf(

@@ -82,13 +82,48 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import coil.compose.AsyncImage
 import kotlinx.coroutines.tasks.await
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 
 private val UPH_Navy = Color(0xFF16224C)
 private val UPH_Red  = Color(0xFFE31E2E)
 private val UPH_White = Color(0xFFFFFFFF)
 private val UPH_Orange = Color(0xFFF58A0A)
-
 val routeColor = Color(0xFFA64AEF)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun uphDatePickerColors() = DatePickerDefaults.colors(
+    containerColor = Color(0xFFF8F9FD),
+
+    titleContentColor = UPH_Navy,
+    headlineContentColor = UPH_Navy,
+    subheadContentColor = UPH_Navy,
+
+    weekdayContentColor = UPH_Navy,
+    dayContentColor = UPH_Navy,
+    disabledDayContentColor = UPH_Navy.copy(alpha = 0.35f),
+    yearContentColor = UPH_Navy,
+    currentYearContentColor = UPH_Navy,
+
+    todayDateBorderColor = UPH_Navy,
+    todayContentColor = UPH_Navy,
+
+    selectedDayContainerColor = UPH_Orange,
+    selectedDayContentColor = UPH_White,
+
+    dayInSelectionRangeContainerColor = UPH_Orange.copy(alpha = 0.18f),
+    dayInSelectionRangeContentColor = UPH_Navy,
+
+    selectedYearContainerColor = UPH_Orange,
+    selectedYearContentColor = UPH_White,
+
+    navigationContentColor = UPH_Navy
+)
+
+@Composable
+private fun uphTextBtnColors() =
+    ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
 
 class MainActivity : ComponentActivity() {
     // Dipanggil saat activity dibuat untuk set konten ke composable utama
@@ -887,7 +922,7 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
         ) { Text("Add to Calendar") }
         Spacer(Modifier.height(12.dp))
         posterUrl?.let { url ->
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = coil.request.ImageRequest.Builder(ctx)
                     .data(url)
                     .crossfade(true)
@@ -899,7 +934,29 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
                     .heightIn(min = 160.dp, max = 420.dp)
                     .clip(RoundedCornerShape(30.dp))
                     .align(Alignment.CenterHorizontally)
-            )
+            ) {
+                when (painter.state) {
+                    is coil.compose.AsyncImagePainter.State.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 160.dp, max = 420.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = UPH_Navy,
+                                trackColor = UPH_Navy.copy(alpha = 0.15f)
+                            )
+                        }
+                    }
+                    is coil.compose.AsyncImagePainter.State.Success -> {
+                        SubcomposeAsyncImageContent()
+                    }
+                    else -> {
+                        Spacer(Modifier.height(0.dp))
+                    }
+                }
+            }
 
             Spacer(Modifier.height(12.dp))
         }
@@ -1031,7 +1088,7 @@ fun EventsScreen(navController: NavHostController) {
     val allEvents by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
 
     var building by remember { mutableStateOf("All") }
-    val buildings = listOf("All", "B", "C", "D", "F", "G")
+    val buildings = listOf("All", "B", "C", "D", "F")
 
     var status by remember { mutableStateOf("All") }
     val statuses = listOf("All", "Ongoing", "Upcoming", "Coming Soon")
@@ -1050,8 +1107,8 @@ fun EventsScreen(navController: NavHostController) {
             val inBuilding = (building == "All") || (e.buildingId == building)
             val inStatus = when (status) {
                 "Ongoing"     -> now.isAfter(e.start) && now.isBefore(e.end)
-                "Upcoming"    -> e.start.isAfter(now) && e.start.isAfter(now.plusDays(3))
-                "Coming Soon" -> e.start.isAfter(now) && e.start.isBefore(now.plusDays(3))
+                "Upcoming"    -> e.start.isAfter(now) && e.start.isAfter(now.plusDays(7))
+                "Coming Soon" -> e.start.isAfter(now) && e.start.isBefore(now.plusDays(14))
                 else -> true
             }
             inBuilding && inStatus
@@ -1169,39 +1226,19 @@ fun EventsScreen(navController: NavHostController) {
                     TextButton(
                         onClick = {
                             dpState.selectedDateMillis?.let { millis ->
-                                val picked = Instant.ofEpochMilli(millis)
+                                startDate = Instant.ofEpochMilli(millis)
                                     .atZone(ZoneId.systemDefault()).toLocalDate()
-                                startDate = picked
                                 if (startDate.isAfter(endDate)) endDate = startDate
                             }
                             showDatePickerStart = false
                         },
-                        colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                        colors = uphTextBtnColors()
                     ) { Text("OK") }
                 }
             ) {
                 DatePicker(
                     state = dpState,
-                    colors = DatePickerDefaults.colors(
-                        containerColor = Color(0xFFF8F9FD),
-                        titleContentColor = UPH_Navy,
-                        headlineContentColor = UPH_Navy,
-                        weekdayContentColor = UPH_Navy,
-                        subheadContentColor = UPH_Navy,
-                        dayContentColor = UPH_Navy,
-                        disabledDayContentColor = UPH_Navy.copy(alpha = 0.35f),
-                        todayDateBorderColor = UPH_Navy,
-                        todayContentColor = UPH_Navy,
-                        selectedDayContainerColor = UPH_Orange,
-                        selectedDayContentColor = UPH_White,
-                        dayInSelectionRangeContainerColor = UPH_Orange.copy(alpha = 0.18f),
-                        dayInSelectionRangeContentColor = UPH_Navy,
-                        yearContentColor = UPH_Navy,
-                        currentYearContentColor = UPH_Navy,
-                        selectedYearContainerColor = UPH_Orange,
-                        selectedYearContentColor = UPH_White,
-                        navigationContentColor = UPH_Navy
-                    )
+                    colors = uphDatePickerColors()
                 )
             }
         }
@@ -1217,39 +1254,19 @@ fun EventsScreen(navController: NavHostController) {
                     TextButton(
                         onClick = {
                             dpState2.selectedDateMillis?.let { millis ->
-                                val picked = Instant.ofEpochMilli(millis)
+                                endDate = Instant.ofEpochMilli(millis)
                                     .atZone(ZoneId.systemDefault()).toLocalDate()
-                                endDate = picked
                                 if (endDate.isBefore(startDate)) startDate = endDate
                             }
                             showDatePickerEnd = false
                         },
-                        colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                        colors = uphTextBtnColors()
                     ) { Text("OK") }
                 }
             ) {
                 DatePicker(
                     state = dpState2,
-                    colors = DatePickerDefaults.colors(
-                        containerColor = Color(0xFFF8F9FD),
-                        titleContentColor = UPH_Navy,
-                        headlineContentColor = UPH_Navy,
-                        weekdayContentColor = UPH_Navy,
-                        subheadContentColor = UPH_Navy,
-                        dayContentColor = UPH_Navy,
-                        disabledDayContentColor = UPH_Navy.copy(alpha = 0.35f),
-                        todayDateBorderColor = UPH_Navy,
-                        todayContentColor = UPH_Navy,
-                        selectedDayContainerColor = UPH_Orange,
-                        selectedDayContentColor = UPH_White,
-                        dayInSelectionRangeContainerColor = UPH_Orange.copy(alpha = 0.18f),
-                        dayInSelectionRangeContentColor = UPH_Navy,
-                        yearContentColor = UPH_Navy,
-                        currentYearContentColor = UPH_Navy,
-                        selectedYearContainerColor = UPH_Orange,
-                        selectedYearContentColor = UPH_White,
-                        navigationContentColor = UPH_Navy
-                    )
+                    colors = uphDatePickerColors()
                 )
             }
         }

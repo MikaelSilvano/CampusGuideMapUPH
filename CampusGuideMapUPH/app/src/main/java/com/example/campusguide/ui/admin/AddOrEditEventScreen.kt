@@ -33,8 +33,190 @@ import com.example.campusguide.data.Event
 import com.google.firebase.Timestamp
 import java.util.Calendar
 import androidx.compose.runtime.produceState
+import com.example.campusguide.ui.common.UPHPrimaryButton
+import com.example.campusguide.ui.common.UPHSecondaryButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import kotlin.math.max
+import android.content.Context
+import android.provider.OpenableColumns
+import android.webkit.MimeTypeMap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 // Mode form, yaitu tambah baru atau edit
+
+private val UPH_Navy = Color(0xFF16224C)
+private val UPH_Red  = Color(0xFFE31E2E)
+private val UPH_White = Color(0xFFFFFFFF)
+private val UPH_Orange = Color(0xFFF58A0A)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun uphDatePickerColors() = DatePickerDefaults.colors(
+    containerColor = Color(0xFFF8F9FD),
+
+    titleContentColor = UPH_Navy,
+    headlineContentColor = UPH_Navy,
+
+    weekdayContentColor = UPH_Navy,
+    subheadContentColor = UPH_Navy,
+    dayContentColor = UPH_Navy,
+    disabledDayContentColor = UPH_Navy.copy(alpha = 0.35f),
+
+    todayDateBorderColor = UPH_Navy,
+    todayContentColor = UPH_Navy,
+
+    selectedDayContainerColor = UPH_Orange,
+    selectedDayContentColor = UPH_White,
+
+    dayInSelectionRangeContainerColor = UPH_Orange.copy(alpha = 0.18f),
+    dayInSelectionRangeContentColor = UPH_Navy,
+
+    yearContentColor = UPH_Navy,
+    currentYearContentColor = UPH_Navy,
+    selectedYearContainerColor = UPH_Orange,
+    selectedYearContentColor = UPH_White,
+
+    navigationContentColor = UPH_Navy
+)
+
+@Composable
+private fun uphTextBtnColors() =
+    ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+
+@Composable
+private fun uphTextFieldColors() = TextFieldDefaults.colors(
+    focusedIndicatorColor   = UPH_Navy,
+    unfocusedIndicatorColor = UPH_Navy,
+    disabledIndicatorColor  = UPH_Navy.copy(alpha = 0.30f),
+    focusedLabelColor       = UPH_Navy,
+    cursorColor             = UPH_Navy,
+    focusedTrailingIconColor = UPH_Navy,
+    focusedContainerColor   = Color.Transparent,
+    unfocusedContainerColor = Color.Transparent,
+)
+
+@Composable
+private fun VerticalScrollbar(
+    scroll: ScrollState,
+    modifier: Modifier = Modifier,
+    thickness: Dp = 3.dp,
+    minThumb: Dp = 42.dp,
+    color: Color = UPH_Navy.copy(alpha = 0.35f)
+) {
+    Box(
+        modifier
+            .width(thickness)
+            .fillMaxHeight()
+            .drawBehind {
+                val trackW = thickness.toPx()
+                val viewportH = size.height
+                val totalScrollable = scroll.maxValue.toFloat()
+                val contentH = viewportH + totalScrollable
+
+                if (contentH <= viewportH + 1f) return@drawBehind
+
+                val fracVisible = viewportH / contentH
+                val thumbH = max(minThumb.toPx(), viewportH * fracVisible)
+
+                val fracStart =
+                    if (totalScrollable <= 0f) 0f
+                    else scroll.value / totalScrollable
+
+                val y = (viewportH - thumbH) * fracStart
+
+                drawRoundRect(
+                    color = color,
+                    topLeft = Offset(size.width - trackW, y),
+                    size = Size(trackW, thumbH),
+                    cornerRadius = CornerRadius(trackW, trackW)
+                )
+            }
+    )
+}
+private fun resolveDisplayName(ctx: Context, uri: Uri): String {
+    ctx.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+        ?.use { c ->
+            val idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (idx >= 0 && c.moveToFirst()) {
+                val name = c.getString(idx)
+                if (!name.isNullOrBlank()) return name
+            }
+        }
+
+    val last = uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
+    if (!last.isNullOrBlank()) return last
+
+    val ext = MimeTypeMap.getSingleton()
+        .getExtensionFromMimeType(ctx.contentResolver.getType(uri))
+        ?.let { ".$it" } ?: ""
+    return "poster$ext"
+}
+
+private fun filenameFromUrl(url: String?): String? {
+    if (url.isNullOrBlank()) return null
+    return try {
+        val u = Uri.parse(url)
+        val asString = u.toString()
+
+        val oIdx = asString.indexOf("/o/")
+        if (oIdx >= 0) {
+            val afterO = asString.substring(oIdx + 3)
+            val pathEncoded = afterO.substringBefore('?')
+            val decoded = URLDecoder.decode(pathEncoded, StandardCharsets.UTF_8.name())
+            return decoded.substringAfterLast('/').takeIf { it.isNotBlank() }
+        }
+
+        u.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
+    } catch (_: Exception) {
+        null
+    }
+}
+
+private fun isValidPosterUrl(u: String?): Boolean =
+    !u.isNullOrBlank() && (u.startsWith("http://") || u.startsWith("https://"))
+
+@Composable
+private fun WorkingDialog(message: String) {
+    Dialog(onDismissRequest = {}) {
+        Surface(shape = RoundedCornerShape(16.dp), color = Color.White, tonalElevation = 6.dp) {
+            Row(
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(
+                    color = UPH_Navy,
+                    trackColor = UPH_Navy.copy(alpha = 0.15f)
+                )
+                Spacer(Modifier.width(16.dp))
+                Text(message, color = UPH_Navy, style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+}
+
 sealed interface FormMode { data object Add : FormMode; data class Edit(val id: String): FormMode }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +237,11 @@ fun AddOrEditEventScreen(
 
     if (eventId != null && editing == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                color = UPH_Navy,
+                trackColor = UPH_Navy.copy(alpha = 0.15f),
+                strokeWidth = 4.dp
+            )
         }
         return
     }
@@ -96,6 +282,9 @@ fun AddOrEditEventScreen(
         } else emptyList()
     }
 
+    var isWorking by remember { mutableStateOf(false) }
+    var workingMsg by remember { mutableStateOf("") }
+
     LaunchedEffect(building) {
         if (building == null) {
             floor = null
@@ -109,9 +298,19 @@ fun AddOrEditEventScreen(
         if (building == null || floor == null || room !in rooms) room = null
     }
 
+    val ctx = LocalContext.current
+    val rawPosterUrl = editing?.posterUrl
+    val initialPosterName = remember(eventKey) {
+        if (isValidPosterUrl(rawPosterUrl)) filenameFromUrl(rawPosterUrl) else null
+    }
+    var posterName by remember(eventKey) { mutableStateOf<String?>(initialPosterName) }
     var poster: Uri? by remember { mutableStateOf(null) }
+
     val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) poster = uri
+        if (uri != null) {
+            poster = uri
+            posterName = resolveDisplayName(ctx, uri)
+        }
     }
 
     var askConfirm by remember { mutableStateOf(false) }
@@ -123,6 +322,7 @@ fun AddOrEditEventScreen(
             date != null &&
             startMin != null &&
             endMin != null &&
+            endMin!! > startMin!! &&
             building != null &&
             floor != null &&
             room != null
@@ -130,63 +330,102 @@ fun AddOrEditEventScreen(
     Scaffold(
         bottomBar = {
             BottomAppBar {
-                Spacer(Modifier.weight(1f))
-                Button(onClick = { askConfirm = true }, enabled = isValid) { Text("Confirm") }
-                Spacer(Modifier.width(8.dp))
-                OutlinedButton(onClick = onCancel) { Text("Cancel") }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    UPHPrimaryButton(
+                        onClick = { askConfirm = true },
+                        enabled = isValid
+                    ) { Text("Confirm") }
+
+                    Spacer(Modifier.width(12.dp))
+
+                    UPHSecondaryButton(onClick = onCancel) { Text("Cancel") }
+                }
             }
         }
     ) { pad ->
         val scroll = rememberScrollState()
-        Column(
+        Box(
             Modifier
                 .padding(pad)
                 .consumeWindowInsets(pad)
-                .verticalScroll(scroll)
                 .imePadding()
                 .navigationBarsPadding()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .fillMaxSize()
         ) {
-            Text(if (eventId == null) "Add Event" else "Edit Event", style = MaterialTheme.typography.titleLarge)
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scroll)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(if (eventId == null) "Add Event" else "Edit Event", style = MaterialTheme.typography.titleLarge)
 
-            OutlinedTextField(
-                value = name, onValueChange = { name = it },
-                label = { Text("Event Name") }, placeholder = { Text("Enter event name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = heldBy, onValueChange = { heldBy = it },
-                label = { Text("Held By") }, placeholder = { Text("Organizer / Faculty") },
-                modifier = Modifier.fillMaxWidth()
-            )
+                OutlinedTextField(
+                    value = name, onValueChange = { name = it },
+                    label = { Text("Event Name") }, placeholder = { Text("Enter event name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = uphTextFieldColors()
+                )
+                OutlinedTextField(
+                    value = heldBy, onValueChange = { heldBy = it },
+                    label = { Text("Held By") }, placeholder = { Text("Organizer / Faculty") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = uphTextFieldColors()
+                )
 
-            DateTimePickers(
-                date = date, onDateChange = { date = it },
-                startMinutes = startMin, onStartChange = { startMin = it },
-                endMinutes = endMin, onEndChange = { endMin = it }
-            )
+                DateTimePickers(
+                    date = date, onDateChange = { date = it },
+                    startMinutes = startMin, onStartChange = { startMin = it },
+                    endMinutes = endMin, onEndChange = { endMin = it }
+                )
 
-            LocationPickers(
-                building = building, onBuilding = { building = it },
-                floor = floor, onFloor = { floor = it },
-                room = room, onRoom = { room = it },
-                buildings = buildingIds,
-                floors = floors,
-                rooms = rooms
-            )
+                LocationPickers(
+                    building = building, onBuilding = { building = it },
+                    floor = floor, onFloor = { floor = it },
+                    room = room, onRoom = { room = it },
+                    buildings = buildingIds,
+                    floors = floors,
+                    rooms = rooms
+                )
 
-            Row {
-                OutlinedButton(onClick = { pickImage.launch("image/*") }) {
-                    Text(if (poster != null) "Change Poster" else "Choose Poster")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val hasAnyPoster = (poster != null) || (isValidPosterUrl(rawPosterUrl))
+                    OutlinedButton(
+                        onClick = { pickImage.launch("image/*") },
+                        border = BorderStroke(1.dp, UPH_Navy),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = UPH_Navy)
+                    ) {
+                        Text(if (hasAnyPoster) "Change Poster" else "Choose Poster")
+                    }
+
+                    Spacer(Modifier.width(12.dp))
+
+                    val rightText = posterName ?: "No poster yet!"
+                    Text(text = rightText, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
-                Spacer(Modifier.width(12.dp))
-                Text(text = if (poster != null) "Selected ✓" else (editing?.posterUrl?.let { "Already uploaded" } ?: "No poster"))
+
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                Spacer(Modifier.height(80.dp))
             }
 
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            Spacer(Modifier.height(80.dp))
+            VerticalScrollbar(
+                scroll = scroll,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 6.dp)
+            )
         }
+    }
+
+    if (isWorking) {
+        WorkingDialog(workingMsg)
     }
 
     if (askConfirm) {
@@ -194,8 +433,9 @@ fun AddOrEditEventScreen(
             onDismissRequest = { askConfirm = false },
             title = { Text("Are you sure?") },
             confirmButton = {
-                TextButton(onClick = {
+                UPHPrimaryButton(onClick = {
                     askConfirm = false
+
                     val normalized = (date!!.clone() as Calendar).apply {
                         set(Calendar.HOUR_OF_DAY, 0)
                         set(Calendar.MINUTE, 0)
@@ -205,6 +445,8 @@ fun AddOrEditEventScreen(
                     val ts = Timestamp(normalized.time)
 
                     if (eventId == null) {
+                        workingMsg = "Adding..."
+                        isWorking = true
                         val toCreate = Event(
                             id = "",
                             name = name.text.trim(),
@@ -217,8 +459,14 @@ fun AddOrEditEventScreen(
                             room     = room!!,
                             posterUrl = editing?.posterUrl
                         )
-                        vm.create(toCreate, poster, onDone = { success = true }, onError = { error = it })
+                        vm.create(
+                            toCreate, poster,
+                            onDone  = { isWorking = false; success = true },
+                            onError = { e -> isWorking = false; error = e }
+                        )
                     } else {
+                        workingMsg = "Editing..."
+                        isWorking = true
                         val original = editing!!
                         val updated = original.copy(
                             name = name.text.trim(),
@@ -231,11 +479,15 @@ fun AddOrEditEventScreen(
                             room     = room!!,
                             posterUrl = original.posterUrl
                         )
-                        vm.update(updated, poster, onDone = { success = true }, onError = { error = it })
+                        vm.update(
+                            updated, poster,
+                            onDone  = { isWorking = false; success = true },
+                            onError = { e -> isWorking = false; error = e }
+                        )
                     }
                 }) { Text("Yes") }
             },
-            dismissButton = { TextButton(onClick = { askConfirm = false }) { Text("No") } }
+            dismissButton = { UPHSecondaryButton(onClick = { askConfirm = false }) { Text("No") } }
         )
     }
 
@@ -243,7 +495,12 @@ fun AddOrEditEventScreen(
         AlertDialog(
             onDismissRequest = { success = false; onDone() },
             title = { Text(if (eventId == null) "Event has been added" else "Event has been edited") },
-            confirmButton = { TextButton(onClick = { success = false; onDone() }) { Text("OK") } }
+            confirmButton = {
+                TextButton(
+                    onClick = { success = false; onDone() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("OK") }
+            }
         )
     }
 }
@@ -274,7 +531,8 @@ private fun DateTimePickers(
             readOnly = true,
             label = { Text("Event Date") },
             placeholder = { Text("Select date") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = uphTextFieldColors()
         )
         Box(
             Modifier
@@ -286,32 +544,52 @@ private fun DateTimePickers(
     if (showDateDialog) {
         val initialMillis = date?.timeInMillis
         val dpState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+
         DatePickerDialog(
             onDismissRequest = { showDateDialog = false },
             confirmButton = {
-                TextButton(onClick = {
-                    dpState.selectedDateMillis?.let { millis ->
-                        val newCal = Calendar.getInstance().apply {
-                            timeInMillis = millis
-                            set(Calendar.HOUR_OF_DAY, 0)
-                            set(Calendar.MINUTE, 0)
-                            set(Calendar.SECOND, 0)
-                            set(Calendar.MILLISECOND, 0)
+                TextButton(
+                    onClick = {
+                        dpState.selectedDateMillis?.let { millis ->
+                            val newCal = Calendar.getInstance().apply {
+                                timeInMillis = millis
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            onDateChange(newCal)
                         }
-                        onDateChange(newCal)
-                    }
-                    showDateDialog = false
-                }) { Text("OK") }
+                        showDateDialog = false
+                    },
+                    colors = uphTextBtnColors()
+                ) { Text("OK") }
             },
-            dismissButton = { TextButton(onClick = { showDateDialog = false }) { Text("Cancel") } }
+            dismissButton = {
+                TextButton(
+                    onClick = { showDateDialog = false },
+                    colors = uphTextBtnColors()
+                ) { Text("Cancel") }
+            }
         ) {
-            DatePicker(state = dpState)
+            DatePicker(
+                state = dpState,
+                colors = uphDatePickerColors()
+            )
         }
     }
 
     Spacer(Modifier.height(8.dp))
 
-    val times = remember { timeOptions(stepMinutes = 30) }
+    val START_MIN = 6 * 60
+    val END_MIN = 21 * 60
+    val startOptions = remember { timeOptionsBetween(START_MIN, END_MIN - 30, 30) }
+    val baseEndOptions = remember { timeOptionsBetween(START_MIN + 30, END_MIN, 30) }
+    val endOptions = remember(startMinutes) {
+        if (startMinutes == null) baseEndOptions else baseEndOptions.filter { it.second > startMinutes }
+    }
+    val timeInvalid = startMinutes != null && endMinutes != null && endMinutes <= startMinutes
+
     var fromExpanded by remember { mutableStateOf(false) }
     var toExpanded by remember { mutableStateOf(false) }
 
@@ -330,14 +608,18 @@ private fun DateTimePickers(
                 readOnly = true,
                 label = { Text("Event Time (From)") },
                 placeholder = { Text("Select time") },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                colors = uphTextFieldColors()
             )
             ExposedDropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
-                times.forEach { (label, minutes) ->
-                    DropdownMenuItem(text = { Text(label) },
-                        onClick = { onStartChange(minutes); fromExpanded = false })
+                startOptions.forEach { (label, minutes) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            onStartChange(minutes)
+                            fromExpanded = false
+                        }
+                    )
                 }
             }
         }
@@ -353,14 +635,21 @@ private fun DateTimePickers(
                 readOnly = true,
                 label = { Text("To") },
                 placeholder = { Text("Select time") },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
+                isError = timeInvalid,
+                supportingText = { if (timeInvalid) Text("The end time must be later than the start time.") },
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                colors = uphTextFieldColors()
             )
             ExposedDropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
-                times.forEach { (label, minutes) ->
-                    DropdownMenuItem(text = { Text(label) },
-                        onClick = { onEndChange(minutes); toExpanded = false })
+                if (startMinutes == null || endOptions.isEmpty()) {
+                    DropdownMenuItem(text = { Text("Select the start time first.") }, onClick = {}, enabled = false)
+                } else {
+                    endOptions.forEach { (label, minutes) ->
+                        DropdownMenuItem(
+                            text = { Text(label) },
+                            onClick = { onEndChange(minutes); toExpanded = false }
+                        )
+                    }
                 }
             }
         }
@@ -368,15 +657,18 @@ private fun DateTimePickers(
 }
 
 // Utility function
-private fun timeOptions(stepMinutes: Int = 30): List<Pair<String, Int>> {
-    val list = mutableListOf<Pair<String, Int>>()
-    var m = 0
-    val end = 24 * 60
-    while (m < end) {
-        list += fmtMinutes(m) to m
+private fun timeOptionsBetween(
+    startMin: Int,
+    endMin: Int,
+    stepMinutes: Int = 30
+): List<Pair<String, Int>> {
+    val out = mutableListOf<Pair<String, Int>>()
+    var m = startMin
+    while (m <= endMin) {
+        out += "%02d:%02d".format(m / 60, m % 60) to m
         m += stepMinutes
     }
-    return list
+    return out
 }
 
 private fun fmtMinutes(total: Int): String = "%02d:%02d".format(total / 60, total % 60)
@@ -401,7 +693,8 @@ private fun LocationPickers(
             readOnly = true,
             label = { Text("Event Location: Building") },
             placeholder = { Text("Select building") },
-            modifier = Modifier.menuAnchor().fillMaxWidth()
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            colors = uphTextFieldColors()
         )
         ExposedDropdownMenu(expanded = bExpanded, onDismissRequest = { bExpanded = false }) {
             buildings.forEach { b ->
@@ -421,7 +714,8 @@ private fun LocationPickers(
             enabled = floorEnabled,
             label = { Text("Floor") },
             placeholder = { Text("Select floor") },
-            modifier = Modifier.menuAnchor().fillMaxWidth()
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            colors = uphTextFieldColors()
         )
         if (floorEnabled) {
             ExposedDropdownMenu(expanded = fExpanded, onDismissRequest = { fExpanded = false }) {
@@ -443,7 +737,8 @@ private fun LocationPickers(
             enabled = roomEnabled,
             label = { Text("Room") },
             placeholder = { Text("Select room") },
-            modifier = Modifier.menuAnchor().fillMaxWidth()
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            colors = uphTextFieldColors()
         )
         if (roomEnabled) {
             ExposedDropdownMenu(expanded = rExpanded, onDismissRequest = { rExpanded = false }) {

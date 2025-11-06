@@ -8,14 +8,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.campusguide.data.Event
 import androidx.compose.ui.text.style.TextAlign
+import com.example.campusguide.ui.common.UPHPrimaryButton
+import com.example.campusguide.ui.common.UPHSecondaryButton
 
 private val NO_COL_WIDTH = 28.dp
+
+private val UPH_Navy = Color(0xFF16224C)
+private val UPH_Red  = Color(0xFFE31E2E)
+private val UPH_White = Color(0xFFFFFFFF)
+private val UPH_Orange = Color(0xFFF58A0A)
 
 // Menampilkan past events
 @Composable
@@ -43,8 +51,15 @@ fun HistoryScreen(
     Scaffold(
         bottomBar = {
             BottomAppBar {
-                Spacer(Modifier.weight(1f))
-                OutlinedButton(onClick = onBack) { Text("Back") }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    UPHSecondaryButton(onClick = onBack) { Text("Back") }
+                }
             }
         }
     ) { pad ->
@@ -127,7 +142,11 @@ fun HistoryScreen(
 
             if (loading) {
                 Spacer(Modifier.height(8.dp))
-                LinearProgressIndicator(Modifier.fillMaxWidth())
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = UPH_Navy,
+                    trackColor = UPH_Navy.copy(alpha = 0.18f)
+                )
             }
         }
     }

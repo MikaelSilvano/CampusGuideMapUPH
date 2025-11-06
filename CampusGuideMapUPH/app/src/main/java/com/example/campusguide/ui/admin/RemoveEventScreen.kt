@@ -11,14 +11,46 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.campusguide.data.Event
+import com.example.campusguide.ui.common.UPHPrimaryButton
+import com.example.campusguide.ui.common.UPHSecondaryButton
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 private val NO_COL_WIDTH = 28.dp
 private val ACTIONS_COL_WIDTH = 84.dp
+
+private val UPH_Navy = Color(0xFF16224C)
+private val UPH_Red  = Color(0xFFE31E2E)
+private val UPH_White = Color(0xFFFFFFFF)
+private val UPH_Orange = Color(0xFFF58A0A)
+
+@Composable
+private fun WorkingDialog(message: String) {
+    Dialog(onDismissRequest = {}) {
+        Surface(shape = RoundedCornerShape(16.dp), color = Color.White, tonalElevation = 6.dp) {
+            Row(
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(
+                    color = UPH_Navy,
+                    trackColor = UPH_Navy.copy(alpha = 0.15f)
+                )
+                Spacer(Modifier.width(16.dp))
+                Text(message, color = UPH_Navy, style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+}
+
 
 // Layar admin untuk melihat daftar event dan melakukan aksi
 @Composable
@@ -40,11 +72,21 @@ fun RemoveEventScreen(
         )
     }
 
+    var isWorking by remember { mutableStateOf(false) }
+    var workingMsg by remember { mutableStateOf("") }
+
     Scaffold(
         bottomBar = {
             BottomAppBar {
-                Spacer(Modifier.weight(1f))
-                OutlinedButton(onClick = onBack) { Text("Back") } // Kembali ke layar sebelumnya
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    UPHSecondaryButton(onClick = onBack) { Text("Back") }
+                }
             }
         }
     ) { pad ->
@@ -146,9 +188,17 @@ fun RemoveEventScreen(
 
             if (state.loading) {
                 Spacer(Modifier.height(8.dp))
-                LinearProgressIndicator(Modifier.fillMaxWidth())
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = UPH_Navy,
+                    trackColor = UPH_Navy.copy(alpha = 0.18f)
+                )
             }
         }
+    }
+
+    if (isWorking) {
+        WorkingDialog(workingMsg)
     }
 
     // Dialog konfirmasi hapus
@@ -158,18 +208,20 @@ fun RemoveEventScreen(
             title = { Text("Are you sure?") },
             text = { Text("This will permanently delete the event.") },
             confirmButton = {
-                TextButton(onClick = {
+                UPHPrimaryButton(onClick = {
                     val id = targetId!!
                     targetId = null
+                    workingMsg = "Deleting..."
+                    isWorking = true
                     vm.delete(
                         id,
-                        onDone = { success = true },
-                        onError = { msg -> error = msg }
+                        onDone  = { isWorking = false; success = true },
+                        onError = { msg -> isWorking = false; error = msg }
                     )
                 }) { Text("Yes, delete") }
             },
             dismissButton = {
-                TextButton(onClick = { targetId = null }) { Text("Cancel") }
+                UPHSecondaryButton(onClick = { targetId = null }) { Text("Cancel") }
             }
         )
     }
@@ -179,7 +231,12 @@ fun RemoveEventScreen(
         AlertDialog(
             onDismissRequest = { success = false },
             title = { Text("Event deleted") },
-            confirmButton = { TextButton(onClick = { success = false }) { Text("OK") } }
+            confirmButton = {
+                TextButton(
+                    onClick = { success = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("OK") }
+            }
         )
     }
 
@@ -189,7 +246,11 @@ fun RemoveEventScreen(
             onDismissRequest = { error = null },
             title = { Text("Failed") },
             text = { Text(msg) },
-            confirmButton = { TextButton(onClick = { error = null }) { Text("OK") } }
+            confirmButton = {
+                TextButton(
+                    onClick = { error = null },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("OK") } }
         )
     }
 }
