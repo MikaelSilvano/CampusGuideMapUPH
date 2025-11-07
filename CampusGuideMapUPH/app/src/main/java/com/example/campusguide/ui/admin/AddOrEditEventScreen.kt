@@ -64,6 +64,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import androidx.activity.compose.BackHandler
+import com.example.campusguide.ui.common.VerticalScrollbar
 
 // Mode form, yaitu tambah baru atau edit
 
@@ -118,44 +120,6 @@ private fun uphTextFieldColors() = TextFieldDefaults.colors(
     unfocusedContainerColor = Color.Transparent,
 )
 
-@Composable
-private fun VerticalScrollbar(
-    scroll: ScrollState,
-    modifier: Modifier = Modifier,
-    thickness: Dp = 3.dp,
-    minThumb: Dp = 42.dp,
-    color: Color = UPH_Navy.copy(alpha = 0.35f)
-) {
-    Box(
-        modifier
-            .width(thickness)
-            .fillMaxHeight()
-            .drawBehind {
-                val trackW = thickness.toPx()
-                val viewportH = size.height
-                val totalScrollable = scroll.maxValue.toFloat()
-                val contentH = viewportH + totalScrollable
-
-                if (contentH <= viewportH + 1f) return@drawBehind
-
-                val fracVisible = viewportH / contentH
-                val thumbH = max(minThumb.toPx(), viewportH * fracVisible)
-
-                val fracStart =
-                    if (totalScrollable <= 0f) 0f
-                    else scroll.value / totalScrollable
-
-                val y = (viewportH - thumbH) * fracStart
-
-                drawRoundRect(
-                    color = color,
-                    topLeft = Offset(size.width - trackW, y),
-                    size = Size(trackW, thumbH),
-                    cornerRadius = CornerRadius(trackW, trackW)
-                )
-            }
-    )
-}
 private fun resolveDisplayName(ctx: Context, uri: Uri): String {
     ctx.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
         ?.use { c ->
@@ -217,6 +181,32 @@ private fun WorkingDialog(message: String) {
     }
 }
 
+@Composable
+fun LogoutConfirmDialog(
+    visible: Boolean,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (!visible) return
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Are you sure you want to log out?") },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF16224C)) // UPH_Navy
+            ) { Text("Yes") }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF16224C))
+            ) { Text("No") }
+        }
+    )
+}
+
+
 sealed interface FormMode { data object Add : FormMode; data class Edit(val id: String): FormMode }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -248,23 +238,42 @@ fun AddOrEditEventScreen(
 
     val eventKey = eventId ?: "ADD"
 
-    var name   by remember(eventKey) { mutableStateOf(TextFieldValue(editing?.name ?: "")) }
-    var heldBy by remember(eventKey) { mutableStateOf(TextFieldValue(editing?.heldBy ?: "")) }
+    val initialName     = editing?.name ?: ""
+    val initialHeldBy   = editing?.heldBy ?: ""
+    val initialStart    = editing?.startTimeMinutes
+    val initialEnd      = editing?.endTimeMinutes
+    val initialBuilding = editing?.building
+    val initialFloor    = editing?.floor
+    val initialRoom     = editing?.room?.takeIf { it.isNotBlank() }
+
+    val initialDateMillis = remember(eventKey) {
+        editing?.date?.toDate()?.let { d ->
+            Calendar.getInstance().apply {
+                time = d
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+        }
+    }
+
+    var name   by remember(eventKey) { mutableStateOf(TextFieldValue(initialName)) }
+    var heldBy by remember(eventKey) { mutableStateOf(TextFieldValue(initialHeldBy)) }
 
     var date by remember(eventKey) {
         mutableStateOf<Calendar?>(
             editing?.date?.toDate()?.let { Calendar.getInstance().apply { time = it } }
         )
     }
-    var startMin by remember(eventKey) { mutableStateOf<Int?>(editing?.startTimeMinutes) }
-    var endMin   by remember(eventKey) { mutableStateOf<Int?>(editing?.endTimeMinutes) }
+    var startMin by remember(eventKey) { mutableStateOf<Int?>(initialStart) }
+    var endMin   by remember(eventKey) { mutableStateOf<Int?>(initialEnd) }
 
-    var building by remember(eventKey) { mutableStateOf<String?>(editing?.building) }
-    var floor    by remember(eventKey) { mutableStateOf<Int?>(editing?.floor) }
-    var room     by remember(eventKey) { mutableStateOf<String?>(editing?.room?.takeIf { it.isNotBlank() }) }
+    var building by remember(eventKey) { mutableStateOf<String?>(initialBuilding) }
+    var floor    by remember(eventKey) { mutableStateOf<Int?>(initialFloor) }
+    var room     by remember(eventKey) { mutableStateOf<String?>(initialRoom) }
 
     val campusRepo = com.example.campusguide.data.InMemoryCampusRepository
-
     val buildingItems by produceState(initialValue = emptyList<com.example.campusguide.data.Building>()) {
         value = campusRepo.getBuildings()
     }
@@ -273,36 +282,23 @@ fun AddOrEditEventScreen(
     val floors by produceState(initialValue = emptyList<Int>(), key1 = building) {
         value = building?.let { campusRepo.getFloors(it) } ?: emptyList()
     }
-
     val rooms by produceState(initialValue = emptyList<String>(), key1 = building, key2 = floor) {
         value = if (building != null && floor != null) {
-            campusRepo.rooms
-                .filter { it.buildingId == building && it.floor == floor }
-                .map { it.code }
+            campusRepo.rooms.filter { it.buildingId == building && it.floor == floor }.map { it.code }
         } else emptyList()
     }
 
-    var isWorking by remember { mutableStateOf(false) }
-    var workingMsg by remember { mutableStateOf("") }
-
     LaunchedEffect(building) {
-        if (building == null) {
-            floor = null
-            room = null
-        } else if (floor !in floors) {
-            floor = null
-            room = null
-        }
+        if (building == null) { floor = null; room = null }
+        else if (floor !in floors) { floor = null; room = null }
     }
     LaunchedEffect(building, floor) {
         if (building == null || floor == null || room !in rooms) room = null
     }
 
     val ctx = LocalContext.current
-    val rawPosterUrl = editing?.posterUrl
-    val initialPosterName = remember(eventKey) {
-        if (isValidPosterUrl(rawPosterUrl)) filenameFromUrl(rawPosterUrl) else null
-    }
+    val rawPosterUrl = editing?.posterUrl?.takeIf { !it.isNullOrBlank() && (it.startsWith("http://") || it.startsWith("https://")) }
+    val initialPosterName = remember(eventKey) { rawPosterUrl?.let { filenameFromUrl(it) } }
     var posterName by remember(eventKey) { mutableStateOf<String?>(initialPosterName) }
     var poster: Uri? by remember { mutableStateOf(null) }
 
@@ -316,6 +312,32 @@ fun AddOrEditEventScreen(
     var askConfirm by remember { mutableStateOf(false) }
     var success    by remember { mutableStateOf(false) }
     var error      by remember { mutableStateOf<String?>(null) }
+    var isWorking  by remember { mutableStateOf(false) }
+    var workingMsg by remember { mutableStateOf("") }
+    var askExit    by remember { mutableStateOf(false) }
+
+    val currentDateMillis = date?.timeInMillis
+
+    val isDirty by remember(
+        name.text, heldBy.text, currentDateMillis, startMin, endMin,
+        building, floor, room, posterName, poster
+    ) {
+        mutableStateOf(
+            name.text.trim()           != initialName ||
+                    heldBy.text.trim()         != initialHeldBy ||
+                    currentDateMillis          != initialDateMillis ||
+                    startMin                   != initialStart ||
+                    endMin                     != initialEnd ||
+                    building                   != initialBuilding ||
+                    floor                      != initialFloor ||
+                    room                       != initialRoom ||
+                    poster != null || (posterName ?: "") != (initialPosterName ?: "")
+        )
+    }
+
+    BackHandler {
+        if (isDirty) askExit = true else onCancel()
+    }
 
     val isValid = name.text.isNotBlank() &&
             heldBy.text.isNotBlank() &&
@@ -341,10 +363,10 @@ fun AddOrEditEventScreen(
                         onClick = { askConfirm = true },
                         enabled = isValid
                     ) { Text("Confirm") }
-
                     Spacer(Modifier.width(12.dp))
-
-                    UPHSecondaryButton(onClick = onCancel) { Text("Cancel") }
+                    UPHSecondaryButton(
+                        onClick = { if (isDirty) askExit = true else onCancel() }
+                    ) { Text("Cancel") }
                 }
             }
         }
@@ -396,7 +418,7 @@ fun AddOrEditEventScreen(
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val hasAnyPoster = (poster != null) || (isValidPosterUrl(rawPosterUrl))
+                    val hasAnyPoster = (poster != null) || (rawPosterUrl != null)
                     OutlinedButton(
                         onClick = { pickImage.launch("image/*") },
                         border = BorderStroke(1.dp, UPH_Navy),
@@ -404,9 +426,7 @@ fun AddOrEditEventScreen(
                     ) {
                         Text(if (hasAnyPoster) "Change Poster" else "Choose Poster")
                     }
-
                     Spacer(Modifier.width(12.dp))
-
                     val rightText = posterName ?: "No poster yet!"
                     Text(text = rightText, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
@@ -428,6 +448,7 @@ fun AddOrEditEventScreen(
         WorkingDialog(workingMsg)
     }
 
+    // Confirm save
     if (askConfirm) {
         AlertDialog(
             onDismissRequest = { askConfirm = false },
@@ -435,7 +456,6 @@ fun AddOrEditEventScreen(
             confirmButton = {
                 UPHPrimaryButton(onClick = {
                     askConfirm = false
-
                     val normalized = (date!!.clone() as Calendar).apply {
                         set(Calendar.HOUR_OF_DAY, 0)
                         set(Calendar.MINUTE, 0)
@@ -457,7 +477,7 @@ fun AddOrEditEventScreen(
                             building = building!!,
                             floor    = floor!!,
                             room     = room!!,
-                            posterUrl = editing?.posterUrl
+                            posterUrl = null // biar URL final di-set oleh repo saat upload
                         )
                         vm.create(
                             toCreate, poster,
@@ -477,7 +497,7 @@ fun AddOrEditEventScreen(
                             building = building!!,
                             floor    = floor!!,
                             room     = room!!,
-                            posterUrl = original.posterUrl
+                            posterUrl = original.posterUrl // repo yang akan overwrite jika poster != null
                         )
                         vm.update(
                             updated, poster,
@@ -487,7 +507,29 @@ fun AddOrEditEventScreen(
                     }
                 }) { Text("Yes") }
             },
-            dismissButton = { UPHSecondaryButton(onClick = { askConfirm = false }) { Text("No") } }
+            dismissButton = {
+                UPHSecondaryButton(onClick = { askConfirm = false }) { Text("No") }
+            }
+        )
+    }
+
+    if (askExit) {
+        AlertDialog(
+            onDismissRequest = { askExit = false },
+            title = { Text("Are you sure want to exit?") },
+            text  = { Text("You have unsaved changes. They will be lost if you leave this page.") },
+            confirmButton = {
+                TextButton(
+                    onClick = { askExit = false; onCancel() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("Yes") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { askExit = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("No") }
+            }
         )
     }
 

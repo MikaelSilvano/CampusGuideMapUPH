@@ -84,12 +84,45 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.tasks.await
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Close
+import com.example.campusguide.ui.common.VerticalScrollbar
+import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.campusguide.ui.common.HorizontalScrollbar
+import coil.compose.AsyncImagePainter
+
 
 private val UPH_Navy = Color(0xFF16224C)
 private val UPH_Red  = Color(0xFFE31E2E)
 private val UPH_White = Color(0xFFFFFFFF)
 private val UPH_Orange = Color(0xFFF58A0A)
 val routeColor = Color(0xFFA64AEF)
+
+private val FACULTY_CARD_WIDTH  = 220.dp
+private val FACULTY_TITLE_HEIGHT = 44.dp
+private val FACULTY_IMAGE_HEIGHT = 110.dp
+
+@Composable
+private fun uphTextFieldColors() = TextFieldDefaults.colors(
+    focusedIndicatorColor    = UPH_Navy,
+    unfocusedIndicatorColor  = UPH_Navy,
+    disabledIndicatorColor   = UPH_Navy.copy(alpha = 0.30f),
+    focusedLabelColor        = UPH_Navy,
+    cursorColor              = UPH_Navy,
+    focusedTrailingIconColor = UPH_Navy,
+    unfocusedTrailingIconColor = UPH_Navy,
+    focusedContainerColor    = Color.Transparent,
+    unfocusedContainerColor  = Color.Transparent,
+    focusedPlaceholderColor  = UPH_Navy.copy(alpha = 0.55f),
+    unfocusedPlaceholderColor= UPH_Navy.copy(alpha = 0.55f),
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,12 +170,27 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// ---- Entrance model + simple data source (MVP) ----
 data class EntranceUI(
     val id: String,
     val label: String,
     val buildingId: String
 )
+
+private val ADMIN_ROUTES = listOf(
+    ROUTE_ADMIN_DASH, ROUTE_ADMIN_ADD, ROUTE_ADMIN_EDIT, ROUTE_ADMIN_REMOVE, ROUTE_ADMIN_HISTORY
+)
+
+fun NavHostController.goToHomeClearingAdmin() {
+    ADMIN_ROUTES.forEach { popBackStack(route = it, inclusive = true) }
+    val popped = popBackStack(route = "home", inclusive = false)
+    if (!popped) {
+        navigate("home") {
+            popUpTo(graph.startDestinationId) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+}
 
 private fun entrancesFor(buildingId: String): List<EntranceUI> = when (buildingId) {
     "B" -> listOf(
@@ -218,7 +266,11 @@ fun CampusGuideApp() {
                                 navController.navigate(ROUTE_ADMIN_DASH) { launchSingleTop = true }
                             })
                         }
-                        adminGraph(navController)
+                        adminGraph(
+                            nav = navController,
+                            onGoToMap = { navController.goToHomeClearingAdmin()
+                            }
+                        )
 
                         composable("building/{id}") {
                             val id = it.arguments?.getString("id") ?: ""
@@ -283,6 +335,14 @@ private fun AppTopBar(
 // Bottom navigation bar
 @Composable
 private fun BottomBar(navController: NavHostController) {
+    var askLogout by remember { mutableStateOf(false) }
+    val current = currentRoute(navController)
+
+    fun goAfterConfirm(block: () -> Unit) {
+        if (current?.startsWith("admin/") == true) askLogout = true else block()
+        if (askLogout && current?.startsWith("admin/") != true) askLogout = false
+    }
+
     val navItemColors = NavigationBarItemDefaults.colors(
         selectedIconColor   = UPH_White,
         selectedTextColor   = UPH_White,
@@ -290,45 +350,60 @@ private fun BottomBar(navController: NavHostController) {
         unselectedTextColor = UPH_White.copy(alpha = 0.75f),
         indicatorColor      = UPH_Orange
     )
+
     NavigationBar(containerColor = UPH_Navy) {
         NavigationBarItem(
-            selected = currentRoute(navController) == "home",
-            onClick = {
-                navController.navigate("home") {
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                    launchSingleTop = true; restoreState = true
-                }
-            },
-            icon = { Icon(Icons.Default.Map, contentDescription = "Map", tint = UPH_White) },
-            label = { Text("Map", color = UPH_White) },
-            colors = navItemColors,
-            alwaysShowLabel = true
+            selected = current == "home",
+            onClick = { goAfterConfirm { navController.goToHomeClearingAdmin() } },
+            icon = { Icon(Icons.Default.Map, contentDescription = "Map") },
+            label = { Text("Map") },
+            colors = navItemColors
         )
         NavigationBarItem(
-            selected = currentRoute(navController) == "events",
-            onClick = {
+            selected = current == "events",
+            onClick = { goAfterConfirm {
                 navController.navigate("events") {
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
                     launchSingleTop = true; restoreState = true
                 }
-            },
-            icon = { Icon(Icons.Default.Event, contentDescription = "Events", tint = UPH_White) },
-            label = { Text("Events", color = UPH_White) },
-            colors = navItemColors,
-            alwaysShowLabel = true
+            } },
+            icon = { Icon(Icons.Default.Event, contentDescription = "Events") },
+            label = { Text("Events") },
+            colors = navItemColors
         )
         NavigationBarItem(
-            selected = currentRoute(navController) == "search",
-            onClick = {
+            selected = current == "search",
+            onClick = { goAfterConfirm {
                 navController.navigate("search") {
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
                     launchSingleTop = true; restoreState = true
                 }
+            } },
+            icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            label = { Text("Search") },
+            colors = navItemColors
+        )
+    }
+
+    if (askLogout) {
+        AlertDialog(
+            onDismissRequest = { askLogout = false },
+            title = { Text("Are you sure you want to log out?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        askLogout = false
+                        navController.goToHomeClearingAdmin()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("Continue") }
             },
-            icon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = UPH_White) },
-            label = { Text("Search", color = UPH_White) },
-            colors = navItemColors,
-            alwaysShowLabel = true
+            dismissButton = {
+                TextButton(
+                    onClick = { askLogout = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("Cancel") }
+            }
         )
     }
 }
@@ -497,21 +572,19 @@ fun HomeScreen(
                 }
             }
 
-            // --- Route overlay (above pins) ---
             Canvas(
                 modifier = Modifier
                     .matchParentSize()
                     .zIndex(2f)
             ) {
                 if (pathNodeIds.size >= 2) {
-                    // force Offset from Compose and compute in this DrawScope
                     val pts: List<Offset> = pathRepo
                         .toNormalizedOffsets(pathNodeIds)
                         .map { (nx, ny) -> Offset(nx * size.width, ny * size.height) }
 
                     for (i in 0 until (pts.size - 1)) {
                         drawLine(
-                            brush = SolidColor(routeColor),    // <— brush overload is very safe
+                            brush = SolidColor(routeColor),
                             start = pts[i],
                             end   = pts[i + 1],
                             strokeWidth = 10f
@@ -519,7 +592,6 @@ fun HomeScreen(
                     }
                 }
             }
-            // --- Path Mode toggle button (ONLY this one) ---
             PathModeButton(
                 enabled = isPathMode,
                 onToggle = {
@@ -814,37 +886,82 @@ fun SearchScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
 
     Column(Modifier.fillMaxSize().padding(12.dp)) {
+
         OutlinedTextField(
             value = q,
             onValueChange = { newQ ->
                 q = newQ
-                scope.launch { results = repo.search(newQ) }
+                scope.launch {
+                    results = if (newQ.isBlank()) emptyList() else repo.search(newQ)
+                }
             },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search faculty, room, or event…") }
-        )
-        LazyColumn {
-            items(results) { r ->
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            when (r) {
-                                is SearchResult.FacultyResult -> navController.navigate("building/${r.buildingId}")
-                                is SearchResult.RoomResult -> navController.navigate("floor/${r.buildingId}/${r.floor}")
-                                is SearchResult.EventResult -> navController.navigate("event/${r.eventId}")
-                            }
-                        }
-                        .padding(12.dp)
-                ) {
-                    Text(r.title, fontWeight = FontWeight.Bold)
-                    val subtitle = when (r) {
-                        is SearchResult.EventResult -> prettyEventSubtitle(r.subtitle)
-                        else -> r.subtitle
+            label = { Text("Search") },
+            placeholder = { Text("Search faculty, room, or event…") },
+            trailingIcon = {
+                if (q.isNotEmpty()) {
+                    IconButton(onClick = { q = ""; results = emptyList() }) {
+                        Icon(Icons.Default.Close, contentDescription = "Clear")
                     }
-                    Text(subtitle)
                 }
-                Divider()
+            },
+            colors = uphTextFieldColors()
+        )
+
+        val scroll = rememberScrollState()
+        val showResults = q.isNotBlank()
+
+        Box(Modifier.fillMaxSize()) {
+            if (showResults) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scroll)
+                ) {
+                    if (results.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No match found!", color = UPH_Navy)
+                        }
+                    } else {
+                        results.forEach { r ->
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        when (r) {
+                                            is SearchResult.FacultyResult -> navController.navigate("building/${r.buildingId}")
+                                            is SearchResult.RoomResult    -> navController.navigate("floor/${r.buildingId}/${r.floor}")
+                                            is SearchResult.EventResult   -> navController.navigate("event/${r.eventId}")
+                                        }
+                                    }
+                                    .padding(12.dp)
+                            ) {
+                                Text(r.title, fontWeight = FontWeight.Bold, color = UPH_Navy)
+                                val subtitle = when (r) {
+                                    is SearchResult.EventResult -> prettyEventSubtitle(r.subtitle)
+                                    else -> r.subtitle
+                                }
+                                Text(subtitle)
+                            }
+                            Divider()
+                        }
+                        Spacer(Modifier.height(2.dp))
+                    }
+                }
+
+                VerticalScrollbar(
+                    scroll = scroll,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 6.dp)
+                )
+            } else {
+                Spacer(Modifier.height(0.dp))
             }
         }
     }
@@ -964,7 +1081,6 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
 }
 
 @OptIn(ExperimentalLayoutApi::class)
-// Detail bangunan
 @Composable
 fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     val ctx = LocalContext.current
@@ -982,48 +1098,91 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     val events by remember(buildingId) { repo.streamEventsForBuilding(buildingId) }
         .collectAsState(initial = emptyList())
 
-    Column(Modifier.fillMaxSize().padding(12.dp)) {
-        BackToMapButton(navController, Modifier.padding(bottom = 8.dp))
+    val outerScroll = rememberScrollState()
 
-        Text("Building ${building?.id ?: buildingId}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        Text("List of Faculties", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(6.dp))
-        Row(Modifier.horizontalScroll(rememberScrollState())) {
-            val all = InMemoryCampusRepository.facultyInBuilding
-            val faculties = all.filterValues { it == buildingId }.keys.ifEmpty { listOf("Faculty of ...") }
-            faculties.forEach { f ->
-                Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFFF2F3F7), modifier = Modifier.padding(end = 8.dp)) {
-                    Box(Modifier.size(width = 200.dp, height = 90.dp).padding(12.dp), contentAlignment = Alignment.Center) {
-                        Text(f, fontWeight = FontWeight.SemiBold)
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(outerScroll)
+                .padding(12.dp)
+        ) {
+            BackToMapButton(navController, Modifier.padding(bottom = 8.dp))
+
+            Text(
+                "Building ${building?.id ?: buildingId}",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(8.dp))
+            Text("List of Faculties", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(6.dp))
+
+            val facScroll = rememberScrollState()
+            Box(Modifier.fillMaxWidth()) {
+                Row(Modifier.horizontalScroll(facScroll)) {
+                    val all = InMemoryCampusRepository.facultyInBuilding
+                    val faculties = all.filterValues { it == buildingId }
+                        .keys.ifEmpty { listOf("Faculty of ...") }
+
+                    faculties.forEach { f ->
+                        FacultyCard(
+                            title = f,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
                     }
                 }
+                HorizontalScrollbar(
+                    scroll = facScroll,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(top = 4.dp)
+                )
             }
-        }
-        Spacer(Modifier.height(8.dp))
-        Divider()
-        Spacer(Modifier.height(8.dp))
-        Text("Floor Navigation", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(6.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            floors.forEach { f ->
-                OutlinedButton(onClick = { navController.navigate("floor/${buildingId}/$f") }) { Text("Floor $f") }
+
+            Spacer(Modifier.height(8.dp))
+            Divider()
+            Spacer(Modifier.height(8.dp))
+
+            Text("Floor Navigation", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(6.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                floors.forEach { f ->
+                    OutlinedButton(
+                        onClick = { navController.navigate("floor/${buildingId}/$f") },
+                        border = BorderStroke(1.dp, UPH_Navy),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = UPH_Navy
+                        )
+                    ) { Text("Floor $f") }
+                }
             }
-        }
-        Spacer(Modifier.height(12.dp))
-        Divider()
-        Spacer(Modifier.height(8.dp))
-        Text("Events", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(6.dp))
-        LazyColumn(Modifier.fillMaxSize()) {
-            items(events) { e ->
-                EventCard(e) { navController.navigate("event/${e.id}") }
-                Spacer(Modifier.height(8.dp))
+
+            Spacer(Modifier.height(12.dp))
+            Divider()
+            Spacer(Modifier.height(8.dp))
+
+            Text("Events", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(6.dp))
+
+            Column {
+                events.forEach { e ->
+                    EventCard(e) { navController.navigate("event/${e.id}") }
+                    Spacer(Modifier.height(8.dp))
+                }
             }
+
+            Spacer(Modifier.height(12.dp))
         }
+
+        com.example.campusguide.ui.common.VerticalScrollbar(
+            scroll = outerScroll,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 6.dp)
+        )
     }
 }
 
@@ -1048,21 +1207,43 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
             tried = true
         }
     }
+
     val drawableId = remember(resName) {
         ctx.resources.getIdentifier(resName, "drawable", ctx.packageName)
     }
 
     Box(Modifier.fillMaxSize()) {
+
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             when {
                 url != null -> {
-                    AsyncImage(
+                    coil.compose.SubcomposeAsyncImage(
                         model = url,
                         contentDescription = "Floor plan",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
-                    )
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        when (painter.state) {
+                            is AsyncImagePainter.State.Success -> {
+                                Image(
+                                    painter = painter,
+                                    contentDescription = "Floor plan",
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            else -> {
+                                CircularProgressIndicator(
+                                    modifier   = Modifier.size(40.dp),
+                                    color      = UPH_Navy,
+                                    trackColor = UPH_Navy.copy(alpha = 0.15f),
+                                    strokeWidth = 4.dp
+                                )
+                            }
+                        }
+                    }
                 }
+
                 tried && drawableId != 0 -> {
                     Image(
                         painter = painterResource(drawableId),
@@ -1071,10 +1252,17 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                         contentScale = ContentScale.Fit
                     )
                 }
+
                 tried -> Text("No floor plan image for Building $buildingId Floor $floor")
-                else -> CircularProgressIndicator()
+
+                else -> CircularProgressIndicator(
+                    color = UPH_Navy,
+                    trackColor = UPH_Navy.copy(alpha = 0.15f),
+                    strokeWidth = 4.dp
+                )
             }
         }
+
         BackToMapButton(navController, Modifier.align(Alignment.TopStart).padding(8.dp))
     }
 }
@@ -1086,6 +1274,13 @@ fun EventsScreen(navController: NavHostController) {
     val ctx = LocalContext.current
     val repo = remember { CampusRepoProvider.provide(ctx) }
     val allEvents by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
+
+    var loadedOnce by remember { mutableStateOf(false) }
+    LaunchedEffect(allEvents) {
+        if (!loadedOnce && allEvents.isNotEmpty()) loadedOnce = true
+    }
+    val isLoading = !loadedOnce
+
 
     var building by remember { mutableStateOf("All") }
     val buildings = listOf("All", "B", "C", "D", "F")
@@ -1272,15 +1467,101 @@ fun EventsScreen(navController: NavHostController) {
         }
 
         Spacer(Modifier.height(8.dp))
-        LazyColumn(Modifier.fillMaxSize()) {
-            items(filtered) { e ->
-                EventCard(e) { navController.navigate("event/${e.id}") }
-                Spacer(Modifier.height(8.dp))
+
+        val scroll = rememberScrollState()
+
+        if (isLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = UPH_Navy,
+                trackColor = UPH_Navy.copy(alpha = 0.18f)
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        Box(Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scroll)
+            ) {
+                filtered.forEach { e ->
+                    EventCard(e) { navController.navigate("event/${e.id}") }
+                    Spacer(Modifier.height(8.dp))
+                }
+                Spacer(Modifier.height(2.dp))
             }
+
+            VerticalScrollbar(
+                scroll = scroll,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 6.dp)
+            )
         }
     }
     DebugSeedButton()
 }
+
+@Composable
+private fun FacultyCard(
+    title: String,
+    imageUrl: String? = null,
+    modifier: Modifier = Modifier
+) {
+    val placeholder = "https://via.placeholder.com/400x240?text=Faculty+Photo"
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFF2F3F7),
+        tonalElevation = 1.dp,
+        modifier = modifier.width(FACULTY_CARD_WIDTH)
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(FACULTY_TITLE_HEIGHT),
+                contentAlignment = Alignment.TopStart
+            ) {
+                Text(
+                    title,
+                    color = UPH_Navy,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            SubcomposeAsyncImage(
+                model = imageUrl ?: placeholder,
+                contentDescription = "Faculty photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(FACULTY_IMAGE_HEIGHT)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFE9EDF6))
+            ) {
+                when (painter.state) {
+                    is coil.compose.AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
+                    is coil.compose.AsyncImagePainter.State.Loading -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                color = UPH_Navy,
+                                trackColor = UPH_Navy.copy(alpha = 0.15f),
+                                strokeWidth = 3.dp
+                            )
+                        }
+                    }
+                    else -> Box(Modifier.fillMaxSize().background(Color(0xFFE9EDF6)))
+                }
+            }
+        }
+    }
+}
+
 
 // Mengembalikan label status event dan warna badge
 @Composable

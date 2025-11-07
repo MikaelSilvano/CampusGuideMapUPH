@@ -17,6 +17,11 @@ import com.example.campusguide.data.Event
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import java.util.Calendar
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.example.campusguide.ui.common.VerticalScrollbar
 
 private val UPH_Navy   = Color(0xFF16224C)
 private val UPH_Red    = Color(0xFFB33A2E)
@@ -34,7 +39,8 @@ fun DashboardScreen(
     onAdd: ()->Unit,
     onEdit: (String)->Unit,
     onRemove: (String)->Unit,
-    onHistory: ()->Unit
+    onHistory: ()->Unit,
+    onGoToMap: () -> Unit,
 ) {
     val state by vm.state.collectAsState()
     LaunchedEffect(Unit) { vm.refresh() }
@@ -48,6 +54,18 @@ fun DashboardScreen(
     var selectedId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(events) {
         if (selectedId != null && events.none { it.id == selectedId }) selectedId = null
+    }
+
+    var askLogout by remember { mutableStateOf(false) }
+    var pendingNav: (() -> Unit)? by remember { mutableStateOf(null) }
+
+    fun requestLogoutAndNavigate(to: () -> Unit) {
+        pendingNav = to
+        askLogout = true
+    }
+
+    BackHandler {
+        requestLogoutAndNavigate { onGoToMap() }
     }
 
     Scaffold(
@@ -136,9 +154,32 @@ fun DashboardScreen(
             EventTable(
                 events = events,
                 selectedId = selectedId,
-                onSelect = { id -> selectedId = id }
+                onSelect = { id -> selectedId = id },
+                loading = state.loading
             )
         }
+    }
+    if (askLogout) {
+        AlertDialog(
+            onDismissRequest = { askLogout = false },
+            title = { Text("Are you sure you want to log out?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        askLogout = false
+                        (pendingNav ?: onGoToMap).invoke()
+                        pendingNav = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("Yes") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { askLogout = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("No") }
+            }
+        )
     }
 }
 
@@ -147,7 +188,8 @@ fun DashboardScreen(
 private fun EventTable(
     events: List<Event>,
     selectedId: String?,
-    onSelect: (String) -> Unit
+    onSelect: (String) -> Unit,
+    loading: Boolean
 ) {
     Surface(
         shape = MaterialTheme.shapes.large,
@@ -155,40 +197,67 @@ private fun EventTable(
         shadowElevation = 2.dp,
         color = Color.White
     ) {
-        Column {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .background(UPH_Navy)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HeadCell("No.", 0.8f)
-                HeadCell("Event Name", 1.8f)
-                HeadCell("Held By", 1.2f)
-                HeadCell("Time", 2.0f)
-                Spacer(Modifier.width(5.dp))
-                HeadCell("Date", 1.2f)
+        val scroll = rememberScrollState()
+        Box(Modifier.fillMaxWidth()) {
+            Column {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(UPH_Navy)
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HeadCell("No.", 0.8f)
+                    HeadCell("Event Name", 1.8f)
+                    HeadCell("Held By", 1.2f)
+                    HeadCell("Time", 2.0f)
+                    Spacer(Modifier.width(5.dp))
+                    HeadCell("Date", 1.2f)
+                }
+
+                if (loading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = UPH_Navy,
+                        trackColor = UPH_Navy.copy(alpha = 0.18f)
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scroll)
+                ) {
+                    events.forEachIndexed { idx, e ->
+                        val selected = selectedId == e.id
+                        TableRow(
+                            index = idx + 1,
+                            e = e,
+                            selected = selected,
+                            onClick = { onSelect(e.id) }
+                        )
+                        if (idx < events.lastIndex) {
+                            Divider(thickness = 0.5.dp, color = Color(0xFFE5E6EC))
+                        }
+                    }
+                    Spacer(Modifier.height(2.dp))
+                }
             }
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                itemsIndexed(events, key = { _, e -> e.id }) { idx, e ->
-                    val selected = selectedId == e.id
-                    TableRow(
-                        index = idx + 1,
-                        e = e,
-                        selected = selected,
-                        onClick = { onSelect(e.id) }
-                    )
-                    if (idx < events.lastIndex) {
-                        Divider(thickness = 0.5.dp, color = Color(0xFFE5E6EC))
-                    }
-                }
-                item { Spacer(Modifier.height(2.dp)) }
-            }
+            VerticalScrollbar(
+                scroll = scroll,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 6.dp)
+            )
+        }
+
+        if (loading) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                color = UPH_Navy,
+                trackColor = UPH_Navy.copy(alpha = 0.18f)
+            )
         }
     }
 }
@@ -248,24 +317,6 @@ private fun CountChip(label: String, value: Int, bg: Color) {
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.headlineMedium
         )
-    }
-}
-
-@Composable
-private fun TableHeader() {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .background(UPH_Navy)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        HeadCell("No.", 0.8f)
-        HeadCell("Event Name", 2.2f)
-        HeadCell("Held By", 1.6f)
-        HeadCell("Time", 1.4f)
-        Spacer(Modifier.width(12.dp))
-        HeadCell("Date", 1.4f)
     }
 }
 

@@ -14,7 +14,10 @@ const val ROUTE_ADMIN_REMOVE = "admin/remove"
 const val ROUTE_ADMIN_HISTORY = "admin/history"
 
 // Menambahkan seluruh rute/halaman admin ke NavGraph aplikasi
-fun NavGraphBuilder.adminGraph(nav: NavController) {
+fun NavGraphBuilder.adminGraph(
+    nav: NavController,
+    onGoToMap: () -> Unit,
+){
     composable(ROUTE_ADMIN_DASH) {
         val vm: EventsViewModel = viewModel()
         DashboardScreen(
@@ -22,7 +25,8 @@ fun NavGraphBuilder.adminGraph(nav: NavController) {
             onAdd = { nav.navigate(ROUTE_ADMIN_ADD) },          // Menuju form add
             onEdit = { id -> nav.navigate("admin/edit/$id") },  // Menuju form edit
             onRemove = { nav.navigate(ROUTE_ADMIN_REMOVE) },    // Menuju form remove
-            onHistory = { nav.navigate(ROUTE_ADMIN_HISTORY) }   // Menuju form history
+            onHistory = { nav.navigate(ROUTE_ADMIN_HISTORY) },   // Menuju form history
+            onGoToMap = onGoToMap
         )
     }
     composable(ROUTE_ADMIN_ADD) {

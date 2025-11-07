@@ -23,6 +23,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.example.campusguide.ui.common.VerticalScrollbar
 
 private val NO_COL_WIDTH = 28.dp
 private val ACTIONS_COL_WIDTH = 84.dp
@@ -114,76 +117,80 @@ fun RemoveEventScreen(
             Spacer(Modifier.height(4.dp))
 
             // Daftar event
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                itemsIndexed(events) { idx, ev ->
-                    ElevatedCard {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("${idx + 1}", modifier = Modifier.width(NO_COL_WIDTH), fontSize = 12.sp)
-
-                            Text(
-                                ev.name,
-                                modifier = Modifier.weight(1.7f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 12.sp
-                            )
-
-                            Text(
-                                ev.heldBy,
-                                modifier = Modifier.weight(1.2f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 12.sp
-                            )
-
-                            Column(
-                                modifier = Modifier.weight(1.9f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Text(
-                                    fmtDate(ev),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    fontSize = 12.sp
-                                )
-                                Text(
-                                    "${fmtTime(ev.startTimeMinutes)}–${fmtTime(ev.endTimeMinutes)}",
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    fontSize = 12.sp
-                                )
-                            }
-
-                            // Publish/unpublish dan delete
+            val scroll = rememberScrollState()
+            Box(Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scroll),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    events.forEachIndexed { idx, ev ->
+                        ElevatedCard {
                             Row(
-                                modifier = Modifier.width(ACTIONS_COL_WIDTH),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                IconButton(onClick = {
-                                    vm.setPublished(
-                                        ev.id, !ev.published,
-                                        onDone = {},
-                                        onError = { error = it }
-                                    )
-                                }) {
-                                    Icon(
-                                        if (ev.published) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                        contentDescription = "Toggle visibility"
+                                Text("${idx + 1}", modifier = Modifier.width(NO_COL_WIDTH), fontSize = 12.sp)
+
+                                Text(
+                                    ev.name,
+                                    modifier = Modifier.weight(1.7f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 12.sp
+                                )
+
+                                Text(
+                                    ev.heldBy,
+                                    modifier = Modifier.weight(1.2f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 12.sp
+                                )
+
+                                Column(
+                                    modifier = Modifier.weight(1.9f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(fmtDate(ev), maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp)
+                                    Text(
+                                        "${fmtTime(ev.startTimeMinutes)}–${fmtTime(ev.endTimeMinutes)}",
+                                        maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp
                                     )
                                 }
-                                IconButton(onClick = { targetId = ev.id }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+
+                                Row(
+                                    modifier = Modifier.width(ACTIONS_COL_WIDTH),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    IconButton(onClick = {
+                                        vm.setPublished(ev.id, !ev.published, onDone = {}, onError = { error = it })
+                                    }) {
+                                        Icon(
+                                            if (ev.published) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = "Toggle visibility"
+                                        )
+                                    }
+                                    IconButton(onClick = { targetId = ev.id }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Delete")
+                                    }
                                 }
                             }
                         }
                     }
+                    Spacer(Modifier.height(2.dp))
                 }
+
+                VerticalScrollbar(
+                    scroll = scroll,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 6.dp)
+                )
             }
 
             if (state.loading) {

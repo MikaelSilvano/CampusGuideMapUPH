@@ -27,6 +27,43 @@ import androidx.compose.ui.text.input.KeyboardType
 private val UPH_Navy  = Color(0xFF16224C)
 private val UPH_White = Color(0xFFFFFFFF)
 
+// di file yang sama (di bawah import), tambah:
+private fun mapLoginError(t: Throwable): String {
+    val raw = t.message?.lowercase().orEmpty()
+
+    return when {
+        t is com.google.firebase.auth.FirebaseAuthInvalidCredentialsException ->
+            "Incorrect email or password."
+
+        t is com.google.firebase.auth.FirebaseAuthInvalidUserException &&
+                t.errorCode == "ERROR_USER_NOT_FOUND" ->
+            "No account found for this email."
+
+        t is com.google.firebase.auth.FirebaseAuthInvalidUserException &&
+                t.errorCode == "ERROR_USER_DISABLED" ->
+            "This account has been disabled. Please contact the administrator."
+
+        raw.contains("invalid email") || raw.contains("error_invalid_email") ->
+            "Please enter a valid email address."
+
+        raw.contains("too many requests") || raw.contains("too-many-requests") ->
+            "Too many attempts. Please try again later."
+
+        t is com.google.firebase.FirebaseNetworkException ||
+                raw.contains("network error") ->
+            "Network error. Please check your internet connection and try again."
+
+        raw.contains("operation not allowed") ->
+            "Password sign-in is not enabled for this project."
+
+        raw.contains("has expired") || raw.contains("malformed") ->
+            "The supplied authentication credential is invalid or has expired."
+
+        else ->
+            "Authentication failed. Please try again."
+    }
+}
+
 // Admin login screen
 @Composable
 fun AdminLoginScreen(onSuccess: () -> Unit) {
@@ -138,7 +175,7 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
                     Text(error!!, color = MaterialTheme.colorScheme.error)
                 }
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(20.dp))
 
                 // Tombol login: validasi input, loading screen, dan simpan kredensial (optional)
                 Button(
@@ -153,7 +190,9 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
                             res.onSuccess {
                                 if (remember) creds.save(email.trim(), pass) else creds.clear()
                                 onSuccess()
-                            }.onFailure { error = it.message ?: "Login failed" }
+                            }.onFailure { th ->
+                                error = mapLoginError(th)
+                            }
                         }
                     },
                     enabled = !loading,

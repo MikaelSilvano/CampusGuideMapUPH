@@ -17,6 +17,9 @@ import com.example.campusguide.data.Event
 import androidx.compose.ui.text.style.TextAlign
 import com.example.campusguide.ui.common.UPHPrimaryButton
 import com.example.campusguide.ui.common.UPHSecondaryButton
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.example.campusguide.ui.common.VerticalScrollbar
 
 private val NO_COL_WIDTH = 28.dp
 
@@ -90,62 +93,58 @@ fun HistoryScreen(
             Divider()
             Spacer(Modifier.height(4.dp))
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                itemsIndexed(items) { idx, ev ->
-                    ElevatedCard {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("${idx + 1}", modifier = Modifier.width(NO_COL_WIDTH), fontSize = 12.sp)
-
-                            Text(
-                                ev.name,
-                                modifier = Modifier.weight(1.6f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 12.sp
-                            )
-
-                            Text(
-                                ev.heldBy,
-                                modifier = Modifier.weight(1.2f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 12.sp
-                            )
-                            Spacer(Modifier.height(4.dp))
-
-                            Column(
-                                modifier = Modifier.weight(2.2f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
+            val scroll = rememberScrollState()
+            Box(Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scroll),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items.forEachIndexed { idx, ev ->
+                        ElevatedCard {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Text("${idx + 1}", modifier = Modifier.width(NO_COL_WIDTH), fontSize = 12.sp)
+
                                 Text(
-                                    fmtDate(ev),
+                                    ev.name,
+                                    modifier = Modifier.weight(1.6f),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     fontSize = 12.sp
                                 )
                                 Text(
-                                    "${fmtTime(ev.startTimeMinutes)}–${fmtTime(ev.endTimeMinutes)}",
+                                    ev.heldBy,
+                                    modifier = Modifier.weight(1.2f),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     fontSize = 12.sp
                                 )
+
+                                Column(
+                                    modifier = Modifier.weight(2.2f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(fmtDate(ev), maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp)
+                                    Text("${fmtTime(ev.startTimeMinutes)}–${fmtTime(ev.endTimeMinutes)}",
+                                        maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp)
+                                }
                             }
                         }
                     }
+                    Spacer(Modifier.height(2.dp))
                 }
-            }
 
-            if (loading) {
-                Spacer(Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = UPH_Navy,
-                    trackColor = UPH_Navy.copy(alpha = 0.18f)
+                VerticalScrollbar(
+                    scroll = scroll,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 6.dp)
                 )
             }
         }
