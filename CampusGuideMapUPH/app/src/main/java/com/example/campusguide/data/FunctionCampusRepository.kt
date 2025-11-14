@@ -78,8 +78,9 @@ class FunctionsCampusRepository(
             }
             .map { e ->
                 SearchResult.EventResult(
-                    eventId = e.id,
-                    display = "${e.name} • ${e.start.toLocalDate()} • ${e.buildingId}${e.room}"
+                    eventId    = e.id,
+                    buildingId = e.buildingId,
+                    display    = "${e.name} • ${e.start.toLocalDate()} • Building ${e.buildingId} • ${e.room}"
                 )
             }
 

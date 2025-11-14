@@ -24,9 +24,17 @@ data class CampusEvent(
 
 // Hasil pencarian gabungan
 sealed class SearchResult(val title: String, val subtitle: String) {
-    class FacultyResult(val faculty: String, val buildingId: String): SearchResult(faculty, "Faculty located in Building $buildingId")
-    class RoomResult(val buildingId: String, val floor: Int, val room: String): SearchResult(room, "Room at Building $buildingId • Floor $floor")
-    class EventResult(val eventId: String, val display: String): SearchResult("Event", display)
+    class FacultyResult(val faculty: String, val buildingId: String)
+        : SearchResult(faculty, "Faculty located in Building $buildingId")
+
+    class RoomResult(val buildingId: String, val floor: Int, val room: String)
+        : SearchResult(room, "Room at Building $buildingId • Floor $floor")
+
+    class EventResult(
+        val eventId: String,
+        val buildingId: String,
+        val display: String
+    ) : SearchResult("Event", display)
 }
 
 // Filter daftar event
@@ -84,11 +92,11 @@ object InMemoryCampusRepository: CampusRepository {
             FrequentlyVisitedPlace("B", 1, "Pelita Hall",                  "pelita_hall"),
             FrequentlyVisitedPlace("B", 1, "Pelita Shop",                  "pelita_shop"),
             FrequentlyVisitedPlace("B", 1, "Koperasi",                     "koperasi"),
-            FrequentlyVisitedPlace("B", 1, "B114 – AIDA 3D Lab",           "b114_aida_3d_lab"),
-            FrequentlyVisitedPlace("B", 1, "B115 – Clay Creation Lab",     "b115_clay_lab"),
-            FrequentlyVisitedPlace("B", 1, "B116 – Lighting Studio",       "b116_lighting_studio"),
-            FrequentlyVisitedPlace("B", 1, "B121 – Animation Lab",         "b121_animation_lab"),
-            FrequentlyVisitedPlace("B", 1, "B127 – Computer Design Lab",   "b127_computer_design_lab"),
+            FrequentlyVisitedPlace("B", 1, "B114 - AIDA 3D Lab",           "b114_aida_3d_lab"),
+            FrequentlyVisitedPlace("B", 1, "B115 - Clay Creation Lab",     "b115_clay_lab"),
+            FrequentlyVisitedPlace("B", 1, "B116 - Lighting Studio",       "b116_lighting_studio"),
+            FrequentlyVisitedPlace("B", 1, "B121 - Animation Lab",         "b121_animation_lab"),
+            FrequentlyVisitedPlace("B", 1, "B127 - Computer Design Lab",   "b127_computer_design_lab"),
             FrequentlyVisitedPlace("B", 1, "Health Center",                "health_center"),
             FrequentlyVisitedPlace("B", 1, "Soil Mechanic Lab",            "soil_mechanic_lab"),
 
@@ -164,7 +172,11 @@ object InMemoryCampusRepository: CampusRepository {
             FrequentlyVisitedPlace("F", 15,"Faculty of Social and Political Science Office", "fisip_office"),
 
             FrequentlyVisitedPlace("F", 16,"General Affairs Office",       "general_affairs_office"),
-            FrequentlyVisitedPlace("F", 16,"Human Resources Office",       "hr_office")
+            FrequentlyVisitedPlace("F", 16,"Human Resources Office",       "hr_office"),
+        ),
+
+        "H" to listOf(
+            FrequentlyVisitedPlace("HOPE", 4,"HOPE4 Auditorium",       "hope_auditorium")
         )
     )
 
@@ -230,7 +242,11 @@ object InMemoryCampusRepository: CampusRepository {
             SearchResult.RoomResult(r.buildingId, r.floor, r.code)
         }
         val ev = events.filter { it.name.contains(q, true) }.map { e ->
-            SearchResult.EventResult(e.id, "${e.name} • Building ${e.buildingId} • ${e.room}")
+            SearchResult.EventResult(
+                eventId    = e.id,
+                buildingId = e.buildingId,
+                display    = "${e.name} • ${buildingDisplayName(e.buildingId)} • ${e.room}"
+            )
         }
         return fac + room + ev
     }
@@ -317,4 +333,11 @@ object InMemoryCampusRepository: CampusRepository {
     override suspend fun deleteEvent(id: String) {
         events.removeAll { it.id == id }
     }
+}
+
+fun buildingDisplayName(id: String): String {
+    return InMemoryCampusRepository.buildings
+        .find { it.id == id }
+        ?.name
+        ?: "Building $id"
 }

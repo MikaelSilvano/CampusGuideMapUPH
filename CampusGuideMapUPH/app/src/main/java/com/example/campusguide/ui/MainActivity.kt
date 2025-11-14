@@ -98,6 +98,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.example.campusguide.ui.common.HorizontalScrollbar
 import coil.compose.AsyncImagePainter
 import android.util.Log
+import androidx.compose.material.icons.outlined.VideoLibrary
 import com.example.campusguide.data.FrequentlyVisitedPlace
 
 
@@ -215,18 +216,55 @@ private fun entrancesFor(buildingId: String): List<EntranceUI> = when (buildingI
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 // Setup drawer, top bar, bottom bar, dan NavHost
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampusGuideApp() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val route = navBackStackEntry?.destination?.route
+    val args  = navBackStackEntry?.arguments
+
+    val backgroundRes = when (route) {
+        "building/{id}" -> {
+            when (args?.getString("id")) {
+                "B" -> R.drawable.bb
+                "C" -> R.drawable.bc
+                "D" -> R.drawable.bd
+                "F" -> R.drawable.bf
+                "H" -> R.drawable.bh
+                else -> R.drawable.uph_building_background
+            }
+        }
+        "floor/{b}/{f}" -> {
+            when (args?.getString("b")) {
+                "B" -> R.drawable.bb
+                "C" -> R.drawable.bc
+                "D" -> R.drawable.bd
+                "F" -> R.drawable.bf
+                "H" -> R.drawable.bh
+                else -> R.drawable.uph_building_background
+            }
+        }
+        "event/{buildingId}/{eventId}" -> {
+            when (args?.getString("buildingId")) {
+                "B" -> R.drawable.bb
+                "C" -> R.drawable.bc
+                "D" -> R.drawable.bd
+                "F" -> R.drawable.bf
+                "H" -> R.drawable.bh
+                else -> R.drawable.uph_building_background
+            }
+        }
+        else -> R.drawable.uph_building_background
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // Konten drawer dan navigasi ke admin login
             AppDrawer(onAdminLogin = {
                 scope.launch { drawerState.close() }
                 navController.navigate(ROUTE_ADMIN_LOGIN)
@@ -246,20 +284,20 @@ fun CampusGuideApp() {
             },
             bottomBar = { BottomBar(navController) }
         ) { padding ->
-            // Latar belakang bergambar + overlay
             AppBackground(
+                imageRes = backgroundRes,
                 imageAlignment = BiasAlignment(0.4f, 0.7f),
-                overlayAlpha = 0.85f
+                overlayAlpha = 0.85f,
             ) {
-                // NEW wrapper so we can overlay the button
-                Box(Modifier.fillMaxSize() .padding(padding) ) {
-
-                    // your existing NavHost (unchanged)
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
                     NavHost(
                         navController = navController,
                         startDestination = "home",
-                        modifier = Modifier
-                            .matchParentSize()      // was fillMaxSize(); matchParentSize works better here
+                        modifier = Modifier.matchParentSize()
                     ) {
                         composable("home")   { HomeScreen(navController) }
                         composable("events") { EventsScreen(navController) }
@@ -267,14 +305,19 @@ fun CampusGuideApp() {
 
                         composable(ROUTE_ADMIN_LOGIN) {
                             AdminLoginScreen(onSuccess = {
-                                navController.popBackStack(route = ROUTE_ADMIN_LOGIN, inclusive = true)
-                                navController.navigate(ROUTE_ADMIN_DASH) { launchSingleTop = true }
+                                navController.popBackStack(
+                                    route = ROUTE_ADMIN_LOGIN,
+                                    inclusive = true
+                                )
+                                navController.navigate(ROUTE_ADMIN_DASH) {
+                                    launchSingleTop = true
+                                }
                             })
                         }
+
                         adminGraph(
                             nav = navController,
-                            onGoToMap = { navController.goToHomeClearingAdmin()
-                            }
+                            onGoToMap = { navController.goToHomeClearingAdmin() }
                         )
 
                         composable("building/{id}") {
@@ -286,19 +329,20 @@ fun CampusGuideApp() {
                             val f = it.arguments?.getString("f")?.toIntOrNull() ?: 1
                             FloorPlanScreen(navController, b, f)
                         }
-                        composable("event/{eventId}") {
-                            val eventId = it.arguments?.getString("eventId") ?: ""
+                        composable("event/{buildingId}/{eventId}") { backStackEntry ->
+                            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
                             EventDetailScreen(navController, eventId)
                         }
+                        composable("sport/{id}") { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id") ?: ""
+                            SportFacilityScreen(navController, id)
+                        }
                     }
-
                 }
             }
-
-        }
         }
     }
-
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 // App bar bagian atas
@@ -456,6 +500,28 @@ data class Spot(
     val color: Color
 )
 
+data class SportSpot(
+    val id: String,
+    val label: String,
+    val x: Float,
+    val y: Float
+)
+
+data class SportFacility(
+    val id: String,
+    val title: String,
+    val imageKey: String
+)
+
+private fun sportFacilityFor(id: String): SportFacility? = when (id) {
+    "basketball" -> SportFacility("basketball", "Basketball Court", "basketball")
+    "gym"        -> SportFacility("gym",        "Gym",                         "gym")
+    "pool"       -> SportFacility("pool",       "Olympic Size Swimming Pool",  "pool")
+    "soccer"     -> SportFacility("soccer",     "Soccer Field",                "soccer")
+    "multisport" -> SportFacility("multisport", "Multisport Venue",            "multisport")
+    else -> null
+}
+
 // Home page (map UPH)
 @Composable
 fun HomeScreen(
@@ -480,11 +546,11 @@ fun HomeScreen(
 
     // ---- Map pins (default colors; F is NOT green anymore) ----
     val hotspots = listOf(
-        Spot("F", 0.23f,  0.36f, UPH_Navy),
         Spot("B", 0.665f, 0.73f, UPH_Orange),
         Spot("H", 0.55f,  0.77f, Color(0xFFFFC27A)),
         Spot("C", 0.35f,  0.78f, Color(0xFFFFD54F)),
         Spot("D", 0.46f,  0.46f, Color(0xFF1E88E5)),
+        Spot("F", 0.23f,  0.36f, Color(0xFF23943c)),
         Spot("G", 0.35f,  0.06f, Color(0xFFEF5350))
     )
 
@@ -532,10 +598,8 @@ fun HomeScreen(
                                 if (!isPathMode) {
                                     navController.navigate("building/${s.id}")
                                 } else {
-                                    // selection flow
                                     when {
                                         startBuildingId == null || (startBuildingId != null && endBuildingId != null) -> {
-                                            // Start or restart
                                             startBuildingId = s.id
                                             endBuildingId = null
                                             startEntrance = null
@@ -557,7 +621,6 @@ fun HomeScreen(
                                             }
                                         }
                                         endBuildingId == null -> {
-                                            // Destination
                                             endBuildingId = s.id
                                             val es = entrancesFor(s.id)
                                             if (es.size <= 1) {
@@ -575,6 +638,32 @@ fun HomeScreen(
                                         }
                                     }
                                 }
+                            }
+                    )
+                }
+
+                // Hotspot untuk sport facilities
+                val sportSpots = listOf(
+                    SportSpot("basketball", "1", 0.33f, 0.61f),
+                    SportSpot("gym",        "2", 0.32f, 0.53f),
+                    SportSpot("pool",       "3", 0.30f, 0.47f),
+                    SportSpot("soccer",     "4", 0.62f, 0.29f),
+                    SportSpot("multisport", "5", 0.75f, 0.11f)
+                )
+
+                val sportDotSize = 30.dp
+
+                sportSpots.forEach { s ->
+                    val xOff = (maxWidth * s.x) - (sportDotSize / 2)
+                    val yOff = (maxHeight * s.y) - (sportDotSize / 2)
+
+                    SportDot(
+                        label = s.label,
+                        size = sportDotSize,
+                        modifier = Modifier
+                            .offset(x = xOff, y = yOff)
+                            .clickable {
+                                navController.navigate("sport/${s.id}")
                             }
                     )
                 }
@@ -766,6 +855,34 @@ fun BuildingDot(
     }
 }
 
+@Composable
+fun SportDot(
+    label: String,
+    size: Dp,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = UPH_Navy,
+        shape = CircleShape,
+        shadowElevation = 4.dp,
+        modifier = modifier.size(size)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .border(2.dp, UPH_White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                label,
+                color = UPH_White,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
 // Menu bar (drawer)
 @Composable
 fun AppDrawer(onAdminLogin: () -> Unit) {
@@ -810,6 +927,13 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            DrawerItem(
+                label = "UPH Campus Tour Video",
+                leading = { Icon(Icons.Outlined.VideoLibrary, null, tint = textPrimary) },
+                trailing = { Icon(Icons.Outlined.KeyboardArrowRight, null, tint = chevron) },
+                container = cardDark
+            ) { open("https://www.youtube.com/watch?v=m8kHYpeL_q0") }
+
             DrawerItem(
                 label = "UPH Lippo Village Map",
                 leading = { Icon(Icons.Outlined.Map, null, tint = textPrimary) },
@@ -899,8 +1023,9 @@ fun SearchScreen(navController: NavHostController) {
             value = q,
             onValueChange = { newQ ->
                 q = newQ
+                val normalized = normalizeSearchQuery(newQ)
                 scope.launch {
-                    results = if (newQ.isBlank()) emptyList() else repo.search(newQ)
+                    results = if (normalized.isBlank()) emptyList() else repo.search(normalized)
                 }
             },
             modifier = Modifier.fillMaxWidth(),
@@ -937,6 +1062,24 @@ fun SearchScreen(navController: NavHostController) {
                         }
                     } else {
                         results.forEach { r ->
+                            val title = when (r) {
+                                is SearchResult.RoomResult ->
+                                    displayRoomCode(r.buildingId, r.title)
+                                is SearchResult.EventResult ->
+                                    r.title
+                                else ->
+                                    r.title
+                            }
+
+                            val subtitle = when (r) {
+                                is SearchResult.RoomResult ->
+                                    "${buildingDisplayName(r.buildingId)} • Floor ${r.floor}"
+                                is SearchResult.EventResult ->
+                                    prettyEventSubtitle(r.subtitle)
+                                else ->
+                                    r.subtitle
+                            }
+
                             Column(
                                 Modifier
                                     .fillMaxWidth()
@@ -944,16 +1087,12 @@ fun SearchScreen(navController: NavHostController) {
                                         when (r) {
                                             is SearchResult.FacultyResult -> navController.navigate("building/${r.buildingId}")
                                             is SearchResult.RoomResult    -> navController.navigate("floor/${r.buildingId}/${r.floor}")
-                                            is SearchResult.EventResult   -> navController.navigate("event/${r.eventId}")
+                                            is SearchResult.EventResult   -> navController.navigate("event/${r.buildingId}/${r.eventId}")
                                         }
                                     }
                                     .padding(12.dp)
                             ) {
-                                Text(r.title, fontWeight = FontWeight.Bold, color = UPH_Navy)
-                                val subtitle = when (r) {
-                                    is SearchResult.EventResult -> prettyEventSubtitle(r.subtitle)
-                                    else -> r.subtitle
-                                }
+                                Text(title, fontWeight = FontWeight.Bold, color = UPH_Navy)
                                 Text(subtitle)
                             }
                             Divider()
@@ -1025,7 +1164,7 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
 
         Text(e.name, style = MaterialTheme.typography.headlineSmall)
         Text("Held by: ${e.heldBy}")
-        Text("Building ${e.buildingId} • ${roomLabel(e.room)}")
+        Text("${buildingDisplayName(e.buildingId)} • Room ${displayRoomCode(e.buildingId, e.room)}")
         Text("Starts: ${e.start.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))}")
         Text("Ends: ${e.end.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))}")
         Spacer(Modifier.height(16.dp))
@@ -1034,7 +1173,10 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
                 val intent = Intent(Intent.ACTION_INSERT).apply {
                     data = CalendarContract.Events.CONTENT_URI
                     putExtra(CalendarContract.Events.TITLE, e.name)
-                    putExtra(CalendarContract.Events.EVENT_LOCATION, "Building ${e.buildingId} • ${e.room}")
+                    putExtra(
+                        CalendarContract.Events.EVENT_LOCATION,
+                        "${buildingDisplayName(e.buildingId)} • Room ${displayRoomCode(e.buildingId, e.room)}"
+                    )
                     putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, e.start.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                     putExtra(CalendarContract.EXTRA_EVENT_END_TIME, e.end.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                 }
@@ -1085,6 +1227,129 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
 
             Spacer(Modifier.height(12.dp))
         }
+    }
+}
+
+@Composable
+fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
+    val ctx = LocalContext.current
+    val facility = sportFacilityFor(facilityId)
+
+    if (facility == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Facility not found")
+        }
+        return
+    }
+
+    var imageUrl by remember(facilityId) { mutableStateOf<String?>(null) }
+    var isLoading by remember(facilityId) { mutableStateOf(true) }
+
+    LaunchedEffect(facilityId) {
+        isLoading = true
+        imageUrl = null
+
+        val storage = FirebaseStorage.getInstance().reference
+        val candidates = listOf(
+            "sports/${facility.imageKey}.jpg",
+            "sports/${facility.imageKey}.jpeg",
+            "sports/${facility.imageKey}.png"
+        )
+
+        for (path in candidates) {
+            try {
+                val url = storage.child(path).downloadUrl.await()
+                imageUrl = url.toString()
+                break
+            } catch (_: Exception) {
+            }
+        }
+        isLoading = false
+    }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        BackToMapButton(navController, modifier = Modifier.padding(bottom = 8.dp))
+
+        Text(
+            facility.title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(12.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 180.dp, max = 360.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color(0xFFE9EDF6)),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                isLoading && imageUrl == null -> {
+                    Box(
+                        modifier = Modifier.matchParentSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier   = Modifier.size(40.dp),
+                            color      = UPH_Navy,
+                            trackColor = UPH_Navy.copy(alpha = 0.15f)
+                        )
+                    }
+                }
+                imageUrl != null -> {
+                    SubcomposeAsyncImage(
+                        model = imageUrl,
+                        contentDescription = facility.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize()
+                    ) {
+                        when (painter.state) {
+                            is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
+                            is AsyncImagePainter.State.Loading -> {
+                                Box(
+                                    modifier = Modifier.matchParentSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier   = Modifier.size(40.dp),
+                                        color      = UPH_Navy,
+                                        trackColor = UPH_Navy.copy(alpha = 0.15f)
+                                    )
+                                }
+                            }
+                            else -> {  }
+                        }
+                    }
+                }
+                else -> {
+                    Text(
+                        "No image available",
+                        color = UPH_Navy
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Text(
+            "Description",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
+                    "Suspendisse potenti. Integer volutpat, urna sed molestie " +
+                    "molestie, nunc libero feugiat ante, id interdum lorem " +
+                    "nibh in mauris."
+        )
     }
 }
 
@@ -1186,7 +1451,9 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
 
             Column {
                 events.forEach { e ->
-                    EventCard(e) { navController.navigate("event/${e.id}") }
+                    EventCard(e) {
+                        navController.navigate("event/${e.buildingId}/${e.id}")
+                    }
                     Spacer(Modifier.height(8.dp))
                 }
             }
@@ -1311,7 +1578,7 @@ fun EventsScreen(navController: NavHostController) {
 
 
     var building by remember { mutableStateOf("All") }
-    val buildings = listOf("All", "B", "C", "D", "F")
+    val buildingOptions = listOf("All") + InMemoryCampusRepository.buildings.map { it.id }
 
     var status by remember { mutableStateOf("All") }
     val statuses = listOf("All", "Ongoing", "Upcoming", "Coming Soon")
@@ -1348,18 +1615,29 @@ fun EventsScreen(navController: NavHostController) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             var buildingExpanded by remember { mutableStateOf(false) }
+
             ExposedDropdownMenuBox(
                 expanded = buildingExpanded,
                 onExpandedChange = { buildingExpanded = !buildingExpanded },
                 modifier = Modifier.weight(1f)
             ) {
+                val buildingLabel = if (building == "All") {
+                    "All"
+                } else {
+                    buildingDisplayName(building)
+                }
+
                 OutlinedTextField(
-                    value = building,
+                    value = buildingLabel,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Building") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = buildingExpanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = UPH_Navy,
                         focusedLabelColor = UPH_Navy,
@@ -1369,17 +1647,19 @@ fun EventsScreen(navController: NavHostController) {
                         unfocusedContainerColor = Color.Transparent
                     )
                 )
+
                 ExposedDropdownMenu(
                     expanded = buildingExpanded,
                     onDismissRequest = { buildingExpanded = false },
                     containerColor = UPH_Navy,
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    buildings.forEach { b ->
+                    buildingOptions.forEach { id ->
+                        val label = if (id == "All") "All" else buildingDisplayName(id)
                         DropdownMenuItem(
-                            text = { Text(b, color = UPH_White) },
+                            text = { Text(label, color = UPH_White) },
                             onClick = {
-                                building = b
+                                building = id
                                 buildingExpanded = false
                             },
                             colors = MenuDefaults.itemColors(textColor = UPH_White)
@@ -1389,6 +1669,7 @@ fun EventsScreen(navController: NavHostController) {
             }
 
             var statusExpanded by remember { mutableStateOf(false) }
+
             ExposedDropdownMenuBox(
                 expanded = statusExpanded,
                 onExpandedChange = { statusExpanded = !statusExpanded },
@@ -1399,8 +1680,12 @@ fun EventsScreen(navController: NavHostController) {
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Status") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = UPH_Navy,
                         focusedLabelColor = UPH_Navy,
@@ -1410,6 +1695,7 @@ fun EventsScreen(navController: NavHostController) {
                         unfocusedContainerColor = Color.Transparent
                     )
                 )
+
                 ExposedDropdownMenu(
                     expanded = statusExpanded,
                     onDismissRequest = { statusExpanded = false },
@@ -1514,7 +1800,9 @@ fun EventsScreen(navController: NavHostController) {
                     .verticalScroll(scroll)
             ) {
                 filtered.forEach { e ->
-                    EventCard(e) { navController.navigate("event/${e.id}") }
+                    EventCard(e) {
+                        navController.navigate("event/${e.buildingId}/${e.id}")
+                    }
                     Spacer(Modifier.height(8.dp))
                 }
                 Spacer(Modifier.height(2.dp))
@@ -1885,7 +2173,7 @@ fun EventCard(e: CampusEvent, onClick: () -> Unit = {}) {
             Text("Held By: ${e.heldBy}")
             Text("Date: ${e.start.toLocalDate()}")
             Text("Time: ${e.start.toLocalTime()} – ${e.end.toLocalTime()}")
-            Text("Room: ${cleanRoom(e.room)}")
+            Text("Room: ${displayRoomCode(e.buildingId, e.room)}")
         }
     }
 }
@@ -1980,4 +2268,30 @@ private fun prettyEventSubtitle(s: String): String {
     t = t.replace(Regex("""\b([A-Z])\s*Room\b"""), "$1 • Room")
     t = t.replace(Regex("""\s{2,}"""), " ")
     return t.trim()
+}
+
+private fun normalizeSearchQuery(q: String): String {
+    val t = q.trim()
+    if (t.length >= 2 && t.startsWith("hp", ignoreCase = true)) {
+        val rest = t.substring(2)
+        return if (rest.isBlank()) "H" else "H$rest"
+    }
+    return t
+}
+
+
+fun buildingDisplayName(id: String?): String {
+    return when (id) {
+        "H" -> "Building HOPE"
+        null -> ""
+        else -> "Building $id"
+    }
+}
+
+fun displayRoomCode(buildingId: String?, room: String): String {
+    val clean = room.trim()
+
+    return if (buildingId == "H" && clean.startsWith("H")) {
+        "HP" + clean.removePrefix("H")
+    } else clean
 }

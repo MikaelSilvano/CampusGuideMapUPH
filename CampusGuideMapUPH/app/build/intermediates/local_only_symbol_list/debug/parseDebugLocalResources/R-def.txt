@@ -12,6 +12,11 @@ color uph_green
 color uph_navy
 color uph_red
 color uph_white
+drawable bb
+drawable bc
+drawable bd
+drawable bf
+drawable bh
 drawable ic_launcher_background
 drawable ic_launcher_foreground
 drawable logo_kampus

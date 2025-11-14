@@ -1,5 +1,6 @@
 package com.example.campusguide.ui
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -19,11 +20,12 @@ fun AppBackground(
     modifier: Modifier = Modifier,
     imageAlignment: Alignment = Alignment.Center,
     overlayAlpha: Float = 0.82f,
+    @DrawableRes imageRes: Int = R.drawable.uph_building_background,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(R.drawable.uph_building_background),
+            painter = painterResource(imageRes),
             contentDescription = null,
             modifier = Modifier.matchParentSize(),
             contentScale = ContentScale.Crop,

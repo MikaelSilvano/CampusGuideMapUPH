@@ -1,114 +1,134 @@
 [
     {
-        "merged": "com.example.campusguide.app-debug-5:/raw_campus_graph.json.flat",
-        "source": "com.example.campusguide.app-main-7:/raw/campus_graph.json"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_round.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_uph_building_background.jpg.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/uph_building_background.jpg"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/ic_launcher_foreground.xml"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher_foreground.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher_foreground.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/raw_events_seed_600.json.flat",
-        "source": "com.example.campusguide.app-main-7:/raw/events_seed_600.json"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_logo.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/uph_logo.png"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_path_mode_button_invert.jpg.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/path_mode_button_invert.jpg"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_path_mode_button_invert.jpg.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/path_mode_button_invert.jpg"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_ic_launcher_background.xml.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/ic_launcher_background.xml"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_path_mode_button.jpg.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/path_mode_button.jpg"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_path_mode_button.jpg.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/path_mode_button.jpg"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_uph_main_logo.png.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/uph_main_logo.png"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_main_logo.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/uph_main_logo.png"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher_foreground.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher_foreground.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher_foreground.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher_round.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_logo_kampus.png.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/logo_kampus.png"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher_foreground.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher_foreground.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_building_background.jpg.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/uph_building_background.jpg"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_uph_map.png.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/uph_map.png"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-mdpi_ic_launcher_round.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-mdpi/ic_launcher_round.webp"
+        "merged": "com.example.campusguide.app-debug-5:/drawable_bb.png.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/bb.png"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-hdpi_ic_launcher_round.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-hdpi/ic_launcher_round.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "com.example.campusguide.app-debug-5:/drawable_bh.jpg.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/bh.jpg"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher_round.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher_round.webp"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher_round.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_logo_kampus.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/logo_kampus.png"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/raw_events_seed_600.json.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/raw/events_seed_600.json"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_uph_map.png.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/uph_map.png"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xxxhdpi/ic_launcher.webp"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/drawable_uph_logo.png.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/drawable/uph_logo.png"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.example.campusguide.app-main-7:/drawable/ic_launcher_background.xml"
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/raw_campus_graph.json.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/raw/campus_graph.json"
     },
     {
-        "merged": "com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
-        "source": "com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher_foreground.webp"
+        "merged": "com.example.campusguide.app-debug-5:/drawable_bd.jpg.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/bd.jpg"
+    },
+    {
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_bc.jpg.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/bc.jpg"
+    },
+    {
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.campusguide.app-debug-5:/drawable_bf.jpg.flat",
+        "source": "com.example.campusguide.app-main-7:/drawable/bf.jpg"
+    },
+    {
+        "merged": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-debug-5:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "/Users/vano/Downloads/Day1_JetpackCompose_Timer-master/daemon/9.0-milestone-1/com.example.campusguide.app-main-7:/mipmap-xxhdpi/ic_launcher_round.webp"
     }
 ]

@@ -734,6 +734,19 @@ private fun timeOptionsBetween(
 
 private fun fmtMinutes(total: Int): String = "%02d:%02d".format(total / 60, total % 60)
 
+private fun formatBuildingLabel(id: String): String = when (id) {
+    "H" -> "Building HOPE"
+    else -> "Building $id"
+}
+
+private fun formatRoomLabel(buildingId: String?, roomCode: String): String {
+    return if (buildingId == "H" && roomCode.startsWith("H")) {
+        "HP" + roomCode.removePrefix("H")
+    } else {
+        roomCode
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LocationPickers(
@@ -746,26 +759,29 @@ private fun LocationPickers(
     var fExpanded by remember { mutableStateOf(false) }
     var rExpanded by remember { mutableStateOf(false) }
 
-    // Pilih Building
     ExposedDropdownMenuBox(expanded = bExpanded, onExpandedChange = { bExpanded = it }) {
         OutlinedTextField(
-            value = building?.let { "Building $it" } ?: "",
+            value = building?.let { formatBuildingLabel(it) } ?: "",
             onValueChange = {},
             readOnly = true,
             label = { Text("Event Location: Building") },
             placeholder = { Text("Select building") },
-            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
             colors = uphTextFieldColors()
         )
         ExposedDropdownMenu(expanded = bExpanded, onDismissRequest = { bExpanded = false }) {
             buildings.forEach { b ->
-                DropdownMenuItem(text = { Text("Building $b") }, onClick = { onBuilding(b); bExpanded = false })
+                DropdownMenuItem(
+                    text = { Text(formatBuildingLabel(b)) },
+                    onClick = { onBuilding(b); bExpanded = false }
+                )
             }
         }
     }
     Spacer(Modifier.height(8.dp))
 
-    // Pilih Floor
     val floorEnabled = building != null
     ExposedDropdownMenuBox(expanded = fExpanded && floorEnabled, onExpandedChange = { if (floorEnabled) fExpanded = it }) {
         OutlinedTextField(
@@ -775,36 +791,45 @@ private fun LocationPickers(
             enabled = floorEnabled,
             label = { Text("Floor") },
             placeholder = { Text("Select floor") },
-            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
             colors = uphTextFieldColors()
         )
         if (floorEnabled) {
             ExposedDropdownMenu(expanded = fExpanded, onDismissRequest = { fExpanded = false }) {
                 floors.forEach { fl ->
-                    DropdownMenuItem(text = { Text("Floor $fl") }, onClick = { onFloor(fl); fExpanded = false })
+                    DropdownMenuItem(
+                        text = { Text("Floor $fl") },
+                        onClick = { onFloor(fl); fExpanded = false }
+                    )
                 }
             }
         }
     }
     Spacer(Modifier.height(8.dp))
 
-    // Pilih Room
     val roomEnabled = building != null && floor != null
     ExposedDropdownMenuBox(expanded = rExpanded && roomEnabled, onExpandedChange = { if (roomEnabled) rExpanded = it }) {
         OutlinedTextField(
-            value = room ?: "",
+            value = room?.let { formatRoomLabel(building, it) } ?: "",
             onValueChange = {},
             readOnly = true,
             enabled = roomEnabled,
             label = { Text("Room") },
             placeholder = { Text("Select room") },
-            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
             colors = uphTextFieldColors()
         )
         if (roomEnabled) {
             ExposedDropdownMenu(expanded = rExpanded, onDismissRequest = { rExpanded = false }) {
                 rooms.forEach { r ->
-                    DropdownMenuItem(text = { Text(r) }, onClick = { onRoom(r); rExpanded = false })
+                    DropdownMenuItem(
+                        text = { Text(formatRoomLabel(building, r)) },
+                        onClick = { onRoom(r); rExpanded = false }
+                    )
                 }
             }
         }
