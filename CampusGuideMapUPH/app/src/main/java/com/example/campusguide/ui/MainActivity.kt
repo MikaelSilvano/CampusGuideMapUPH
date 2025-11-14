@@ -97,6 +97,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.campusguide.ui.common.HorizontalScrollbar
 import coil.compose.AsyncImagePainter
+import android.util.Log
+import com.example.campusguide.data.FrequentlyVisitedPlace
 
 
 private val UPH_Navy = Color(0xFF16224C)
@@ -233,13 +235,16 @@ fun CampusGuideApp() {
     ) {
         Scaffold(
             topBar = {
-                // App bar atas
+                val current = currentRoute(navController)
+                val isAdminScreen = current?.startsWith("admin/") == true
+
                 AppTopBar(
+                    showSearch = !isAdminScreen,
                     onSearch = { navController.navigate("search") },
                     onMenu = { scope.launch { drawerState.open() } }
                 )
             },
-            bottomBar = { BottomBar(navController) } // Bottom navigation
+            bottomBar = { BottomBar(navController) }
         ) { padding ->
             // Latar belakang bergambar + overlay
             AppBackground(
@@ -299,6 +304,7 @@ fun CampusGuideApp() {
 // App bar bagian atas
 @Composable
 private fun AppTopBar(
+    showSearch: Boolean,
     onSearch: () -> Unit,
     onMenu: () -> Unit
 ) {
@@ -325,8 +331,10 @@ private fun AppTopBar(
             }
         },
         actions = {
-            IconButton(onClick = onSearch) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
+            if (showSearch) {
+                IconButton(onClick = onSearch) {
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                }
             }
         }
     )
@@ -1110,36 +1118,45 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
             BackToMapButton(navController, Modifier.padding(bottom = 8.dp))
 
             Text(
-                "Building ${building?.id ?: buildingId}",
+                building?.name ?: "Building $buildingId",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.height(8.dp))
-            Text("List of Faculties", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(6.dp))
+            // === Faculties section (hide if none) ===
+            val allFac = InMemoryCampusRepository.facultyInBuilding
+            val faculties = allFac.filterValues { it == buildingId }.keys.toList()
 
-            val facScroll = rememberScrollState()
-            Box(Modifier.fillMaxWidth()) {
-                Row(Modifier.horizontalScroll(facScroll)) {
-                    val all = InMemoryCampusRepository.facultyInBuilding
-                    val faculties = all.filterValues { it == buildingId }
-                        .keys.ifEmpty { listOf("Faculty of ...") }
+            if (faculties.isNotEmpty()) {
+                Text("List of Faculties", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(6.dp))
 
-                    faculties.forEach { f ->
-                        FacultyCard(
-                            title = f,
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
+                val facScroll = rememberScrollState()
+                Box(Modifier.fillMaxWidth()) {
+                    Row(Modifier.horizontalScroll(facScroll)) {
+                        faculties.forEach { f ->
+                            FacultyCard(
+                                title = f,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
                     }
+                    HorizontalScrollbar(
+                        scroll = facScroll,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(top = 4.dp)
+                    )
                 }
-                HorizontalScrollbar(
-                    scroll = facScroll,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(top = 4.dp)
-                )
+
+                Spacer(Modifier.height(12.dp))
+                Divider()
+                Spacer(Modifier.height(12.dp))
             }
 
-            Spacer(Modifier.height(8.dp))
+            FrequentlyVisitedSection(buildingId = buildingId, navController = navController)
+
+            Spacer(Modifier.height(12.dp))
             Divider()
             Spacer(Modifier.height(8.dp))
 
@@ -1190,7 +1207,7 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
 @Composable
 fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor: Int) {
     val resName = "b" + buildingId.lowercase() + "_f" + floor
-    val storagePath = "maps/$buildingId/$resName.png"
+    val storagePath = "maps/$buildingId/$resName.jpg"
     val ctx = LocalContext.current
 
     var url by remember { mutableStateOf<String?>(null) }
@@ -1233,12 +1250,17 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                                 )
                             }
                             else -> {
-                                CircularProgressIndicator(
-                                    modifier   = Modifier.size(40.dp),
-                                    color      = UPH_Navy,
-                                    trackColor = UPH_Navy.copy(alpha = 0.15f),
-                                    strokeWidth = 4.dp
-                                )
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier   = Modifier.size(40.dp),
+                                        color      = UPH_Navy,
+                                        trackColor = UPH_Navy.copy(alpha = 0.15f),
+                                        strokeWidth = 4.dp
+                                    )
+                                }
                             }
                         }
                     }
@@ -1255,11 +1277,17 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
 
                 tried -> Text("No floor plan image for Building $buildingId Floor $floor")
 
-                else -> CircularProgressIndicator(
-                    color = UPH_Navy,
-                    trackColor = UPH_Navy.copy(alpha = 0.15f),
-                    strokeWidth = 4.dp
-                )
+                else -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier   = Modifier.size(40.dp),
+                        color      = UPH_Navy,
+                        trackColor = UPH_Navy.copy(alpha = 0.15f),
+                        strokeWidth = 4.dp
+                    )
+                }
             }
         }
 
@@ -1506,10 +1534,43 @@ fun EventsScreen(navController: NavHostController) {
 @Composable
 private fun FacultyCard(
     title: String,
-    imageUrl: String? = null,
     modifier: Modifier = Modifier
 ) {
-    val placeholder = "https://via.placeholder.com/400x240?text=Faculty+Photo"
+    var imageUrl  by remember(title) { mutableStateOf<String?>(null) }
+    var isLoading by remember(title) { mutableStateOf(true) }
+
+    LaunchedEffect(title) {
+        isLoading = true
+        imageUrl = null
+
+        val base = InMemoryCampusRepository.facultyImageFiles[title]
+        Log.d("FacultyCard", "Title = '$title', base = '$base'")
+
+        if (base != null) {
+            val storage = FirebaseStorage.getInstance().reference
+            val candidates = listOf(
+                "faculties/$base.jpg",
+                "faculties/$base.jpeg",
+                "faculties/$base.png"
+            )
+
+            for (path in candidates) {
+                try {
+                    Log.d("FacultyCard", "Trying path: $path")
+                    val url = storage.child(path).downloadUrl.await()
+                    imageUrl = url.toString()
+                    Log.d("FacultyCard", "SUCCESS for $path -> $imageUrl")
+                    break
+                } catch (e: Exception) {
+                    Log.e("FacultyCard", "FAILED for $path: ${e.message}")
+                }
+            }
+        } else {
+            Log.w("FacultyCard", "No base name for title='$title'")
+        }
+
+        isLoading = false
+    }
 
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -1517,8 +1578,10 @@ private fun FacultyCard(
         tonalElevation = 1.dp,
         modifier = modifier.width(FACULTY_CARD_WIDTH)
     ) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-
+        Column(
+            Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1534,34 +1597,228 @@ private fun FacultyCard(
                 )
             }
 
-            SubcomposeAsyncImage(
-                model = imageUrl ?: placeholder,
-                contentDescription = "Faculty photo",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(FACULTY_IMAGE_HEIGHT)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFE9EDF6))
-            ) {
-                when (painter.state) {
-                    is coil.compose.AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
-                    is coil.compose.AsyncImagePainter.State.Loading -> {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(
-                                color = UPH_Navy,
-                                trackColor = UPH_Navy.copy(alpha = 0.15f),
-                                strokeWidth = 3.dp
-                            )
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(FACULTY_IMAGE_HEIGHT)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFE9EDF6)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = UPH_Navy,
+                            trackColor = UPH_Navy.copy(alpha = 0.15f),
+                            strokeWidth = 3.dp
+                        )
+                    }
+                }
+
+                imageUrl != null -> {
+                    SubcomposeAsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Faculty photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(FACULTY_IMAGE_HEIGHT)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFE9EDF6))
+                    ) {
+                        when (painter.state) {
+                            is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
+                            is AsyncImagePainter.State.Loading -> {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(
+                                        color = UPH_Navy,
+                                        trackColor = UPH_Navy.copy(alpha = 0.15f),
+                                        strokeWidth = 3.dp
+                                    )
+                                }
+                            }
+                            else -> {
+                                Box(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .background(Color(0xFFE9EDF6))
+                                )
+                            }
                         }
                     }
-                    else -> Box(Modifier.fillMaxSize().background(Color(0xFFE9EDF6)))
+                }
+
+                else -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(FACULTY_IMAGE_HEIGHT)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFE9EDF6))
+                    )
                 }
             }
         }
     }
 }
 
+@Composable
+private fun FeaturedPlaceCard(
+    place: FrequentlyVisitedPlace,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var imageUrl  by remember(place.imageKey) { mutableStateOf<String?>(null) }
+    var isLoading by remember(place.imageKey) { mutableStateOf(true) }
+
+    LaunchedEffect(place.imageKey) {
+        isLoading = true
+        imageUrl = null
+
+        val storage = FirebaseStorage.getInstance().reference
+        val candidates = listOf(
+            "featured/${place.imageKey}.jpg",
+            "featured/${place.imageKey}.jpeg",
+            "featured/${place.imageKey}.png"
+        )
+
+        for (path in candidates) {
+            try {
+                val url = storage.child(path).downloadUrl.await()
+                imageUrl = url.toString()
+                break
+            } catch (_: Exception) {
+            }
+        }
+        isLoading = false
+    }
+
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFF2F3F7),
+        tonalElevation = 1.dp,
+        modifier = modifier.width(FACULTY_CARD_WIDTH)
+    ) {
+        Column(
+            Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                place.name,
+                color = UPH_Navy,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(FACULTY_IMAGE_HEIGHT)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFE9EDF6)),
+                contentAlignment = Alignment.Center
+            ) {
+                when {
+                    isLoading && imageUrl == null -> {
+                        CircularProgressIndicator(
+                            modifier   = Modifier.size(32.dp),
+                            color      = UPH_Navy,
+                            trackColor = UPH_Navy.copy(alpha = 0.15f),
+                            strokeWidth = 3.dp
+                        )
+                    }
+
+                    imageUrl != null -> {
+                        SubcomposeAsyncImage(
+                            model = imageUrl,
+                            contentDescription = place.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.matchParentSize()
+                        ) {
+                            when (painter.state) {
+                                is AsyncImagePainter.State.Success -> {
+                                    SubcomposeAsyncImageContent()
+                                }
+                                is AsyncImagePainter.State.Loading -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier   = Modifier.size(32.dp),
+                                            color      = UPH_Navy,
+                                            trackColor = UPH_Navy.copy(alpha = 0.15f),
+                                            strokeWidth = 3.dp
+                                        )
+                                    }
+                                }
+                                else -> {
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = UPH_Navy.copy(alpha = 0.06f),
+                        shape = RoundedCornerShape(999.dp)
+                    )
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "Floor ${place.floor}",
+                    color = UPH_Navy,
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FrequentlyVisitedSection(
+    buildingId: String,
+    navController: NavHostController
+) {
+    val items = InMemoryCampusRepository
+        .frequentlyVisitedByBuilding[buildingId]
+        .orEmpty()
+
+    if (items.isEmpty()) return
+
+    Text("Frequently Visited", style = MaterialTheme.typography.titleMedium)
+    Spacer(Modifier.height(6.dp))
+
+    val scroll = rememberScrollState()
+    Box(Modifier.fillMaxWidth()) {
+        Row(Modifier.horizontalScroll(scroll)) {
+            items.forEach { place ->
+                FeaturedPlaceCard(
+                    place = place,
+                    onClick = {
+                        navController.navigate("floor/${place.buildingId}/${place.floor}")
+                    },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
+        }
+
+        HorizontalScrollbar(
+            scroll = scroll,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(top = 4.dp)
+        )
+    }
+}
 
 // Mengembalikan label status event dan warna badge
 @Composable

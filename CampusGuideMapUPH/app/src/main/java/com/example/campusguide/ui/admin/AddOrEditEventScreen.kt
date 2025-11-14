@@ -335,6 +335,10 @@ fun AddOrEditEventScreen(
         )
     }
 
+    val eventInPast by remember(date, startMin) {
+        mutableStateOf(isEventInPast(date, startMin))
+    }
+
     BackHandler {
         if (isDirty) askExit = true else onCancel()
     }
@@ -347,7 +351,8 @@ fun AddOrEditEventScreen(
             endMin!! > startMin!! &&
             building != null &&
             floor != null &&
-            room != null
+            room != null &&
+            !eventInPast
 
     Scaffold(
         bottomBar = {
@@ -408,6 +413,14 @@ fun AddOrEditEventScreen(
                     endMinutes = endMin, onEndChange = { endMin = it }
                 )
 
+                if (eventInPast) {
+                    Text(
+                        "Event time cannot be in the past!",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
                 LocationPickers(
                     building = building, onBuilding = { building = it },
                     floor = floor, onFloor = { floor = it },
@@ -455,6 +468,12 @@ fun AddOrEditEventScreen(
             title = { Text("Are you sure?") },
             confirmButton = {
                 UPHPrimaryButton(onClick = {
+                    if (isEventInPast(date, startMin)) {
+                        error = "Event time cannot be in the past!"
+                        askConfirm = false
+                        return@UPHPrimaryButton
+                    }
+
                     askConfirm = false
                     val normalized = (date!!.clone() as Calendar).apply {
                         set(Calendar.HOUR_OF_DAY, 0)
@@ -791,3 +810,22 @@ private fun LocationPickers(
         }
     }
 }
+
+private fun isEventInPast(
+    date: Calendar?,
+    startMinutes: Int?
+): Boolean {
+    if (date == null || startMinutes == null) return false
+
+    val eventCal = (date.clone() as Calendar).apply {
+        val h = startMinutes / 60
+        val m = startMinutes % 60
+        set(Calendar.HOUR_OF_DAY, h)
+        set(Calendar.MINUTE, m)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    return eventCal.timeInMillis < System.currentTimeMillis()
+}
+
