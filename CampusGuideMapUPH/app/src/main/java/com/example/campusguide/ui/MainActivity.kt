@@ -1074,11 +1074,17 @@ fun SearchScreen(navController: NavHostController) {
                             val subtitle = when (r) {
                                 is SearchResult.RoomResult ->
                                     "${buildingDisplayName(r.buildingId)} • Floor ${r.floor}"
-                                is SearchResult.EventResult ->
-                                    prettyEventSubtitle(r.subtitle)
+
+                                is SearchResult.EventResult -> {
+                                    val base = prettyEventSubtitle(r.subtitle)
+                                    val buildingToken = "Building ${r.buildingId}"
+                                    base.replace(buildingToken, buildingDisplayName(r.buildingId))
+                                }
+
                                 else ->
                                     r.subtitle
                             }
+
 
                             Column(
                                 Modifier
