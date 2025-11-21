@@ -251,17 +251,6 @@ object InMemoryCampusRepository: CampusRepository {
         return fac + room + ev
     }
 
-    // Utility function
-    fun eventsFiltered(filter: EventFilter): List<CampusEvent> {
-        val now = LocalDateTime.now()
-        return when(filter) {
-            EventFilter.All -> events
-            EventFilter.Ongoing -> events.filter { now.isAfter(it.start) && now.isBefore(it.end) }
-            EventFilter.Upcoming -> events.filter { now.isBefore(it.start) }
-            EventFilter.Soon -> events.filter { it.start.isAfter(now) && it.start.isBefore(now.plusDays(3)) }
-        }
-    }
-
     override suspend fun setPublished(id: String, published: Boolean) {
 
     }

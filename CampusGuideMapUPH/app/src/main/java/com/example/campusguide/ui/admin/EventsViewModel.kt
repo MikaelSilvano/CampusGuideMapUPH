@@ -23,7 +23,7 @@ data class AdminState(
 
 // ViewModel antara UI admin dan repository event
 class EventsViewModel(
-    private val repo: EventsRepository = EventsRepository()
+    val repo: EventsRepository = EventsRepository()
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AdminState())

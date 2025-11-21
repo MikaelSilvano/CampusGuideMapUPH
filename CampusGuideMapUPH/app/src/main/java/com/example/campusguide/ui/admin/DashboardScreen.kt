@@ -22,6 +22,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.example.campusguide.ui.common.VerticalScrollbar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 
 private val UPH_Navy   = Color(0xFF16224C)
 private val UPH_Red    = Color(0xFFB33A2E)
@@ -41,6 +45,7 @@ fun DashboardScreen(
     onRemove: (String)->Unit,
     onHistory: ()->Unit,
     onGoToMap: () -> Unit,
+    onCalendar: () -> Unit,
 ) {
     val state by vm.state.collectAsState()
     LaunchedEffect(Unit) { vm.refresh() }
@@ -116,11 +121,25 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Text(
-                "Dashboard",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Dashboard",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+
+                IconButton(onClick = { onCalendar() }) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = "Calendar View",
+                        tint = UPH_Navy
+                    )
+                }
+            }
             Spacer(Modifier.height(12.dp))
 
             Surface(

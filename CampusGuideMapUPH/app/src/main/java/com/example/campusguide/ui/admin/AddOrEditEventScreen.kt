@@ -66,6 +66,13 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import androidx.activity.compose.BackHandler
 import com.example.campusguide.ui.common.VerticalScrollbar
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.File
+import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // Mode form, yaitu tambah baru atau edit
 
@@ -162,6 +169,66 @@ private fun filenameFromUrl(url: String?): String? {
 private fun isValidPosterUrl(u: String?): Boolean =
     !u.isNullOrBlank() && (u.startsWith("http://") || u.startsWith("https://"))
 
+private val ALLOWED_MIME_TYPES = setOf(
+    "image/jpeg",
+    "image/jpg",
+    "image/png"
+)
+
+private val ALLOWED_EXTENSIONS = setOf("jpg", "jpeg", "png")
+
+private fun isAllowedImage(ctx: Context, uri: Uri, displayName: String? = null): Boolean {
+    val type = ctx.contentResolver.getType(uri)?.lowercase()
+    if (type != null && type in ALLOWED_MIME_TYPES) return true
+
+    val name = (displayName ?: resolveDisplayName(ctx, uri)).lowercase()
+    val dot = name.lastIndexOf('.')
+    if (dot != -1 && dot + 1 < name.length) {
+        val ext = name.substring(dot + 1)
+        if (ext in ALLOWED_EXTENSIONS) return true
+    }
+    return false
+}
+
+// Kompres ke JPEG di cache dir
+private suspend fun compressImageToTempFile(
+    ctx: Context,
+    uri: Uri,
+    maxSizePx: Int = 1280,
+    quality: Int = 80
+): Uri? = withContext(Dispatchers.IO) {
+    val resolver = ctx.contentResolver
+
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    resolver.openInputStream(uri)?.use { input ->
+        BitmapFactory.decodeStream(input, null, bounds)
+    }
+
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@withContext null
+
+    var sampleSize = 1
+    while ((bounds.outWidth / sampleSize) > maxSizePx ||
+        (bounds.outHeight / sampleSize) > maxSizePx
+    ) {
+        sampleSize *= 2
+    }
+
+    val opts = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+    val bitmap: Bitmap = resolver.openInputStream(uri)?.use { input ->
+        BitmapFactory.decodeStream(input, null, opts)
+    } ?: return@withContext null
+
+    try {
+        val outFile = File.createTempFile("poster_", ".jpg", ctx.cacheDir)
+        FileOutputStream(outFile).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out)
+        }
+        Uri.fromFile(outFile)
+    } finally {
+        bitmap.recycle()
+    }
+}
+
 @Composable
 private fun WorkingDialog(message: String) {
     Dialog(onDismissRequest = {}) {
@@ -218,6 +285,16 @@ fun AddOrEditEventScreen(
     onCancel: () -> Unit
 ) {
     val state by vm.state.collectAsState()
+    val ctx = LocalContext.current
+    val repo = vm.repo
+
+    var fullEvents by remember { mutableStateOf<List<Event>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        fullEvents = repo.listAllAdmin()
+    }
+
+    val scope = rememberCoroutineScope()
     val eventId = (mode as? FormMode.Edit)?.id
     val editing = eventId?.let { id -> state.events.firstOrNull { it.id == id } }
 
@@ -296,18 +373,10 @@ fun AddOrEditEventScreen(
         if (building == null || floor == null || room !in rooms) room = null
     }
 
-    val ctx = LocalContext.current
-    val rawPosterUrl = editing?.posterUrl?.takeIf { !it.isNullOrBlank() && (it.startsWith("http://") || it.startsWith("https://")) }
+    val rawPosterUrl = editing?.posterUrl?.takeIf { isValidPosterUrl(it) }
     val initialPosterName = remember(eventKey) { rawPosterUrl?.let { filenameFromUrl(it) } }
     var posterName by remember(eventKey) { mutableStateOf<String?>(initialPosterName) }
     var poster: Uri? by remember { mutableStateOf(null) }
-
-    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
-            poster = uri
-            posterName = resolveDisplayName(ctx, uri)
-        }
-    }
 
     var askConfirm by remember { mutableStateOf(false) }
     var success    by remember { mutableStateOf(false) }
@@ -315,6 +384,21 @@ fun AddOrEditEventScreen(
     var isWorking  by remember { mutableStateOf(false) }
     var workingMsg by remember { mutableStateOf("") }
     var askExit    by remember { mutableStateOf(false) }
+
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            val displayName = resolveDisplayName(ctx, uri)
+            if (!isAllowedImage(ctx, uri, displayName)) {
+                error = "Only .jpg, .jpeg or .png images are allowed as posters."
+                poster = null
+                posterName = null
+            } else {
+                error = null
+                poster = uri
+                posterName = displayName
+            }
+        }
+    }
 
     val currentDateMillis = date?.timeInMillis
 
@@ -474,7 +558,28 @@ fun AddOrEditEventScreen(
                         return@UPHPrimaryButton
                     }
 
+                    val conflict = findRoomConflict(
+                        all        = fullEvents,
+                        currentId  = eventId,
+                        date       = date,
+                        startMinutes = startMin,
+                        endMinutes   = endMin,
+                        building   = building,
+                        floor      = floor,
+                        room       = room
+                    )
+
+                    if (conflict != null) {
+                        val roomLabel = formatRoomLabel(building!!, conflict.room)
+                        val msg = "Room $roomLabel is being used for \"${conflict.name}\" " +
+                                "event from ${fmtMinutes(conflict.startTimeMinutes)} until ${fmtMinutes(conflict.endTimeMinutes)}."
+                        error = msg
+                        askConfirm = false
+                        return@UPHPrimaryButton
+                    }
+
                     askConfirm = false
+
                     val normalized = (date!!.clone() as Calendar).apply {
                         set(Calendar.HOUR_OF_DAY, 0)
                         set(Calendar.MINUTE, 0)
@@ -483,46 +588,59 @@ fun AddOrEditEventScreen(
                     }
                     val ts = Timestamp(normalized.time)
 
-                    if (eventId == null) {
-                        workingMsg = "Adding..."
+                    scope.launch {
+                        workingMsg = if (eventId == null) "Adding..." else "Editing..."
                         isWorking = true
-                        val toCreate = Event(
-                            id = "",
-                            name = name.text.trim(),
-                            heldBy = heldBy.text.trim(),
-                            date = ts,
-                            startTimeMinutes = startMin!!,
-                            endTimeMinutes   = endMin!!,
-                            building = building!!,
-                            floor    = floor!!,
-                            room     = room!!,
-                            posterUrl = null // biar URL final di-set oleh repo saat upload
-                        )
-                        vm.create(
-                            toCreate, poster,
-                            onDone  = { isWorking = false; success = true },
-                            onError = { e -> isWorking = false; error = e }
-                        )
-                    } else {
-                        workingMsg = "Editing..."
-                        isWorking = true
-                        val original = editing!!
-                        val updated = original.copy(
-                            name = name.text.trim(),
-                            heldBy = heldBy.text.trim(),
-                            date = ts,
-                            startTimeMinutes = startMin!!,
-                            endTimeMinutes   = endMin!!,
-                            building = building!!,
-                            floor    = floor!!,
-                            room     = room!!,
-                            posterUrl = original.posterUrl // repo yang akan overwrite jika poster != null
-                        )
-                        vm.update(
-                            updated, poster,
-                            onDone  = { isWorking = false; success = true },
-                            onError = { e -> isWorking = false; error = e }
-                        )
+
+                        val compressedPoster: Uri? = if (poster != null) {
+                            compressImageToTempFile(ctx, poster!!) ?: run {
+                                isWorking = false
+                                error = "Failed to compress poster image. Please try another file."
+                                return@launch
+                            }
+                        } else {
+                            null
+                        }
+
+                        if (eventId == null) {
+                            val toCreate = Event(
+                                id = "",
+                                name = name.text.trim(),
+                                heldBy = heldBy.text.trim(),
+                                date = ts,
+                                startTimeMinutes = startMin!!,
+                                endTimeMinutes   = endMin!!,
+                                building = building!!,
+                                floor    = floor!!,
+                                room     = room!!,
+                                posterUrl = null
+                            )
+                            vm.create(
+                                toCreate,
+                                compressedPoster,
+                                onDone  = { isWorking = false; success = true },
+                                onError = { e -> isWorking = false; error = e }
+                            )
+                        } else {
+                            val original = editing!!
+                            val updated = original.copy(
+                                name = name.text.trim(),
+                                heldBy = heldBy.text.trim(),
+                                date = ts,
+                                startTimeMinutes = startMin!!,
+                                endTimeMinutes   = endMin!!,
+                                building = building!!,
+                                floor    = floor!!,
+                                room     = room!!,
+                                posterUrl = original.posterUrl
+                            )
+                            vm.update(
+                                updated,
+                                compressedPoster,
+                                onDone  = { isWorking = false; success = true },
+                                onError = { e -> isWorking = false; error = e }
+                            )
+                        }
                     }
                 }) { Text("Yes") }
             },
@@ -853,4 +971,48 @@ private fun isEventInPast(
 
     return eventCal.timeInMillis < System.currentTimeMillis()
 }
+
+private fun dayKeyFromCalendar(c: Calendar): Int {
+    return (c.get(Calendar.YEAR) * 10_000) +
+            ((c.get(Calendar.MONTH) + 1) * 100) +
+            c.get(Calendar.DAY_OF_MONTH)
+}
+
+private fun dayKeyFromTimestamp(ts: com.google.firebase.Timestamp): Int {
+    val cal = Calendar.getInstance().apply { time = ts.toDate() }
+    return dayKeyFromCalendar(cal)
+}
+
+private fun findRoomConflict(
+    all: List<Event>,
+    currentId: String?,
+    date: Calendar?,
+    startMinutes: Int?,
+    endMinutes: Int?,
+    building: String?,
+    floor: Int?,
+    room: String?
+): Event? {
+    if (
+        date == null || startMinutes == null || endMinutes == null ||
+        building == null || floor == null || room == null
+    ) return null
+
+    val keyNew = dayKeyFromCalendar(date)
+
+    return all.firstOrNull { e ->
+        if (currentId != null && e.id == currentId) return@firstOrNull false
+
+        if (e.building != building || e.floor != floor || e.room != room) return@firstOrNull false
+
+        val keyExist = dayKeyFromTimestamp(e.date)
+        if (keyExist != keyNew) return@firstOrNull false
+
+        val s2 = e.startTimeMinutes
+        val e2 = e.endTimeMinutes
+
+        startMinutes < e2 && s2 < endMinutes
+    }
+}
+
 

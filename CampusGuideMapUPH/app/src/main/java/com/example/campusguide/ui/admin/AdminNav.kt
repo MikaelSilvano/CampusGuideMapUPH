@@ -12,21 +12,23 @@ const val ROUTE_ADMIN_ADD    = "admin/add"
 const val ROUTE_ADMIN_EDIT   = "admin/edit/{eventId}"
 const val ROUTE_ADMIN_REMOVE = "admin/remove"
 const val ROUTE_ADMIN_HISTORY = "admin/history"
+const val ROUTE_ADMIN_CALENDAR = "admin/calendar_admin"
+const val ROUTE_ADMIN_CALENDAR_DAY = "admin/calendar_admin_day/{date}"
 
-// Menambahkan seluruh rute/halaman admin ke NavGraph aplikasi
 fun NavGraphBuilder.adminGraph(
     nav: NavController,
     onGoToMap: () -> Unit,
-){
+) {
     composable(ROUTE_ADMIN_DASH) {
         val vm: EventsViewModel = viewModel()
         DashboardScreen(
             vm = vm,
-            onAdd = { nav.navigate(ROUTE_ADMIN_ADD) },          // Menuju form add
-            onEdit = { id -> nav.navigate("admin/edit/$id") },  // Menuju form edit
-            onRemove = { nav.navigate(ROUTE_ADMIN_REMOVE) },    // Menuju form remove
-            onHistory = { nav.navigate(ROUTE_ADMIN_HISTORY) },   // Menuju form history
-            onGoToMap = onGoToMap
+            onAdd = { nav.navigate(ROUTE_ADMIN_ADD) },
+            onEdit = { id -> nav.navigate("admin/edit/$id") },
+            onRemove = { nav.navigate(ROUTE_ADMIN_REMOVE) },
+            onHistory = { nav.navigate(ROUTE_ADMIN_HISTORY) },
+            onGoToMap = onGoToMap,
+            onCalendar = { nav.navigate(ROUTE_ADMIN_CALENDAR) } // ← HERE
         )
     }
     composable(ROUTE_ADMIN_ADD) {
@@ -60,6 +62,31 @@ fun NavGraphBuilder.adminGraph(
         HistoryScreen(
             vm = vm,
             onBack = { nav.popBackStack() }
+        )
+    }
+    composable(ROUTE_ADMIN_CALENDAR) {
+        val vm: EventsViewModel = viewModel()
+        CalendarAdminScreen(
+            vm = vm,
+            onBack = { nav.popBackStack() },
+            onSelectDate = { date ->
+                val route = ROUTE_ADMIN_CALENDAR_DAY.replace("{date}", date.toString())
+                nav.navigate(route)
+            }
+        )
+    }
+
+    composable(ROUTE_ADMIN_CALENDAR_DAY) { backStackEntry ->
+        val date = backStackEntry.arguments?.getString("date") ?: ""
+
+        val vm: EventsViewModel = viewModel()
+        CalendarDayEventsScreen(
+            dateStr = date,
+            vm = vm,
+            onBack = { nav.popBackStack() },
+            onEventClick = { eventId ->
+                nav.navigate("admin/edit/$eventId")
+            }
         )
     }
 }

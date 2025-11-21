@@ -59,15 +59,4 @@ object EventsSeeder {
             delay(delayMsPerItem)
         }
     }
-
-    suspend fun deleteAllEvents() = withContext(Dispatchers.IO) {
-        val api = RetrofitProvider.api
-        val bearer = "Bearer ${getIdTokenOrThrow()}"
-        val items = api.listEvents()
-        for (e in items) {
-            val id = e.id ?: continue
-            runCatching { api.deleteEvent(bearer, id) }
-            delay(60)
-        }
-    }
 }
