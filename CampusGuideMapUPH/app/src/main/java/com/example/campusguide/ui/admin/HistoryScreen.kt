@@ -38,6 +38,19 @@ fun HistoryScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
 
+    var loadedOnce by remember { mutableStateOf(false) }
+
+    LaunchedEffect(items) {
+        if (!loadedOnce && items.isNotEmpty()) loadedOnce = true
+    }
+
+    LaunchedEffect(true) {
+        kotlinx.coroutines.delay(4000)
+        if (!loadedOnce && items.isEmpty()) {
+            error = "Unable to load history. Please check your internet connection."
+        }
+    }
+
     LaunchedEffect(Unit) {
         vm.loadPastEvents(
             onDone = {
@@ -46,7 +59,7 @@ fun HistoryScreen(
             },
             onError = { msg ->
                 loading = false
-                error = msg
+                error = friendlyError(msg)
             }
         )
     }
@@ -167,4 +180,26 @@ private fun fmtDate(ev: Event): String {
     val m = d.month + 1
     val day = d.date
     return "%04d-%02d-%02d".format(y, m, day)
+}
+
+private fun friendlyError(msg: String): String {
+    return when {
+        msg.contains("500") ->
+            "Server error occurred. Please try again later."
+
+        msg.contains("404") ->
+            "Data not found. Please try again."
+
+        msg.contains("400") ->
+            "Invalid request. Please check again."
+
+        msg.contains("timeout", ignoreCase = true) ->
+            "The server took too long to respond."
+
+        msg.contains("network", ignoreCase = true) ->
+            "Network error. Please check your internet connection."
+
+        else ->
+            "Failed to load data. Please try again."
+    }
 }

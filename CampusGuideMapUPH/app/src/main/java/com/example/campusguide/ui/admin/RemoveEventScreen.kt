@@ -168,7 +168,14 @@ fun RemoveEventScreen(
                                     horizontalArrangement = Arrangement.SpaceEvenly
                                 ) {
                                     IconButton(onClick = {
-                                        vm.setPublished(ev.id, !ev.published, onDone = {}, onError = { error = it })
+                                        vm.setPublished(
+                                            ev.id,
+                                            !ev.published,
+                                            onDone = {},
+                                            onError = { err ->
+                                                error = friendlyError(err)
+                                            }
+                                        )
                                     }) {
                                         Icon(
                                             if (ev.published) Icons.Default.Visibility else Icons.Default.VisibilityOff,
@@ -193,7 +200,7 @@ fun RemoveEventScreen(
                 )
             }
 
-            if (state.loading) {
+            if (state.loading && targetId == null && !isWorking) {
                 Spacer(Modifier.height(8.dp))
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
@@ -223,8 +230,12 @@ fun RemoveEventScreen(
                     vm.delete(
                         id,
                         onDone  = { isWorking = false; success = true },
-                        onError = { msg -> isWorking = false; error = msg }
+                        onError = { msg ->
+                            isWorking = false
+                            error = friendlyError(msg)
+                        }
                     )
+
                 }) { Text("Yes, delete") }
             },
             dismissButton = {
@@ -270,4 +281,17 @@ private fun fmtDate(ev: Event): String {
     val m = d.month + 1
     val day = d.date
     return "%04d-%02d-%02d".format(y, m, day)
+}
+
+private fun friendlyError(msg: String): String {
+    return when {
+        msg.contains("500") -> "A server error occurred. Please try again later."
+        msg.contains("400") -> "Request failed. Please check your inputs and try again."
+        msg.contains("timeout", ignoreCase = true) ->
+            "The server took too long to respond. Please try again."
+        msg.contains("network", ignoreCase = true) ->
+            "Network error. Please check your connection."
+
+        else -> "Something went wrong. Please try again."
+    }
 }

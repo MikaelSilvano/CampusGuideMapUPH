@@ -165,6 +165,8 @@ object InMemoryCampusRepository: CampusRepository {
             FrequentlyVisitedPlace("F", 2, "FIT Lab",                      "fit_lab"),
             FrequentlyVisitedPlace("F", 2, "Galeri Investasi",             "galeri_investasi"),
 
+            FrequentlyVisitedPlace("F", 3, "Registar Office",             "registrar_office"),
+
             FrequentlyVisitedPlace("F", 9, "TV Lab",                       "tv_lab"),
 
             FrequentlyVisitedPlace("F", 12,"Faculty of Economics & Business Office", "feb_office"),

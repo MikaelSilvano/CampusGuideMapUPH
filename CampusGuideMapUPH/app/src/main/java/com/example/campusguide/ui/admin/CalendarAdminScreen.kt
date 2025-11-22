@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.campusguide.data.Event
+import com.example.campusguide.ui.ErrorDialog
 import com.example.campusguide.ui.toLocalDate
 import java.time.LocalDate
 import java.time.YearMonth
@@ -51,8 +52,19 @@ fun CalendarAdminScreen(
     val state by vm.state.collectAsState()
     val events = state.events
 
-    LaunchedEffect(Unit) {
+    var loadedOnce by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(events) {
         vm.refresh()
+        if (!loadedOnce && events.isNotEmpty()) loadedOnce = true
+    }
+
+    LaunchedEffect(true) {
+        kotlinx.coroutines.delay(4000)
+        if (!loadedOnce && events.isEmpty()) {
+            error = "Unable to load events. Please check your internet connection."
+        }
     }
 
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
@@ -136,6 +148,7 @@ fun CalendarAdminScreen(
             )
         }
     }
+    ErrorDialog(error) { error = null }
 }
 
 @Composable

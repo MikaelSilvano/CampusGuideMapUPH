@@ -48,7 +48,14 @@ fun DashboardScreen(
     onCalendar: () -> Unit,
 ) {
     val state by vm.state.collectAsState()
-    LaunchedEffect(Unit) { vm.refresh() }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        vm.refresh(
+            onError = { msg -> error = friendlyError(msg) }
+        )
+    }
+
 
     val events = remember(state.events) {
         state.events.sortedWith(
@@ -197,6 +204,19 @@ fun DashboardScreen(
                     onClick = { askLogout = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
                 ) { Text("No") }
+            }
+        )
+    }
+    error?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { error = null },
+            title = { Text("Failed to load events") },
+            text = { Text(msg) },
+            confirmButton = {
+                TextButton(
+                    onClick = { error = null },
+                    colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+                ) { Text("OK") }
             }
         )
     }
@@ -397,3 +417,26 @@ private fun fmtDate(ts: com.google.firebase.Timestamp): String {
         c.get(Calendar.DAY_OF_MONTH)
     )
 }
+
+private fun friendlyError(msg: String): String {
+    return when {
+        msg.contains("500") ->
+            "Server error occurred. Please try again later."
+
+        msg.contains("404") ->
+            "Data not found. Please try again."
+
+        msg.contains("400") ->
+            "Invalid request. Please check again."
+
+        msg.contains("timeout", ignoreCase = true) ->
+            "The server took too long to respond."
+
+        msg.contains("network", ignoreCase = true) ->
+            "Network error. Please check your internet connection."
+
+        else ->
+            "Failed to load data. Please try again."
+    }
+}
+

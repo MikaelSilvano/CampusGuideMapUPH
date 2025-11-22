@@ -224,6 +224,8 @@ fun CampusGuideApp() {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    var globalError by remember { mutableStateOf<String?>(null) }
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val route = navBackStackEntry?.destination?.route
     val args  = navBackStackEntry?.arguments
@@ -251,6 +253,36 @@ fun CampusGuideApp() {
         }
         "event/{buildingId}/{eventId}" -> {
             when (args?.getString("buildingId")) {
+                "B" -> R.drawable.bb
+                "C" -> R.drawable.bc
+                "D" -> R.drawable.bd
+                "F" -> R.drawable.bf
+                "H" -> R.drawable.bh
+                else -> R.drawable.uph_building_background
+            }
+        }
+        "event_detail_user/{id}" -> {
+            val eventId = args?.getString("id")
+            val ctx = LocalContext.current
+            val repo = remember { CampusRepoProvider.provide(ctx) }
+            val events by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
+            val e = events.firstOrNull { it.id == eventId }
+
+            var loadedOnce by remember { mutableStateOf(false) }
+            var error by remember { mutableStateOf<String?>(null) }
+
+            LaunchedEffect(events) {
+                if (!loadedOnce && events.isNotEmpty()) loadedOnce = true
+            }
+
+            LaunchedEffect(true) {
+                kotlinx.coroutines.delay(4000)
+                if (!loadedOnce && events.isEmpty()) {
+                    error = "Unable to load event data. Check your internet connection."
+                }
+            }
+
+            when (e?.buildingId) {
                 "B" -> R.drawable.bb
                 "C" -> R.drawable.bc
                 "D" -> R.drawable.bd
@@ -337,8 +369,28 @@ fun CampusGuideApp() {
                             val id = backStackEntry.arguments?.getString("id") ?: ""
                             SportFacilityScreen(navController, id)
                         }
+                        composable("events_calendar") {
+                            EventsCalendarUserScreen(navController)
+                        }
+
+                        composable("user_calendar_day/{date}") { backStackEntry ->
+                            val date = backStackEntry.arguments?.getString("date")!!
+                            EventsCalendarUserDayScreen(
+                                dateStr = date,
+                                onBack = { navController.popBackStack() },
+                                onEventClick = { eventId ->
+                                    navController.navigate("event_detail_user/$eventId")
+                                }
+                            )
+                        }
+
+                        composable("event_detail_user/{id}") {
+                            val id = it.arguments?.getString("id")!!
+                            EventDetailScreen(navController, id)
+                        }
                     }
                 }
+                ErrorDialog(globalError) { globalError = null }
             }
         }
     }
@@ -713,7 +765,7 @@ fun HomeScreen(
 
         // Helper text
         val help = when {
-            !isPathMode -> "Tap bulatan pada peta untuk membuka detail."
+            !isPathMode -> "Press the circle button to view detailed information."
             startBuildingId == null -> "Path Mode: choose a START building."
             endBuildingId == null -> "Path Mode: choose a DESTINATION building."
             else -> "Path Mode: path shown. Toggle button to reset."
@@ -1236,6 +1288,23 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
     }
 }
 
+private val sportDescriptions = mapOf(
+    "basketball" to
+            "Our indoor basketball court is home to UPH’s championship-winning teams, offering international-standard facilities that support the players’ journey to consistent athletic excellence.",
+
+    "soccer" to
+            "With a well-maintained pitch, our soccer field provides an outstanding experience for players looking to train or compete in matches.",
+
+    "pool" to
+            "Our Olympic-sized swimming pool provides a quality setting for students to refine their techniques, enjoy a refreshing swim, and challenge themselves in aquatic sports.",
+
+    "multisport" to
+            "At our futsal and badminton court, students can refine their skills, reach their athletic goals and follow in the footsteps of UPH’s past champions.",
+
+    "gym" to
+            "With spacious workout zones and quality equipment, our gym is a place where students can stay active and achieve their fitness goals for a healthier life."
+)
+
 @Composable
 fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
     val ctx = LocalContext.current
@@ -1351,10 +1420,9 @@ fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-                    "Suspendisse potenti. Integer volutpat, urna sed molestie " +
-                    "molestie, nunc libero feugiat ante, id interdum lorem " +
-                    "nibh in mauris."
+            sportDescriptions[facilityId]
+                ?: "No description available.",
+            color = UPH_Navy
         )
     }
 }
@@ -1568,13 +1636,24 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 // Layar daftar event
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun EventsScreen(navController: NavHostController) {
     val ctx = LocalContext.current
     val repo = remember { CampusRepoProvider.provide(ctx) }
-    val allEvents by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
+
+    val allEvents by remember { repo.streamAllEvents() }
+        .collectAsState(initial = emptyList())
+
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(true) {
+        try {
+        } catch (e: Exception) {
+            error = "Unable to load events. Please check your connection."
+        }
+    }
 
     var loadedOnce by remember { mutableStateOf(false) }
     LaunchedEffect(allEvents) {
@@ -1582,6 +1661,12 @@ fun EventsScreen(navController: NavHostController) {
     }
     val isLoading = !loadedOnce
 
+    LaunchedEffect(true) {
+        kotlinx.coroutines.delay(8000)
+        if (!loadedOnce && allEvents.isEmpty()) {
+            error = "Unable to load events. Please check your internet connection."
+        }
+    }
 
     var building by remember { mutableStateOf("All") }
     val buildingOptions = listOf("All") + InMemoryCampusRepository.buildings.map { it.id }
@@ -1724,10 +1809,23 @@ fun EventsScreen(navController: NavHostController) {
 
         Spacer(Modifier.height(8.dp))
 
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            FilterPill("From: $startDate") { showDatePickerStart = true } // Filter tanggal mulai
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilterPill("From: $startDate") { showDatePickerStart = true }
             Spacer(Modifier.width(8.dp))
-            FilterPill("To: $endDate") { showDatePickerEnd = true }       // Filter tanggal akhir
+            FilterPill("To: $endDate") { showDatePickerEnd = true }
+
+            Spacer(Modifier.weight(1f))
+
+            IconButton(onClick = { navController.navigate("events_calendar") }) {
+                Icon(
+                    Icons.Default.Event,
+                    contentDescription = "Calendar",
+                    tint = UPH_Navy
+                )
+            }
         }
 
         if (showDatePickerStart) {
@@ -1822,6 +1920,7 @@ fun EventsScreen(navController: NavHostController) {
             )
         }
     }
+    ErrorDialog(error) { error = null }
     DebugSeedButton()
 }
 
@@ -2118,14 +2217,19 @@ private fun FrequentlyVisitedSection(
 @Composable
 fun StatusBadge(e: CampusEvent): Pair<String, Color> {
     val now = LocalDateTime.now()
+
     return when {
+        now.isAfter(e.end) ->
+            "Past" to Color.LightGray
+
         now.isAfter(e.start) && now.isBefore(e.end) ->
             "Ongoing" to Color(0xFFE0F2FF)
-        e.start.isAfter(now) && e.start.isBefore(now.plusDays(3)) ->
+
+        e.start.isAfter(now) && e.start.isBefore(now.plusDays(7)) ->
             "Coming Soon" to Color(0xFFF7EDE3)
-        e.start.isAfter(now) ->
+
+        else ->
             "Upcoming" to Color(0xFFEAF7E9)
-        else -> "Past" to Color.LightGray
     }
 }
 
@@ -2300,4 +2404,20 @@ fun displayRoomCode(buildingId: String?, room: String): String {
     return if (buildingId == "H" && clean.startsWith("H")) {
         "HP" + clean.removePrefix("H")
     } else clean
+}
+
+@Composable
+fun ErrorDialog(message: String?, onDismiss: () -> Unit) {
+    if (message == null) return
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Failed to load data") },
+        text = { Text(message) },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("OK", color = UPH_Navy)
+            }
+        }
+    )
 }

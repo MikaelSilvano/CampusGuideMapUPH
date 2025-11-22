@@ -289,9 +289,25 @@ fun AddOrEditEventScreen(
     val repo = vm.repo
 
     var fullEvents by remember { mutableStateOf<List<Event>>(emptyList()) }
+    var error      by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        fullEvents = repo.listAllAdmin()
+    var loadedOnce by remember { mutableStateOf(false) }
+
+    LaunchedEffect(fullEvents) {
+        if (!loadedOnce && fullEvents.isNotEmpty()) loadedOnce = true
+    }
+
+    LaunchedEffect(true) {
+        kotlinx.coroutines.delay(4000)
+        if (!loadedOnce && fullEvents.isEmpty()) {
+            error = "Unable to load events. Please check your internet connection."
+        }
+        try {
+            fullEvents = repo.listAllAdmin()
+        } catch (e: Exception) {
+            fullEvents = emptyList()
+            error = friendlyError(e.message ?: "Network error")
+        }
     }
 
     val scope = rememberCoroutineScope()
@@ -380,7 +396,6 @@ fun AddOrEditEventScreen(
 
     var askConfirm by remember { mutableStateOf(false) }
     var success    by remember { mutableStateOf(false) }
-    var error      by remember { mutableStateOf<String?>(null) }
     var isWorking  by remember { mutableStateOf(false) }
     var workingMsg by remember { mutableStateOf("") }
     var askExit    by remember { mutableStateOf(false) }
@@ -619,7 +634,10 @@ fun AddOrEditEventScreen(
                                 toCreate,
                                 compressedPoster,
                                 onDone  = { isWorking = false; success = true },
-                                onError = { e -> isWorking = false; error = e }
+                                onError = { e ->
+                                    isWorking = false
+                                    error = friendlyError(e)
+                                }
                             )
                         } else {
                             val original = editing!!
@@ -679,6 +697,18 @@ fun AddOrEditEventScreen(
                     onClick = { success = false; onDone() },
                     colors = ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
                 ) { Text("OK") }
+            }
+        )
+    }
+    error?.let {
+        AlertDialog(
+            onDismissRequest = { error = null },
+            title = { Text("Failed to add/edit events") },
+            text = { Text(it) },
+            confirmButton = {
+                TextButton(onClick = { error = null }) {
+                    Text("OK", color = UPH_Navy)
+                }
             }
         )
     }
@@ -1012,6 +1042,19 @@ private fun findRoomConflict(
         val e2 = e.endTimeMinutes
 
         startMinutes < e2 && s2 < endMinutes
+    }
+}
+
+private fun friendlyError(msg: String): String {
+    return when {
+        msg.contains("500") -> "A server error occurred. Please try again later."
+        msg.contains("400") -> "Request failed. Please check your inputs and try again."
+        msg.contains("timeout", ignoreCase = true) ->
+            "The server took too long to respond. Please try again."
+        msg.contains("network", ignoreCase = true) ->
+            "Network error. Please check your connection."
+
+        else -> "Something went wrong. Please try again."
     }
 }
 

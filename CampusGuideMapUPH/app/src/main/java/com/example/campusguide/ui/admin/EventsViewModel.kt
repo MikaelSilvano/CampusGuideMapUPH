@@ -30,7 +30,7 @@ class EventsViewModel(
     val state: StateFlow<AdminState> = _state
 
     // Mengambil ulang daftar event dan membuat statistik
-    fun refresh() {
+    fun refresh(onError: ((String) -> Unit)? = null) {
         viewModelScope.launch {
             _state.update { it.copy(loading = true, error = null) }
             try {
@@ -45,8 +45,8 @@ class EventsViewModel(
 
                 val active = all.filter { !it.isPast() }
 
-                val nowTs = com.google.firebase.Timestamp.now()
-                val in7  = com.google.firebase.Timestamp(nowTs.seconds + java.util.concurrent.TimeUnit.DAYS.toSeconds(7), 0)
+                val nowTs = Timestamp.now()
+                val in7 = Timestamp(nowTs.seconds + TimeUnit.DAYS.toSeconds(7), 0)
 
                 val visible = active.filter { it.published }
                 val ongoing = visible.count { it.isOngoing(nowTs) }
@@ -62,12 +62,19 @@ class EventsViewModel(
                         countComingSoon = coming
                     )
                 }
+
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                _state.update {
+                    it.copy(
+                        events = emptyList(),
+                        loading = false,
+                        error = e.message ?: "Failed to load"
+                    )
+                }
             }
+
         }
     }
-
 
     // Membuat event baru
     fun create(event: Event, posterUri: Uri?, onDone: (String)->Unit, onError: (String)->Unit) {

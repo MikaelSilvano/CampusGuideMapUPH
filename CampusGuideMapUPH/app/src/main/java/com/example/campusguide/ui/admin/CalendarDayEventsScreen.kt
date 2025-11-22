@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.campusguide.data.Event
+import com.example.campusguide.ui.ErrorDialog
 import com.example.campusguide.ui.common.VerticalScrollbar
 import com.example.campusguide.ui.toLocalDate
 import java.time.LocalDate
@@ -52,10 +53,21 @@ fun CalendarDayEventsScreen(
     val events = state.events
     var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
+    var loadedOnce by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(state.events) {
         isLoading = true
         vm.refresh()
         isLoading = false
+        if (!loadedOnce && state.events.isNotEmpty()) loadedOnce = true
+    }
+
+    LaunchedEffect(true) {
+        kotlinx.coroutines.delay(4000)
+        if (!loadedOnce && state.events.isEmpty()) {
+            error = "Unable to load events. Please check your internet connection."
+        }
     }
 
     val date = LocalDate.parse(dateStr)
@@ -130,6 +142,7 @@ fun CalendarDayEventsScreen(
             }
         }
     }
+    ErrorDialog(error) { error = null }
 }
 
 @Composable
