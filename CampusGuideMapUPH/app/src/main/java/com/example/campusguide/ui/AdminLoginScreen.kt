@@ -23,6 +23,11 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
+import android.util.Log
+import android.widget.Toast
+import android.content.ClipboardManager
+import android.content.ClipData
+import com.google.firebase.auth.FirebaseAuth
 
 private val UPH_Navy  = Color(0xFF16224C)
 private val UPH_White = Color(0xFFFFFFFF)
@@ -177,7 +182,6 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
 
                 Spacer(Modifier.height(20.dp))
 
-                // Tombol login: validasi input, loading screen, dan simpan kredensial (optional)
                 Button(
                     onClick = {
                         if (email.isBlank() || pass.isBlank()) {
@@ -189,6 +193,7 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
                             loading = false
                             res.onSuccess {
                                 if (remember) creds.save(email.trim(), pass) else creds.clear()
+                                //logAndCopyIdToken(ctx)
                                 onSuccess()
                             }.onFailure { th ->
                                 error = mapLoginError(th)
@@ -221,4 +226,35 @@ fun AdminLoginScreen(onSuccess: () -> Unit) {
             }
         }
     }
+}
+
+private fun logAndCopyIdToken(ctx: android.content.Context) {
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+    if (user == null) {
+        Toast.makeText(ctx, "User belum login.", Toast.LENGTH_SHORT).show()
+        return
+    }
+    user.getIdToken(true)
+        .addOnSuccessListener { result ->
+            val token = result.token ?: ""
+            Log.d("AdminToken", "ID_TOKEN: $token")
+
+            val curl = """
+                curl -X POST \
+                  -H "Authorization: Bearer $token" \
+                  -H "Content-Type: application/json" \
+                  -d '{"email":"campusguidemap@gmail.com"}' \
+                  "https://asia-southeast1-campus-guide-map-uph.cloudfunctions.net/grantAdmin"
+            """.trimIndent()
+            Log.d("AdminToken", "CURL:\n$curl")
+
+            val cb = ctx.getSystemService(ClipboardManager::class.java)
+            cb.setPrimaryClip(ClipData.newPlainText("ID_TOKEN", token))
+            Toast.makeText(ctx, "ID token dicopy ke clipboard & dicetak di Logcat.", Toast.LENGTH_LONG).show()
+        }
+        .addOnFailureListener { e ->
+            Log.e("AdminToken", "Gagal ambil token", e)
+            Toast.makeText(ctx, "Gagal ambil token: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
 }

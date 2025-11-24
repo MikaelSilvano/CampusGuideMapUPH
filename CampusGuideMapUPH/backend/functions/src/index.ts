@@ -216,3 +216,41 @@ export const deleteEvent = onRequest(
   }
 );
 
+export const grantAdmin = onRequest(
+  { region: "asia-southeast1", cors: true },
+  async (req, res) => {
+    if (req.method !== "POST") { res.status(405).end(); return; }
+
+    const decoded = await verify(req, res, "admin");
+    if (!decoded) return;
+
+    const email = (req.body?.email ?? "").toString().trim();
+    if (!email) { res.status(400).json({ error: "missing email" }); return; }
+
+    const user = await getAuth().getUserByEmail(email);
+    const existing = user.customClaims ?? {};
+    await getAuth().setCustomUserClaims(user.uid, { ...existing, role: "admin" });
+
+    res.json({ ok: true, uid: user.uid, role: "admin" });
+  }
+);
+
+export const revokeAdmin = onRequest(
+  { region: "asia-southeast1", cors: true },
+  async (req, res) => {
+    if (req.method !== "POST") { res.status(405).end(); return; }
+
+    const decoded = await verify(req, res, "admin");
+    if (!decoded) return;
+
+    const email = (req.body?.email ?? "").toString().trim();
+    if (!email) { res.status(400).json({ error: "missing email" }); return; }
+
+    const user = await getAuth().getUserByEmail(email);
+    const existing = user.customClaims ?? {};
+    const { role, ...rest } = existing;
+    await getAuth().setCustomUserClaims(user.uid, { ...rest });
+
+    res.json({ ok: true, uid: user.uid, role: null });
+  }
+);
