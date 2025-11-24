@@ -99,6 +99,7 @@ import com.example.campusguide.ui.common.HorizontalScrollbar
 import coil.compose.AsyncImagePainter
 import android.util.Log
 import androidx.compose.material.icons.outlined.VideoLibrary
+import androidx.compose.ui.unit.sp
 import com.example.campusguide.data.FrequentlyVisitedPlace
 
 
@@ -331,7 +332,12 @@ fun CampusGuideApp() {
                         startDestination = "home",
                         modifier = Modifier.matchParentSize()
                     ) {
-                        composable("home")   { HomeScreen(navController) }
+                        composable("home") {
+                            HomeScreen(
+                                navController = navController,
+                                showPathButton = false
+                            )
+                        }
                         composable("events") { EventsScreen(navController) }
                         composable("search") { SearchScreen(navController) }
 
@@ -421,9 +427,16 @@ private fun AppTopBar(
                 Image(
                     painter = painterResource(id = R.drawable.uph_logo),
                     contentDescription = "UPH",
-                    modifier = Modifier.height(28.dp).padding(end = 8.dp)
+                    modifier = Modifier
+                        .height(28.dp)
+                        .padding(end = 15.dp)
                 )
-                Text("Campus Map")
+                Text(
+                    text = "Campus Map",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 20.sp,
+                    maxLines = 1
+                )
             }
         },
         actions = {
@@ -578,7 +591,8 @@ private fun sportFacilityFor(id: String): SportFacility? = when (id) {
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    debugBorders: Boolean = false
+    debugBorders: Boolean = false,
+    showPathButton: Boolean = true
 ) {
     // ---- Path Mode & selection state ----
     var isPathMode by rememberSaveable { mutableStateOf(false) }
@@ -596,14 +610,12 @@ fun HomeScreen(
     val graph = remember { pathRepo.graph() }
     var pathNodeIds by remember { mutableStateOf<List<String>>(emptyList()) }
 
-    // ---- Map pins (default colors; F is NOT green anymore) ----
     val hotspots = listOf(
         Spot("B", 0.665f, 0.73f, UPH_Orange),
-        Spot("H", 0.55f,  0.77f, Color(0xFFFFC27A)),
+        Spot("H", 0.57f,  0.79f, Color(0xFFFFC27A)),
         Spot("C", 0.35f,  0.78f, Color(0xFFFFD54F)),
         Spot("D", 0.46f,  0.46f, Color(0xFF1E88E5)),
         Spot("F", 0.23f,  0.36f, Color(0xFF23943c)),
-        Spot("G", 0.35f,  0.06f, Color(0xFFEF5350))
     )
 
     Column(
@@ -741,24 +753,26 @@ fun HomeScreen(
                     }
                 }
             }
-            PathModeButton(
-                enabled = isPathMode,
-                onToggle = {
-                    isPathMode = !isPathMode
-                    if (!isPathMode) {
-                        startBuildingId = null
-                        endBuildingId = null
-                        startEntrance = null
-                        endEntrance = null
-                        showPickerFor = null
-                        pathNodeIds = emptyList()
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 88.dp)
-                    .zIndex(10f)
-            )
+            if (showPathButton) {
+                PathModeButton(
+                    enabled = isPathMode,
+                    onToggle = {
+                        isPathMode = !isPathMode
+                        if (!isPathMode) {
+                            startBuildingId = null
+                            endBuildingId = null
+                            startEntrance = null
+                            endEntrance = null
+                            showPickerFor = null
+                            pathNodeIds = emptyList()
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp, bottom = 88.dp)
+                        .zIndex(10f)
+                )
+            }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -1544,6 +1558,11 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     }
 }
 
+fun floorLabel(floor: Int): String {
+    return "Floor $floor"
+}
+
+
 // Layar denah lantai yang memuat gambar dari Firebase Storage
 @Composable
 fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor: Int) {
@@ -1570,26 +1589,114 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
         ctx.resources.getIdentifier(resName, "drawable", ctx.packageName)
     }
 
-    Box(Modifier.fillMaxSize()) {
+    val roomsOnFloor = remember(buildingId, floor) {
+        InMemoryCampusRepository.rooms
+            .filter { it.buildingId == buildingId && it.floor == floor }
+            .sortedBy { it.code }
+            .map { room ->
+                displayRoomCode(room.buildingId, room.code)
+            }
+    }
 
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            when {
-                url != null -> {
-                    coil.compose.SubcomposeAsyncImage(
-                        model = url,
-                        contentDescription = "Floor plan",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize()
+    val outerScroll = rememberScrollState()
+
+    val frequentlyVisitedOnThisFloor = remember(buildingId, floor) {
+        InMemoryCampusRepository
+            .frequentlyVisitedByBuilding[buildingId]
+            .orEmpty()
+            .filter { it.floor == floor }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(outerScroll)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+        ) {
+            Spacer(Modifier.height(40.dp))
+
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = Color(0xFFF2F3F7),
+                tonalElevation = 1.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "${buildingDisplayName(buildingId)} - ${floorLabel(floor)} Navigation",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = UPH_Navy
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 220.dp, max = 420.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
                     ) {
-                        when (painter.state) {
-                            is AsyncImagePainter.State.Success -> {
-                                Image(
-                                    painter = painter,
+                        when {
+                            url != null -> {
+                                SubcomposeAsyncImage(
+                                    model = url,
                                     contentDescription = "Floor plan",
                                     contentScale = ContentScale.Fit,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.matchParentSize()
+                                ) {
+                                    when (painter.state) {
+                                        is AsyncImagePainter.State.Success -> {
+                                            SubcomposeAsyncImageContent()
+                                        }
+                                        is AsyncImagePainter.State.Loading -> {
+                                            Box(
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    modifier   = Modifier.size(40.dp),
+                                                    color      = UPH_Navy,
+                                                    trackColor = UPH_Navy.copy(alpha = 0.15f),
+                                                    strokeWidth = 4.dp
+                                                )
+                                            }
+                                        }
+                                        else -> {
+                                            Box(
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    "Failed to load map",
+                                                    color = UPH_Navy
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            tried && drawableId != 0 -> {
+                                Image(
+                                    painter = painterResource(drawableId),
+                                    contentDescription = "Floor plan",
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.matchParentSize()
                                 )
                             }
+
+                            tried -> {
+                                Text(
+                                    "No floor plan image for ${buildingDisplayName(buildingId)} ${floorLabel(floor)}",
+                                    color = UPH_Navy
+                                )
+                            }
+
                             else -> {
                                 Box(
                                     modifier = Modifier.fillMaxSize(),
@@ -1606,35 +1713,102 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                         }
                     }
                 }
+            }
 
-                tried && drawableId != 0 -> {
-                    Image(
-                        painter = painterResource(drawableId),
-                        contentDescription = "Floor plan",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
+            Spacer(Modifier.height(16.dp))
+
+            if (frequentlyVisitedOnThisFloor.isNotEmpty()) {
+                Text(
+                    text = "Frequently Visited on ${floorLabel(floor)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = UPH_Navy
+                )
+                Spacer(Modifier.height(8.dp))
+
+                val featuredScroll = rememberScrollState()
+                Box(Modifier.fillMaxWidth()) {
+                    Row(Modifier.horizontalScroll(featuredScroll)) {
+                        frequentlyVisitedOnThisFloor.forEach { place ->
+                            FeaturedPlaceCard(
+                                place = place,
+                                onClick = {
+                                    // already on the correct floor – keep for future deep-link if needed
+                                    navController.navigate("floor/${place.buildingId}/${place.floor}")
+                                },
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                    }
+
+                    HorizontalScrollbar(
+                        scroll = featuredScroll,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(top = 4.dp)
                     )
                 }
 
-                tried -> Text("No floor plan image for Building $buildingId Floor $floor")
+                Spacer(Modifier.height(16.dp))
+            }
 
-                else -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+            Text(
+                text = "Rooms on ${floorLabel(floor)}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = UPH_Navy
+            )
+            Spacer(Modifier.height(8.dp))
+
+            if (roomsOnFloor.isEmpty()) {
+                Text(
+                    "Room list is not available for this floor yet.",
+                    color = UPH_Navy
+                )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
                 ) {
-                    CircularProgressIndicator(
-                        modifier   = Modifier.size(40.dp),
-                        color      = UPH_Navy,
-                        trackColor = UPH_Navy.copy(alpha = 0.15f),
-                        strokeWidth = 4.dp
-                    )
+                    roomsOnFloor.forEach { roomText ->
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFF2F3F7),
+                            tonalElevation = 1.dp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = roomText,
+                                color = UPH_Navy,
+                                modifier = Modifier.padding(
+                                    horizontal = 16.dp,
+                                    vertical = 10.dp
+                                )
+                            )
+                        }
+                    }
                 }
             }
         }
 
-        BackToMapButton(navController, Modifier.align(Alignment.TopStart).padding(8.dp))
+        BackToMapButton(
+            navController,
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+        )
+
+        VerticalScrollbar(
+            scroll = outerScroll,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 6.dp)
+        )
     }
 }
+
 
 // Layar daftar event
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -2342,14 +2516,14 @@ fun currentRoute(navController: NavHostController): String? {
 @Composable
 private fun PreviewHomeScreenBorders() {
     val nav = rememberNavController()
-    HomeScreen(navController = nav, debugBorders = true)
+    HomeScreen(navController = nav, debugBorders = true, showPathButton = false)
 }
 
 @Preview(name = "Home Screen (Normal)", showSystemUi = true, showBackground = true)
 @Composable
 private fun PreviewHomeScreen() {
     val nav = rememberNavController()
-    HomeScreen(navController = nav)
+    HomeScreen(navController = nav, showPathButton = false)
 }
 
 @Preview(name = "Events Screen", showSystemUi = true, showBackground = true)

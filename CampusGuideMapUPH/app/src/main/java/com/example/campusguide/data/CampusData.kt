@@ -326,9 +326,12 @@ object InMemoryCampusRepository: CampusRepository {
     }
 }
 
-fun buildingDisplayName(id: String): String {
+fun buildingDisplayName(id: String?): String {
+    if (id == null) return ""
+
     return InMemoryCampusRepository.buildings
         .find { it.id == id }
         ?.name
         ?: "Building $id"
 }
+
