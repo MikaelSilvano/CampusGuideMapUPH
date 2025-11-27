@@ -335,7 +335,7 @@ fun CampusGuideApp() {
                         composable("home") {
                             HomeScreen(
                                 navController = navController,
-                                showPathButton = false
+                                showPathButton = true
                             )
                         }
                         composable("events") { EventsScreen(navController) }
@@ -2516,14 +2516,14 @@ fun currentRoute(navController: NavHostController): String? {
 @Composable
 private fun PreviewHomeScreenBorders() {
     val nav = rememberNavController()
-    HomeScreen(navController = nav, debugBorders = true, showPathButton = false)
+    HomeScreen(navController = nav, debugBorders = true, showPathButton = true)
 }
 
 @Preview(name = "Home Screen (Normal)", showSystemUi = true, showBackground = true)
 @Composable
 private fun PreviewHomeScreen() {
     val nav = rememberNavController()
-    HomeScreen(navController = nav, showPathButton = false)
+    HomeScreen(navController = nav, showPathButton = true)
 }
 
 @Preview(name = "Events Screen", showSystemUi = true, showBackground = true)

@@ -298,15 +298,13 @@ fun AddOrEditEventScreen(
     }
 
     LaunchedEffect(true) {
-        kotlinx.coroutines.delay(4000)
-        if (!loadedOnce && fullEvents.isEmpty()) {
-            error = "Unable to load events. Please check your internet connection."
-        }
         try {
             fullEvents = repo.listAllAdmin()
-        } catch (e: Exception) {
+            loadedOnce = true
+            error = null
+        } catch (t: Throwable) {
             fullEvents = emptyList()
-            error = friendlyError(e.message ?: "Network error")
+            error = friendlyErrorFromThrowable(t)
         }
     }
 
@@ -610,7 +608,7 @@ fun AddOrEditEventScreen(
                         val compressedPoster: Uri? = if (poster != null) {
                             compressImageToTempFile(ctx, poster!!) ?: run {
                                 isWorking = false
-                                error = "Failed to compress poster image. Please try another file."
+                                error = friendlyError("Failed to compress poster image. Please try another file.")
                                 return@launch
                             }
                         } else {
@@ -634,9 +632,9 @@ fun AddOrEditEventScreen(
                                 toCreate,
                                 compressedPoster,
                                 onDone  = { isWorking = false; success = true },
-                                onError = { e ->
+                                onError = { err ->
                                     isWorking = false
-                                    error = friendlyError(e)
+                                    error = friendlyErrorFromThrowable(err as? Throwable)
                                 }
                             )
                         } else {
@@ -656,7 +654,10 @@ fun AddOrEditEventScreen(
                                 updated,
                                 compressedPoster,
                                 onDone  = { isWorking = false; success = true },
-                                onError = { e -> isWorking = false; error = e }
+                                onError = { err ->
+                                    isWorking = false
+                                    error = friendlyErrorFromThrowable(err as? Throwable)
+                                }
                             )
                         }
                     }
@@ -1046,16 +1047,29 @@ private fun findRoomConflict(
 }
 
 private fun friendlyError(msg: String): String {
+    val m = msg.lowercase()
     return when {
-        msg.contains("500") -> "A server error occurred. Please try again later."
-        msg.contains("400") -> "Request failed. Please check your inputs and try again."
-        msg.contains("timeout", ignoreCase = true) ->
-            "The server took too long to respond. Please try again."
-        msg.contains("network", ignoreCase = true) ->
-            "Network error. Please check your connection."
-
+        "500" in m -> "A server error occurred. Please try again later."
+        "400" in m -> "Request failed. Please check your inputs and try again."
+        "timeout" in m -> "The server took too long to respond. Please try again."
+        "network" in m -> "Network error. Please check your connection."
         else -> "Something went wrong. Please try again."
     }
 }
 
+private fun friendlyErrorFromThrowable(t: Throwable?): String {
+    if (t == null) return friendlyError("")
+    val raw = (t.message ?: "")
 
+    return when (t) {
+        is java.net.UnknownHostException,
+        is com.google.firebase.FirebaseNetworkException ->
+            "Network error. Please check your connection."
+        is java.net.SocketTimeoutException ->
+            "The server took too long to respond. Please try again."
+        is java.io.FileNotFoundException ->
+            "File not found. Please choose another file."
+        else ->
+            friendlyError(raw)
+    }
+}
