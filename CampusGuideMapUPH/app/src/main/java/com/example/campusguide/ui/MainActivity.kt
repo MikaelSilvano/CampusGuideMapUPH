@@ -427,7 +427,7 @@ fun CampusGuideApp() {
                         composable("home") {
                             HomeScreen(
                                 navController = navController,
-                                showPathButton = true
+                                showPathButton = false
                             )
                         }
                         composable("events") { EventsScreen(navController) }
