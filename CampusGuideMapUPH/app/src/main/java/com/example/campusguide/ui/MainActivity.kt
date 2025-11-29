@@ -4,16 +4,19 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.CalendarContract
-import androidx.compose.foundation.Canvas
 import androidx.compose.ui.res.colorResource
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
@@ -62,13 +65,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
 import com.example.campusguide.R
 import com.example.campusguide.data.*
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import java.time.LocalDate
@@ -77,23 +77,13 @@ import java.time.ZoneId
 import com.example.campusguide.ui.admin.*
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
-import coil.compose.AsyncImage
-import kotlinx.coroutines.tasks.await
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Close
 import com.example.campusguide.ui.common.VerticalScrollbar
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ScrollState
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.campusguide.ui.common.HorizontalScrollbar
 import coil.compose.AsyncImagePainter
@@ -101,6 +91,10 @@ import android.util.Log
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.ui.unit.sp
 import com.example.campusguide.data.FrequentlyVisitedPlace
+import com.example.campusguide.path.BuildingPathStep
+import com.example.campusguide.path.CardinalDirection
+import com.example.campusguide.path.ManualBuildingRoutes
+import androidx.compose.ui.window.Dialog
 
 
 private val UPH_Navy = Color(0xFF16224C)
@@ -109,9 +103,11 @@ private val UPH_White = Color(0xFFFFFFFF)
 private val UPH_Orange = Color(0xFFF58A0A)
 val routeColor = Color(0xFFA64AEF)
 
+
 private val FACULTY_CARD_WIDTH  = 220.dp
 private val FACULTY_TITLE_HEIGHT = 44.dp
 private val FACULTY_IMAGE_HEIGHT = 110.dp
+
 
 @Composable
 private fun uphTextFieldColors() = TextFieldDefaults.colors(
@@ -128,14 +124,17 @@ private fun uphTextFieldColors() = TextFieldDefaults.colors(
     unfocusedPlaceholderColor= UPH_Navy.copy(alpha = 0.55f),
 )
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun uphDatePickerColors() = DatePickerDefaults.colors(
     containerColor = Color(0xFFF8F9FD),
 
+
     titleContentColor = UPH_Navy,
     headlineContentColor = UPH_Navy,
     subheadContentColor = UPH_Navy,
+
 
     weekdayContentColor = UPH_Navy,
     dayContentColor = UPH_Navy,
@@ -143,36 +142,46 @@ private fun uphDatePickerColors() = DatePickerDefaults.colors(
     yearContentColor = UPH_Navy,
     currentYearContentColor = UPH_Navy,
 
+
     todayDateBorderColor = UPH_Navy,
     todayContentColor = UPH_Navy,
+
 
     selectedDayContainerColor = UPH_Orange,
     selectedDayContentColor = UPH_White,
 
+
     dayInSelectionRangeContainerColor = UPH_Orange.copy(alpha = 0.18f),
     dayInSelectionRangeContentColor = UPH_Navy,
+
 
     selectedYearContainerColor = UPH_Orange,
     selectedYearContentColor = UPH_White,
 
+
     navigationContentColor = UPH_Navy
 )
+
 
 @Composable
 private fun uphTextBtnColors() =
     ButtonDefaults.textButtonColors(contentColor = UPH_Navy)
+
 
 class MainActivity : ComponentActivity() {
     // Dipanggil saat activity dibuat untuk set konten ke composable utama
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         // Initialize graph once
         com.example.campusguide.path.PathRepository.init(this, R.raw.campus_graph)
+
 
         setContent { CampusGuideApp() }
     }
 }
+
 
 data class EntranceUI(
     val id: String,
@@ -180,9 +189,11 @@ data class EntranceUI(
     val buildingId: String
 )
 
+
 private val ADMIN_ROUTES = listOf(
     ROUTE_ADMIN_DASH, ROUTE_ADMIN_ADD, ROUTE_ADMIN_EDIT, ROUTE_ADMIN_REMOVE, ROUTE_ADMIN_HISTORY
 )
+
 
 fun NavHostController.goToHomeClearingAdmin() {
     ADMIN_ROUTES.forEach { popBackStack(route = it, inclusive = true) }
@@ -196,15 +207,16 @@ fun NavHostController.goToHomeClearingAdmin() {
     }
 }
 
+
 private fun entrancesFor(buildingId: String): List<EntranceUI> = when (buildingId) {
     "B" -> listOf(
         EntranceUI("B_West",  "West Entrance",  "B"),
-        EntranceUI("B_South", "South Entrance", "B"),
+        EntranceUI("B_South", "North Entrance", "B"),
         EntranceUI("B_East",  "East Entrance",  "B")
     )
     "C" -> listOf(
         EntranceUI("C_South", "South Entrance", "C"),
-        EntranceUI("C_East",  "East Entrance",  "C")
+        EntranceUI("C_East",  "West Entrance",  "C")
     )
     "D" -> listOf(
         EntranceUI("D_West", "West Entrance", "D"),
@@ -217,6 +229,77 @@ private fun entrancesFor(buildingId: String): List<EntranceUI> = when (buildingI
 }
 
 
+private fun entranceDirectionFor(
+    entrance: EntranceUI,
+    destinationBuildingId: String?
+): CardinalDirection? {
+    return when (entrance.buildingId) {
+        "B" -> when (entrance.id) {
+            "B_West"  -> CardinalDirection.WEST
+            "B_East"  -> CardinalDirection.EAST
+            "B_South" -> {
+                // B → D: "change south entrance into north entrance"
+                if (destinationBuildingId == "D") {
+                    CardinalDirection.NORTH
+                } else {
+                    // For other destinations we treat South as "North-ish" too,
+                    // so it still uses the NORTH variant.
+                    CardinalDirection.NORTH
+                }
+            }
+            else -> null
+        }
+        "C" -> when (entrance.id) {
+            "C_South" -> CardinalDirection.SOUTH
+            "C_East"  -> {
+                // "change east entrance into west entrance"
+                CardinalDirection.WEST
+            }
+            else -> null
+        }
+        else -> null    // H, D, F don't need direction for the manual rules
+    }
+}
+
+
+@Composable
+fun SafeStepImage(
+    @androidx.annotation.DrawableRes resId: Int,
+    contentDescription: String,
+    modifier: Modifier = Modifier
+) {
+    val ctx = LocalContext.current
+
+
+    // Check once if we can actually decode this resource
+    val isValid = remember(resId) {
+        runCatching {
+            ctx.resources.getDrawable(resId, ctx.theme)
+        }.isSuccess
+    }
+
+
+    if (isValid) {
+        Image(
+            painter = painterResource(id = resId),
+            contentDescription = contentDescription,
+            modifier = modifier,
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .background(Color.LightGray, RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No image", fontSize = 10.sp, color = Color.DarkGray)
+        }
+    }
+}
+
+
+
+
 // Setup drawer, top bar, bottom bar, dan NavHost
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -225,40 +308,43 @@ fun CampusGuideApp() {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+
     var globalError by remember { mutableStateOf<String?>(null) }
+
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val route = navBackStackEntry?.destination?.route
     val args  = navBackStackEntry?.arguments
 
+
     val backgroundRes = when (route) {
         "building/{id}" -> {
             when (args?.getString("id")) {
                 "B" -> R.drawable.bb
-                "C" -> R.drawable.bc
-                "D" -> R.drawable.bd
-                "F" -> R.drawable.bf
-                "H" -> R.drawable.bh
+                "C" -> R.drawable.`bc`
+                "D" -> R.drawable.`bd`
+                "F" -> R.drawable.`bf`
+                "H" -> R.drawable.`bh`
                 else -> R.drawable.uph_building_background
             }
         }
         "floor/{b}/{f}" -> {
             when (args?.getString("b")) {
                 "B" -> R.drawable.bb
-                "C" -> R.drawable.bc
-                "D" -> R.drawable.bd
-                "F" -> R.drawable.bf
-                "H" -> R.drawable.bh
+                "C" -> R.drawable.`bc`
+                "D" -> R.drawable.`bd`
+                "F" -> R.drawable.`bf`
+                "H" -> R.drawable.`bh`
                 else -> R.drawable.uph_building_background
             }
         }
         "event/{buildingId}/{eventId}" -> {
             when (args?.getString("buildingId")) {
                 "B" -> R.drawable.bb
-                "C" -> R.drawable.bc
-                "D" -> R.drawable.bd
-                "F" -> R.drawable.bf
-                "H" -> R.drawable.bh
+                "C" -> R.drawable.`bc`
+                "D" -> R.drawable.`bd`
+                "F" -> R.drawable.`bf`
+                "H" -> R.drawable.`bh`
                 else -> R.drawable.uph_building_background
             }
         }
@@ -269,12 +355,15 @@ fun CampusGuideApp() {
             val events by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
             val e = events.firstOrNull { it.id == eventId }
 
+
             var loadedOnce by remember { mutableStateOf(false) }
             var error by remember { mutableStateOf<String?>(null) }
+
 
             LaunchedEffect(events) {
                 if (!loadedOnce && events.isNotEmpty()) loadedOnce = true
             }
+
 
             LaunchedEffect(true) {
                 kotlinx.coroutines.delay(4000)
@@ -283,17 +372,19 @@ fun CampusGuideApp() {
                 }
             }
 
+
             when (e?.buildingId) {
                 "B" -> R.drawable.bb
-                "C" -> R.drawable.bc
-                "D" -> R.drawable.bd
-                "F" -> R.drawable.bf
-                "H" -> R.drawable.bh
+                "C" -> R.drawable.`bc`
+                "D" -> R.drawable.`bd`
+                "F" -> R.drawable.`bf`
+                "H" -> R.drawable.`bh`
                 else -> R.drawable.uph_building_background
             }
         }
         else -> R.drawable.uph_building_background
     }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -308,6 +399,7 @@ fun CampusGuideApp() {
             topBar = {
                 val current = currentRoute(navController)
                 val isAdminScreen = current?.startsWith("admin/") == true
+
 
                 AppTopBar(
                     showSearch = !isAdminScreen,
@@ -341,6 +433,7 @@ fun CampusGuideApp() {
                         composable("events") { EventsScreen(navController) }
                         composable("search") { SearchScreen(navController) }
 
+
                         composable(ROUTE_ADMIN_LOGIN) {
                             AdminLoginScreen(onSuccess = {
                                 navController.popBackStack(
@@ -353,10 +446,12 @@ fun CampusGuideApp() {
                             })
                         }
 
+
                         adminGraph(
                             nav = navController,
                             onGoToMap = { navController.goToHomeClearingAdmin() }
                         )
+
 
                         composable("building/{id}") {
                             val id = it.arguments?.getString("id") ?: ""
@@ -379,6 +474,7 @@ fun CampusGuideApp() {
                             EventsCalendarUserScreen(navController)
                         }
 
+
                         composable("user_calendar_day/{date}") { backStackEntry ->
                             val date = backStackEntry.arguments?.getString("date")!!
                             EventsCalendarUserDayScreen(
@@ -389,6 +485,7 @@ fun CampusGuideApp() {
                                 }
                             )
                         }
+
 
                         composable("event_detail_user/{id}") {
                             val id = it.arguments?.getString("id")!!
@@ -401,6 +498,7 @@ fun CampusGuideApp() {
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 // App bar bagian atas
@@ -449,16 +547,19 @@ private fun AppTopBar(
     )
 }
 
+
 // Bottom navigation bar
 @Composable
 private fun BottomBar(navController: NavHostController) {
     var askLogout by remember { mutableStateOf(false) }
     val current = currentRoute(navController)
 
+
     fun goAfterConfirm(block: () -> Unit) {
         if (current?.startsWith("admin/") == true) askLogout = true else block()
         if (askLogout && current?.startsWith("admin/") != true) askLogout = false
     }
+
 
     val navItemColors = NavigationBarItemDefaults.colors(
         selectedIconColor   = UPH_White,
@@ -467,6 +568,7 @@ private fun BottomBar(navController: NavHostController) {
         unselectedTextColor = UPH_White.copy(alpha = 0.75f),
         indicatorColor      = UPH_Orange
     )
+
 
     NavigationBar(containerColor = UPH_Navy) {
         NavigationBarItem(
@@ -502,6 +604,7 @@ private fun BottomBar(navController: NavHostController) {
         )
     }
 
+
     if (askLogout) {
         AlertDialog(
             onDismissRequest = { askLogout = false },
@@ -525,16 +628,20 @@ private fun BottomBar(navController: NavHostController) {
     }
 }
 
+
 @Composable
 fun DebugSeedButton() {
     if (!BuildConfig.DEBUG) return // hide in release builds
+
 
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
 
+
     Box(Modifier.fillMaxSize()) {
         SnackbarHost(hostState = snackbar, modifier = Modifier.align(Alignment.BottomCenter))
+
 
         Button(
             onClick = {
@@ -557,6 +664,8 @@ fun DebugSeedButton() {
 }
 
 
+
+
 // Data untuk hotspot
 data class Spot(
     val id: String,
@@ -565,6 +674,7 @@ data class Spot(
     val color: Color
 )
 
+
 data class SportSpot(
     val id: String,
     val label: String,
@@ -572,11 +682,13 @@ data class SportSpot(
     val y: Float
 )
 
+
 data class SportFacility(
     val id: String,
     val title: String,
     val imageKey: String
 )
+
 
 private fun sportFacilityFor(id: String): SportFacility? = when (id) {
     "basketball" -> SportFacility("basketball", "Basketball Court", "basketball")
@@ -586,6 +698,7 @@ private fun sportFacilityFor(id: String): SportFacility? = when (id) {
     "multisport" -> SportFacility("multisport", "Multisport Venue",            "multisport")
     else -> null
 }
+
 
 // Home page (map UPH)
 @Composable
@@ -597,18 +710,63 @@ fun HomeScreen(
     // ---- Path Mode & selection state ----
     var isPathMode by rememberSaveable { mutableStateOf(false) }
 
+
     var startBuildingId by rememberSaveable { mutableStateOf<String?>(null) }
     var endBuildingId   by rememberSaveable { mutableStateOf<String?>(null) }
     var startEntrance   by rememberSaveable { mutableStateOf<EntranceUI?>(null) }
     var endEntrance     by rememberSaveable { mutableStateOf<EntranceUI?>(null) }
 
+
     // Which entrance sheet is open: "start", "end", or null
     var showPickerFor by remember { mutableStateOf<String?>(null) }
 
-    // ---- Pathfinding graph & rendered path ----
-    val pathRepo = remember { com.example.campusguide.path.PathRepository.get() }
-    val graph = remember { pathRepo.graph() }
-    var pathNodeIds by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    // Manual, picture-based route steps
+    var manualSteps by remember { mutableStateOf<List<BuildingPathStep>>(emptyList()) }
+    var showPathSheet by rememberSaveable { mutableStateOf(false) }
+    var pathError by rememberSaveable { mutableStateOf<String?>(null) }
+
+
+    // Helper to recompute both: graph polyline + manual picture route
+    fun recomputePath() {
+        manualSteps = emptyList()
+        showPathSheet = false
+
+
+        val start = startEntrance
+        val end = endEntrance
+        val startB = start?.buildingId
+        val endB = end?.buildingId
+
+
+        if (start == null || end == null || startB == null || endB == null) return
+
+
+        // Map entrance -> direction (with your "change entrance" rules)
+        val dir = entranceDirectionFor(start, endB)
+
+
+        // Enforce: "B must not be able to go to D (east)"
+        if (startB == "B" && endB == "D" && dir == CardinalDirection.EAST) {
+            pathError = "Route from Building B to D via the east entrance is not allowed. Please use the west or south/north entrance."
+            return
+        }
+
+
+        // 1) Manual picture-based route (for B/C/D/H/F)
+        val manual = ManualBuildingRoutes.resolve(
+            fromBuilding = startB,
+            toBuilding = endB,
+            fromDirection = dir
+        )
+        if (manual != null) {
+            manualSteps = manual
+            showPathSheet = true
+        }
+    }
+
+
+
 
     val hotspots = listOf(
         Spot("B", 0.665f, 0.73f, UPH_Orange),
@@ -617,6 +775,7 @@ fun HomeScreen(
         Spot("D", 0.46f,  0.46f, Color(0xFF1E88E5)),
         Spot("F", 0.23f,  0.36f, Color(0xFF23943c)),
     )
+
 
     Column(
         modifier = Modifier
@@ -636,6 +795,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+
             BoxWithConstraints(
                 modifier = Modifier
                     .matchParentSize()
@@ -645,12 +805,15 @@ fun HomeScreen(
                     Box(Modifier.matchParentSize().border(2.dp, Color.Red))
                 }
 
+
                 val base = 34.dp
                 hotspots.forEach { s ->
                     val xOff = (maxWidth * s.x) - (base / 2)
                     val yOff = (maxHeight * s.y) - (base / 2)
 
+
                     val isSelected = isPathMode && (s.id == startBuildingId || s.id == endBuildingId)
+
 
                     BuildingDot(
                         id = s.id,
@@ -668,18 +831,18 @@ fun HomeScreen(
                                             endBuildingId = null
                                             startEntrance = null
                                             endEntrance = null
-                                            pathNodeIds = emptyList()
+
+
+
 
                                             val es = entrancesFor(s.id)
                                             if (es.size <= 1) {
                                                 startEntrance = es.firstOrNull()
                                                 if (startEntrance != null && endEntrance != null) {
-                                                    pathNodeIds = com.example.campusguide.path.Router.shortestPath(
-                                                        graph = graph,
-                                                        startId = startEntrance!!.id,
-                                                        endId = endEntrance!!.id
-                                                    )
+                                                    recomputePath()
                                                 }
+
+
                                             } else {
                                                 showPickerFor = "start"
                                             }
@@ -690,12 +853,10 @@ fun HomeScreen(
                                             if (es.size <= 1) {
                                                 endEntrance = es.firstOrNull()
                                                 if (startEntrance != null && endEntrance != null) {
-                                                    pathNodeIds = com.example.campusguide.path.Router.shortestPath(
-                                                        graph = graph,
-                                                        startId = startEntrance!!.id,
-                                                        endId = endEntrance!!.id
-                                                    )
+                                                    recomputePath()
                                                 }
+
+
                                             } else {
                                                 showPickerFor = "end"
                                             }
@@ -705,6 +866,7 @@ fun HomeScreen(
                             }
                     )
                 }
+
 
                 // Hotspot untuk sport facilities
                 val sportSpots = listOf(
@@ -721,38 +883,24 @@ fun HomeScreen(
                     val xOff = (maxWidth * s.x) - (sportDotSize / 2)
                     val yOff = (maxHeight * s.y) - (sportDotSize / 2)
 
-                    SportDot(
-                        label = s.label,
-                        size = sportDotSize,
-                        modifier = Modifier
-                            .offset(x = xOff, y = yOff)
-                            .clickable {
+                SportDot(
+                    label = s.label,
+                    size = sportDotSize,
+                    modifier = Modifier
+                        .offset(x = xOff, y = yOff)
+                        .clickable {
+                            if (isPathMode) {
+                                pathError =
+                                    "Path navigation is only available between main buildings.\n" +
+                                            "Exit Path Mode to view sport facilities."
+                            } else {
                                 navController.navigate("sport/${s.id}")
                             }
+                        }
                     )
                 }
             }
 
-            Canvas(
-                modifier = Modifier
-                    .matchParentSize()
-                    .zIndex(2f)
-            ) {
-                if (pathNodeIds.size >= 2) {
-                    val pts: List<Offset> = pathRepo
-                        .toNormalizedOffsets(pathNodeIds)
-                        .map { (nx, ny) -> Offset(nx * size.width, ny * size.height) }
-
-                    for (i in 0 until (pts.size - 1)) {
-                        drawLine(
-                            brush = SolidColor(routeColor),
-                            start = pts[i],
-                            end   = pts[i + 1],
-                            strokeWidth = 10f
-                        )
-                    }
-                }
-            }
             if (showPathButton) {
                 PathModeButton(
                     enabled = isPathMode,
@@ -764,7 +912,9 @@ fun HomeScreen(
                             startEntrance = null
                             endEntrance = null
                             showPickerFor = null
-                            pathNodeIds = emptyList()
+                            manualSteps = emptyList()
+                            showPathSheet = false
+                            pathError = null
                         }
                     },
                     modifier = Modifier
@@ -775,7 +925,9 @@ fun HomeScreen(
             }
         }
 
+
         Spacer(Modifier.height(16.dp))
+
 
         // Helper text
         val help = when {
@@ -786,51 +938,75 @@ fun HomeScreen(
         }
         Text(help, color = Color.Gray)
 
+
         Spacer(Modifier.height(24.dp))
     }
 
+
+    // ---- Entrance pickers (keep INSIDE HomeScreen) ----
     // ---- Entrance pickers (keep INSIDE HomeScreen) ----
     when (showPickerFor) {
         "start" -> {
-            val list = entrancesFor(startBuildingId ?: "")
             EntrancePickerSheet(
-                title = "Choose starting entrance — Building $startBuildingId",
-                items = list,
-                onPick = { e ->
-                    startEntrance = e
+                title = "Pick START entrance for building $startBuildingId",
+                items = entrancesFor(startBuildingId ?: ""),
+                onPick = { chosen ->
+                    startEntrance = chosen
                     showPickerFor = null
                     if (startEntrance != null && endEntrance != null) {
-                        pathNodeIds = com.example.campusguide.path.Router.shortestPath(
-                            graph = graph,
-                            startId = startEntrance!!.id,
-                            endId = endEntrance!!.id
-                        )
+                        recomputePath()
                     }
                 },
                 onDismiss = { showPickerFor = null }
             )
         }
+
+
         "end" -> {
-            val list = entrancesFor(endBuildingId ?: "")
             EntrancePickerSheet(
-                title = "Choose destination entrance — Building $endBuildingId",
-                items = list,
-                onPick = { e ->
-                    endEntrance = e
+                title = "Pick DESTINATION entrance for building $endBuildingId",
+                items = entrancesFor(endBuildingId ?: ""),
+                onPick = { chosen ->
+                    endEntrance = chosen
                     showPickerFor = null
                     if (startEntrance != null && endEntrance != null) {
-                        pathNodeIds = com.example.campusguide.path.Router.shortestPath(
-                            graph = graph,
-                            startId = startEntrance!!.id,
-                            endId = endEntrance!!.id
-                        )
+                        recomputePath()
                     }
                 },
                 onDismiss = { showPickerFor = null }
             )
         }
     }
+
+
+    // ---- Path steps bottom sheet ----
+    if (showPathSheet && manualSteps.isNotEmpty() && startBuildingId != null && endBuildingId != null) {
+        PathStepsBottomSheet(
+            startBuildingId = startBuildingId!!,
+            endBuildingId = endBuildingId!!,
+            steps = manualSteps,
+            onDismiss = { showPathSheet = false }
+        )
+    }
+
+
+    // ---- Error dialog for impossible routes, e.g. B → D east ----
+    pathError?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { pathError = null },
+            title = { Text("No path available") },
+            text = { Text(msg) },
+            confirmButton = {
+                TextButton(onClick = { pathError = null }) {
+                    Text("OK", color = UPH_Navy)
+                }
+            }
+        )
+    }
 }
+
+
+
 
 @Composable
 fun PathModeButton(
@@ -857,6 +1033,7 @@ fun PathModeButton(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -895,6 +1072,264 @@ fun EntrancePickerSheet(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PathStepsBottomSheet(
+    startBuildingId: String,
+    endBuildingId: String,
+    steps: List<BuildingPathStep>,
+    onDismiss: () -> Unit
+) {
+    if (steps.isEmpty()) return
+
+    var enlargedStep by remember { mutableStateOf<BuildingPathStep?>(null) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Color.White
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Path from $startBuildingId to $endBuildingId",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(12.dp))
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+            ) {
+                itemsIndexed(steps) { index, step ->
+                    PathStepRow(
+                        stepNumber = index + 1,
+                        step = step,
+                        onClick = {
+                            enlargedStep = step
+                        }
+                    )
+                }
+            }
+        }
+    }
+    enlargedStep?.let { step ->
+        PathStepPreviewDialog(
+            step = step,
+            onDismiss = { enlargedStep = null }
+        )
+    }
+}
+
+
+@Composable
+fun PathStepRow(
+    stepNumber: Int,
+    step: BuildingPathStep,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() } // <— klik 1 baris untuk enlarge
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Number
+        Text(
+            text = stepNumber.toString(),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.width(24.dp)
+        )
+
+        Spacer(Modifier.width(12.dp))
+
+        // Thumbnail image (tetap pakai ukuran kecil)
+        PathStepImage(
+            stepId = step.id,
+            modifier = Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(16.dp))
+        )
+
+        Spacer(Modifier.width(12.dp))
+
+        // Labels
+        Column {
+            Text(step.label, style = MaterialTheme.typography.titleMedium)
+            Text(step.id.uppercase(), style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+fun PathStepPreviewDialog(
+    step: BuildingPathStep,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White,
+            tonalElevation = 8.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = step.label,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = step.id.uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close"
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                PathStepImage(
+                    stepId = step.id,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PathStepImage(
+    stepId: String,
+    modifier: Modifier = Modifier
+) {
+    var imageUrl  by remember(stepId) { mutableStateOf<String?>(null) }
+    var isLoading by remember(stepId) { mutableStateOf(true) }
+
+    LaunchedEffect(stepId) {
+        isLoading = true
+        imageUrl = null
+
+        val storage = FirebaseStorage.getInstance().reference
+        val candidates = listOf(
+            "pathway/$stepId.png",
+            "pathway/$stepId.jpg",
+            "pathway/$stepId.jpeg",
+            "pathway/$stepId"
+        )
+
+        for (path in candidates) {
+            try {
+                val url = storage.child(path).downloadUrl.await()
+                imageUrl = url.toString()
+                break
+            } catch (e: Exception) {
+                Log.e("PathStepImage", "Failed for $path: ${e.message}")
+            }
+        }
+
+        isLoading = false
+    }
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFE9EDF6))
+    ) {
+        when {
+            isLoading && imageUrl == null -> {
+                Box(
+                    modifier = Modifier.matchParentSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier   = Modifier.size(24.dp),
+                        color      = UPH_Navy,
+                        trackColor = UPH_Navy.copy(alpha = 0.15f),
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
+            imageUrl != null -> {
+                SubcomposeAsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Path step $stepId",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize()
+                ) {
+                    when (painter.state) {
+                        is AsyncImagePainter.State.Success -> {
+                            SubcomposeAsyncImageContent()
+                        }
+                        is AsyncImagePainter.State.Loading -> {
+                            Box(
+                                modifier = Modifier.matchParentSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier   = Modifier.size(24.dp),
+                                    color      = UPH_Navy,
+                                    trackColor = UPH_Navy.copy(alpha = 0.15f),
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                        }
+                        else -> {
+                            Box(
+                                modifier = Modifier.matchParentSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "No image",
+                                    fontSize = 10.sp,
+                                    color = Color.DarkGray
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            else -> {
+                Box(
+                    modifier = Modifier.matchParentSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "No image",
+                        fontSize = 10.sp,
+                        color = Color.DarkGray
+                    )
+                }
+            }
+        }
+    }
+}
 
 // Pin bulat untuk menandai bangunan di peta
 @Composable
@@ -920,6 +1355,7 @@ fun BuildingDot(
         }
     }
 }
+
 
 @Composable
 fun SportDot(
@@ -949,17 +1385,20 @@ fun SportDot(
     }
 }
 
+
 // Menu bar (drawer)
 @Composable
 fun AppDrawer(onAdminLogin: () -> Unit) {
     val ctx = LocalContext.current
     fun open(url: String) = ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
 
+
     val bgDeep     = UPH_Navy
     val cardDark   = Color(0xFF0F1A3A)
     val textPrimary= Color(0xFFE8ECF7)
     val chevron    = textPrimary.copy(alpha = 0.7f)
     val warning    = UPH_Orange
+
 
     ModalDrawerSheet(
         modifier = Modifier.fillMaxHeight(),
@@ -985,7 +1424,9 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
             Text("Campus Guide UPH Lippo Village", style = MaterialTheme.typography.titleMedium, color = textPrimary)
         }
 
+
         Spacer(Modifier.weight(1f))
+
 
         Column(
             modifier = Modifier
@@ -1000,12 +1441,14 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
                 container = cardDark
             ) { open("https://www.youtube.com/watch?v=m8kHYpeL_q0") }
 
+
             DrawerItem(
                 label = "UPH Lippo Village Map",
                 leading = { Icon(Icons.Outlined.Map, null, tint = textPrimary) },
                 trailing = { Icon(Icons.Outlined.KeyboardArrowRight, null, tint = chevron) },
                 container = cardDark
             ) { open("https://maps.app.goo.gl/rJouzJ585cAuywr96") }
+
 
             DrawerItem(
                 label = "UPH Website",
@@ -1014,6 +1457,7 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
                 container = cardDark
             ) { open("https://www.uph.edu/id") }
 
+
             DrawerItem(
                 label = "UPH Instagram",
                 leading = { Icon(Icons.Outlined.CameraAlt, null, tint = textPrimary) },
@@ -1021,12 +1465,14 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
                 container = cardDark
             ) { open("https://www.instagram.com/uphimpactslives/") }
 
+
             DrawerItem(
                 label = "UPH Phone",
                 leading = { Icon(Icons.Outlined.Phone, null, tint = textPrimary) },
                 trailing = { Icon(Icons.Outlined.KeyboardArrowRight, null, tint = chevron) },
                 container = cardDark
             ) { open("tel:0215460901") }
+
 
             DrawerItem(
                 label = "Admin Login",
@@ -1038,6 +1484,7 @@ fun AppDrawer(onAdminLogin: () -> Unit) {
         Spacer(Modifier.height(12.dp))
     }
 }
+
 
 // Item komponen baris di dalam drawer
 @Composable
@@ -1074,6 +1521,7 @@ private fun DrawerItem(
     }
 }
 
+
 // Search tab
 @Composable
 fun SearchScreen(navController: NavHostController) {
@@ -1083,7 +1531,9 @@ fun SearchScreen(navController: NavHostController) {
     var results by remember { mutableStateOf<List<SearchResult>>(emptyList()) }
     val scope = rememberCoroutineScope()
 
+
     Column(Modifier.fillMaxSize().padding(12.dp)) {
+
 
         OutlinedTextField(
             value = q,
@@ -1107,8 +1557,10 @@ fun SearchScreen(navController: NavHostController) {
             colors = uphTextFieldColors()
         )
 
+
         val scroll = rememberScrollState()
         val showResults = q.isNotBlank()
+
 
         Box(Modifier.fillMaxSize()) {
             if (showResults) {
@@ -1137,9 +1589,11 @@ fun SearchScreen(navController: NavHostController) {
                                     r.title
                             }
 
+
                             val subtitle = when (r) {
                                 is SearchResult.RoomResult ->
                                     "${buildingDisplayName(r.buildingId)} • Floor ${r.floor}"
+
 
                                 is SearchResult.EventResult -> {
                                     val base = prettyEventSubtitle(r.subtitle)
@@ -1147,9 +1601,12 @@ fun SearchScreen(navController: NavHostController) {
                                     base.replace(buildingToken, buildingDisplayName(r.buildingId))
                                 }
 
+
                                 else ->
                                     r.subtitle
                             }
+
+
 
 
                             Column(
@@ -1173,6 +1630,7 @@ fun SearchScreen(navController: NavHostController) {
                     }
                 }
 
+
                 VerticalScrollbar(
                     scroll = scroll,
                     modifier = Modifier
@@ -1186,6 +1644,7 @@ fun SearchScreen(navController: NavHostController) {
     }
 }
 
+
 // Detail event
 @Composable
 fun EventDetailScreen(navController: NavHostController, eventId: String) {
@@ -1193,6 +1652,7 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
     val repo = remember { CampusRepoProvider.provide(ctx) }
     val events by remember { repo.streamAllEvents() }.collectAsState(initial = emptyList())
     val e = events.firstOrNull { it.id == eventId }
+
 
     var posterUrl by remember(eventId) { mutableStateOf<String?>(null) }
     LaunchedEffect(eventId, e) {
@@ -1206,15 +1666,17 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
             null
         }
 
+
         if (fromModel != null) {
             posterUrl = fromModel
             return@LaunchedEffect
         }
 
+
         val storage = FirebaseStorage.getInstance().reference
         val candidates = listOf(
             "posters/$eventId.jpg",
-            "posters/$eventId.png"
+            "posters/$eventId"
         )
         posterUrl = null
         for (path in candidates) {
@@ -1226,13 +1688,16 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
         }
     }
 
+
     if (e == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Event not found") }
         return
     }
 
+
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         BackToMapButton(navController, modifier = Modifier.padding(bottom = 8.dp))
+
 
         Text(e.name, style = MaterialTheme.typography.headlineSmall)
         Text("Held by: ${e.heldBy}")
@@ -1297,32 +1762,40 @@ fun EventDetailScreen(navController: NavHostController, eventId: String) {
                 }
             }
 
+
             Spacer(Modifier.height(12.dp))
         }
     }
 }
 
+
 private val sportDescriptions = mapOf(
     "basketball" to
             "Our indoor basketball court is home to UPH’s championship-winning teams, offering international-standard facilities that support the players’ journey to consistent athletic excellence.",
 
+
     "soccer" to
             "With a well-maintained pitch, our soccer field provides an outstanding experience for players looking to train or compete in matches.",
+
 
     "pool" to
             "Our Olympic-sized swimming pool provides a quality setting for students to refine their techniques, enjoy a refreshing swim, and challenge themselves in aquatic sports.",
 
+
     "multisport" to
             "At our futsal and badminton court, students can refine their skills, reach their athletic goals and follow in the footsteps of UPH’s past champions.",
+
 
     "gym" to
             "With spacious workout zones and quality equipment, our gym is a place where students can stay active and achieve their fitness goals for a healthier life."
 )
 
+
 @Composable
 fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
     val ctx = LocalContext.current
     val facility = sportFacilityFor(facilityId)
+
 
     if (facility == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -1331,19 +1804,23 @@ fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
         return
     }
 
+
     var imageUrl by remember(facilityId) { mutableStateOf<String?>(null) }
     var isLoading by remember(facilityId) { mutableStateOf(true) }
+
 
     LaunchedEffect(facilityId) {
         isLoading = true
         imageUrl = null
 
+
         val storage = FirebaseStorage.getInstance().reference
         val candidates = listOf(
             "sports/${facility.imageKey}.jpg",
             "sports/${facility.imageKey}.jpeg",
-            "sports/${facility.imageKey}.png"
+            "sports/${facility.imageKey}"
         )
+
 
         for (path in candidates) {
             try {
@@ -1356,6 +1833,7 @@ fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
         isLoading = false
     }
 
+
     Column(
         Modifier
             .fillMaxSize()
@@ -1363,12 +1841,14 @@ fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
     ) {
         BackToMapButton(navController, modifier = Modifier.padding(bottom = 8.dp))
 
+
         Text(
             facility.title,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Spacer(Modifier.height(12.dp))
+
 
         Box(
             modifier = Modifier
@@ -1425,7 +1905,9 @@ fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
             }
         }
 
+
         Spacer(Modifier.height(20.dp))
+
 
         Text(
             "Description",
@@ -1441,6 +1923,7 @@ fun SportFacilityScreen(navController: NavHostController, facilityId: String) {
     }
 }
 
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
@@ -1449,6 +1932,7 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     var floors by remember { mutableStateOf(listOf<Int>()) }
     var building by remember { mutableStateOf<Building?>(null) }
     val scope = rememberCoroutineScope()
+
 
     LaunchedEffect(buildingId) {
         scope.launch {
@@ -1459,7 +1943,9 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     val events by remember(buildingId) { repo.streamEventsForBuilding(buildingId) }
         .collectAsState(initial = emptyList())
 
+
     val outerScroll = rememberScrollState()
+
 
     Box(Modifier.fillMaxSize()) {
         Column(
@@ -1470,19 +1956,23 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
         ) {
             BackToMapButton(navController, Modifier.padding(bottom = 8.dp))
 
+
             Text(
                 building?.name ?: "Building $buildingId",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
 
+
             // === Faculties section (hide if none) ===
             val allFac = InMemoryCampusRepository.facultyInBuilding
             val faculties = allFac.filterValues { it == buildingId }.keys.toList()
 
+
             if (faculties.isNotEmpty()) {
                 Text("List of Faculties", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(6.dp))
+
 
                 val facScroll = rememberScrollState()
                 Box(Modifier.fillMaxWidth()) {
@@ -1502,16 +1992,20 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
                     )
                 }
 
+
                 Spacer(Modifier.height(12.dp))
                 Divider()
                 Spacer(Modifier.height(12.dp))
             }
 
+
             FrequentlyVisitedSection(buildingId = buildingId, navController = navController)
+
 
             Spacer(Modifier.height(12.dp))
             Divider()
             Spacer(Modifier.height(8.dp))
+
 
             Text("Floor Navigation", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(6.dp))
@@ -1530,12 +2024,15 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
                 }
             }
 
+
             Spacer(Modifier.height(12.dp))
             Divider()
             Spacer(Modifier.height(8.dp))
 
+
             Text("Events", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(6.dp))
+
 
             Column {
                 events.forEach { e ->
@@ -1546,8 +2043,10 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
                 }
             }
 
+
             Spacer(Modifier.height(12.dp))
         }
+
 
         com.example.campusguide.ui.common.VerticalScrollbar(
             scroll = outerScroll,
@@ -1558,9 +2057,12 @@ fun BuildingDetailScreen(buildingId: String, navController: NavHostController) {
     }
 }
 
+
 fun floorLabel(floor: Int): String {
     return "Floor $floor"
 }
+
+
 
 
 // Layar denah lantai yang memuat gambar dari Firebase Storage
@@ -1570,8 +2072,10 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
     val storagePath = "maps/$buildingId/$resName.jpg"
     val ctx = LocalContext.current
 
+
     var url by remember { mutableStateOf<String?>(null) }
     var tried by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(storagePath) {
         tried = false
@@ -1585,9 +2089,11 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
         }
     }
 
+
     val drawableId = remember(resName) {
         ctx.resources.getIdentifier(resName, "drawable", ctx.packageName)
     }
+
 
     val roomsOnFloor = remember(buildingId, floor) {
         InMemoryCampusRepository.rooms
@@ -1598,7 +2104,9 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
             }
     }
 
+
     val outerScroll = rememberScrollState()
+
 
     val frequentlyVisitedOnThisFloor = remember(buildingId, floor) {
         InMemoryCampusRepository
@@ -1606,6 +2114,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
             .orEmpty()
             .filter { it.floor == floor }
     }
+
 
     Box(Modifier.fillMaxSize()) {
         Column(
@@ -1615,6 +2124,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
             Spacer(Modifier.height(40.dp))
+
 
             Surface(
                 shape = RoundedCornerShape(24.dp),
@@ -1632,6 +2142,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                         fontWeight = FontWeight.SemiBold,
                         color = UPH_Navy
                     )
+
 
                     Box(
                         modifier = Modifier
@@ -1681,6 +2192,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                                 }
                             }
 
+
                             tried && drawableId != 0 -> {
                                 Image(
                                     painter = painterResource(drawableId),
@@ -1690,12 +2202,14 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                                 )
                             }
 
+
                             tried -> {
                                 Text(
                                     "No floor plan image for ${buildingDisplayName(buildingId)} ${floorLabel(floor)}",
                                     color = UPH_Navy
                                 )
                             }
+
 
                             else -> {
                                 Box(
@@ -1715,7 +2229,9 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                 }
             }
 
+
             Spacer(Modifier.height(16.dp))
+
 
             if (frequentlyVisitedOnThisFloor.isNotEmpty()) {
                 Text(
@@ -1725,6 +2241,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                     color = UPH_Navy
                 )
                 Spacer(Modifier.height(8.dp))
+
 
                 val featuredScroll = rememberScrollState()
                 Box(Modifier.fillMaxWidth()) {
@@ -1741,6 +2258,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                         }
                     }
 
+
                     HorizontalScrollbar(
                         scroll = featuredScroll,
                         modifier = Modifier
@@ -1749,8 +2267,10 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                     )
                 }
 
+
                 Spacer(Modifier.height(16.dp))
             }
+
 
             Text(
                 text = "Rooms on ${floorLabel(floor)}",
@@ -1759,6 +2279,7 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
                 color = UPH_Navy
             )
             Spacer(Modifier.height(8.dp))
+
 
             if (roomsOnFloor.isEmpty()) {
                 Text(
@@ -1793,12 +2314,14 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
             }
         }
 
+
         BackToMapButton(
             navController,
             Modifier
                 .align(Alignment.TopStart)
                 .padding(8.dp)
         )
+
 
         VerticalScrollbar(
             scroll = outerScroll,
@@ -1810,6 +2333,8 @@ fun FloorPlanScreen(navController: NavHostController, buildingId: String, floor:
 }
 
 
+
+
 // Layar daftar event
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -1817,10 +2342,13 @@ fun EventsScreen(navController: NavHostController) {
     val ctx = LocalContext.current
     val repo = remember { CampusRepoProvider.provide(ctx) }
 
+
     val allEvents by remember { repo.streamAllEvents() }
         .collectAsState(initial = emptyList())
 
+
     var error by remember { mutableStateOf<String?>(null) }
+
 
     LaunchedEffect(true) {
         try {
@@ -1829,11 +2357,13 @@ fun EventsScreen(navController: NavHostController) {
         }
     }
 
+
     var loadedOnce by remember { mutableStateOf(false) }
     LaunchedEffect(allEvents) {
         if (!loadedOnce && allEvents.isNotEmpty()) loadedOnce = true
     }
     val isLoading = !loadedOnce
+
 
     LaunchedEffect(true) {
         kotlinx.coroutines.delay(8000)
@@ -1842,19 +2372,25 @@ fun EventsScreen(navController: NavHostController) {
         }
     }
 
+
     var building by remember { mutableStateOf("All") }
     val buildingOptions = listOf("All") + InMemoryCampusRepository.buildings.map { it.id }
+
 
     var status by remember { mutableStateOf("All") }
     val statuses = listOf("All", "Ongoing", "Upcoming", "Coming Soon")
 
+
     var startDate by remember { mutableStateOf(LocalDate.now()) }
     var endDate   by remember { mutableStateOf(LocalDate.now().plusDays(7)) }
+
 
     var showDatePickerStart by remember { mutableStateOf(false) }
     var showDatePickerEnd by remember { mutableStateOf(false) }
 
+
     val today = LocalDate.now()
+
 
     val now = LocalDateTime.now()
     val filtered = remember(allEvents, building, status, now) {
@@ -1870,9 +2406,11 @@ fun EventsScreen(navController: NavHostController) {
         }.sortedBy { it.start }
     }
 
+
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Text("Events — $today", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
+
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1880,6 +2418,7 @@ fun EventsScreen(navController: NavHostController) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             var buildingExpanded by remember { mutableStateOf(false) }
+
 
             ExposedDropdownMenuBox(
                 expanded = buildingExpanded,
@@ -1891,6 +2430,7 @@ fun EventsScreen(navController: NavHostController) {
                 } else {
                     buildingDisplayName(building)
                 }
+
 
                 OutlinedTextField(
                     value = buildingLabel,
@@ -1913,6 +2453,7 @@ fun EventsScreen(navController: NavHostController) {
                     )
                 )
 
+
                 ExposedDropdownMenu(
                     expanded = buildingExpanded,
                     onDismissRequest = { buildingExpanded = false },
@@ -1933,7 +2474,9 @@ fun EventsScreen(navController: NavHostController) {
                 }
             }
 
+
             var statusExpanded by remember { mutableStateOf(false) }
+
 
             ExposedDropdownMenuBox(
                 expanded = statusExpanded,
@@ -1961,6 +2504,7 @@ fun EventsScreen(navController: NavHostController) {
                     )
                 )
 
+
                 ExposedDropdownMenu(
                     expanded = statusExpanded,
                     onDismissRequest = { statusExpanded = false },
@@ -1981,7 +2525,9 @@ fun EventsScreen(navController: NavHostController) {
             }
         }
 
+
         Spacer(Modifier.height(8.dp))
+
 
         Row(
             Modifier.fillMaxWidth(),
@@ -1991,7 +2537,9 @@ fun EventsScreen(navController: NavHostController) {
             Spacer(Modifier.width(8.dp))
             FilterPill("To: $endDate") { showDatePickerEnd = true }
 
+
             Spacer(Modifier.weight(1f))
+
 
             IconButton(onClick = { navController.navigate("events_calendar") }) {
                 Icon(
@@ -2001,6 +2549,7 @@ fun EventsScreen(navController: NavHostController) {
                 )
             }
         }
+
 
         if (showDatePickerStart) {
             val dpState = rememberDatePickerState(
@@ -2030,6 +2579,7 @@ fun EventsScreen(navController: NavHostController) {
             }
         }
 
+
         if (showDatePickerEnd) {
             val dpState2 = rememberDatePickerState(
                 initialSelectedDateMillis = endDate
@@ -2058,9 +2608,12 @@ fun EventsScreen(navController: NavHostController) {
             }
         }
 
+
         Spacer(Modifier.height(8.dp))
 
+
         val scroll = rememberScrollState()
+
 
         if (isLoading) {
             LinearProgressIndicator(
@@ -2070,6 +2623,7 @@ fun EventsScreen(navController: NavHostController) {
             )
             Spacer(Modifier.height(8.dp))
         }
+
 
         Box(Modifier.fillMaxSize()) {
             Column(
@@ -2086,6 +2640,7 @@ fun EventsScreen(navController: NavHostController) {
                 Spacer(Modifier.height(2.dp))
             }
 
+
             VerticalScrollbar(
                 scroll = scroll,
                 modifier = Modifier
@@ -2098,6 +2653,7 @@ fun EventsScreen(navController: NavHostController) {
     DebugSeedButton()
 }
 
+
 @Composable
 private fun FacultyCard(
     title: String,
@@ -2106,20 +2662,24 @@ private fun FacultyCard(
     var imageUrl  by remember(title) { mutableStateOf<String?>(null) }
     var isLoading by remember(title) { mutableStateOf(true) }
 
+
     LaunchedEffect(title) {
         isLoading = true
         imageUrl = null
 
+
         val base = InMemoryCampusRepository.facultyImageFiles[title]
         Log.d("FacultyCard", "Title = '$title', base = '$base'")
+
 
         if (base != null) {
             val storage = FirebaseStorage.getInstance().reference
             val candidates = listOf(
                 "faculties/$base.jpg",
                 "faculties/$base.jpeg",
-                "faculties/$base.png"
+                "faculties/$base"
             )
+
 
             for (path in candidates) {
                 try {
@@ -2136,8 +2696,10 @@ private fun FacultyCard(
             Log.w("FacultyCard", "No base name for title='$title'")
         }
 
+
         isLoading = false
     }
+
 
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -2164,6 +2726,7 @@ private fun FacultyCard(
                 )
             }
 
+
             when {
                 isLoading -> {
                     Box(
@@ -2181,6 +2744,7 @@ private fun FacultyCard(
                         )
                     }
                 }
+
 
                 imageUrl != null -> {
                     SubcomposeAsyncImage(
@@ -2215,6 +2779,7 @@ private fun FacultyCard(
                     }
                 }
 
+
                 else -> {
                     Box(
                         modifier = Modifier
@@ -2229,6 +2794,7 @@ private fun FacultyCard(
     }
 }
 
+
 @Composable
 private fun FeaturedPlaceCard(
     place: FrequentlyVisitedPlace,
@@ -2238,16 +2804,19 @@ private fun FeaturedPlaceCard(
     var imageUrl  by remember(place.imageKey) { mutableStateOf<String?>(null) }
     var isLoading by remember(place.imageKey) { mutableStateOf(true) }
 
+
     LaunchedEffect(place.imageKey) {
         isLoading = true
         imageUrl = null
+
 
         val storage = FirebaseStorage.getInstance().reference
         val candidates = listOf(
             "featured/${place.imageKey}.jpg",
             "featured/${place.imageKey}.jpeg",
-            "featured/${place.imageKey}.png"
+            "featured/${place.imageKey}"
         )
+
 
         for (path in candidates) {
             try {
@@ -2259,6 +2828,7 @@ private fun FeaturedPlaceCard(
         }
         isLoading = false
     }
+
 
     Surface(
         onClick = onClick,
@@ -2279,6 +2849,7 @@ private fun FeaturedPlaceCard(
                 overflow = TextOverflow.Ellipsis
             )
 
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -2296,6 +2867,7 @@ private fun FeaturedPlaceCard(
                             strokeWidth = 3.dp
                         )
                     }
+
 
                     imageUrl != null -> {
                         SubcomposeAsyncImage(
@@ -2332,6 +2904,7 @@ private fun FeaturedPlaceCard(
                 }
             }
 
+
             Box(
                 modifier = Modifier
                     .background(
@@ -2350,6 +2923,7 @@ private fun FeaturedPlaceCard(
     }
 }
 
+
 @Composable
 private fun FrequentlyVisitedSection(
     buildingId: String,
@@ -2359,10 +2933,13 @@ private fun FrequentlyVisitedSection(
         .frequentlyVisitedByBuilding[buildingId]
         .orEmpty()
 
+
     if (items.isEmpty()) return
+
 
     Text("Frequently Visited", style = MaterialTheme.typography.titleMedium)
     Spacer(Modifier.height(6.dp))
+
 
     val scroll = rememberScrollState()
     Box(Modifier.fillMaxWidth()) {
@@ -2378,6 +2955,7 @@ private fun FrequentlyVisitedSection(
             }
         }
 
+
         HorizontalScrollbar(
             scroll = scroll,
             modifier = Modifier
@@ -2387,25 +2965,31 @@ private fun FrequentlyVisitedSection(
     }
 }
 
+
 // Mengembalikan label status event dan warna badge
 @Composable
 fun StatusBadge(e: CampusEvent): Pair<String, Color> {
     val now = LocalDateTime.now()
 
+
     return when {
         now.isAfter(e.end) ->
             "Past" to Color.LightGray
 
+
         now.isAfter(e.start) && now.isBefore(e.end) ->
             "Ongoing" to Color(0xFFE0F2FF)
 
+
         e.start.isAfter(now) && e.start.isBefore(now.plusDays(7)) ->
             "Coming Soon" to Color(0xFFF7EDE3)
+
 
         else ->
             "Upcoming" to Color(0xFFEAF7E9)
     }
 }
+
 
 @Composable
 fun FilterPill(text: String, onClick: () -> Unit) {
@@ -2425,6 +3009,7 @@ fun FilterPill(text: String, onClick: () -> Unit) {
         }
     }
 }
+
 
 // Event card untuk membuka detailed event
 @Composable
@@ -2462,6 +3047,7 @@ fun EventCard(e: CampusEvent, onClick: () -> Unit = {}) {
     }
 }
 
+
 @Composable
 fun EventRow(e: CampusEvent, onClick: () -> Unit) {
     Column(
@@ -2474,6 +3060,7 @@ fun EventRow(e: CampusEvent, onClick: () -> Unit) {
         Text("${e.heldBy} • ${e.room} • ${e.start.toLocalDate()} ${e.start.toLocalTime()}–${e.end.toLocalTime()}")
     }
 }
+
 
 // Tombol bulat untuk kembali ke halaman peta/home
 @Composable
@@ -2506,25 +3093,29 @@ fun BackToMapButton(navController: NavHostController, modifier: Modifier = Modif
     }
 }
 
+
 @Composable
 fun currentRoute(navController: NavHostController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination?.route
 }
 
+
 @Preview(name = "Home Screen (Borders)", showSystemUi = true, showBackground = true)
 @Composable
 private fun PreviewHomeScreenBorders() {
     val nav = rememberNavController()
-    HomeScreen(navController = nav, debugBorders = true, showPathButton = true)
+    HomeScreen(navController = nav, debugBorders = true, showPathButton = false)
 }
+
 
 @Preview(name = "Home Screen (Normal)", showSystemUi = true, showBackground = true)
 @Composable
 private fun PreviewHomeScreen() {
     val nav = rememberNavController()
-    HomeScreen(navController = nav, showPathButton = true)
+    HomeScreen(navController = nav, showPathButton = false)
 }
+
 
 @Preview(name = "Events Screen", showSystemUi = true, showBackground = true)
 @Composable
@@ -2533,11 +3124,13 @@ private fun PreviewEventsScreen() {
     EventsScreen(nav)
 }
 
+
 @Preview(name = "Whole App Shell", showSystemUi = true, showBackground = true)
 @Composable
 private fun PreviewApp() {
     CampusGuideApp()
 }
+
 
 // Utility function
 private fun cleanRoom(room: String): String {
@@ -2545,7 +3138,9 @@ private fun cleanRoom(room: String): String {
     return if (t.startsWith("Room", ignoreCase = true)) t.removePrefix("Room").trimStart() else t
 }
 
+
 private fun roomLabel(room: String): String = "Room ${cleanRoom(room)}"
+
 
 private fun prettyEventSubtitle(s: String): String {
     var t = s.replace("•", "• ")
@@ -2553,6 +3148,7 @@ private fun prettyEventSubtitle(s: String): String {
     t = t.replace(Regex("""\s{2,}"""), " ")
     return t.trim()
 }
+
 
 private fun normalizeSearchQuery(q: String): String {
     val t = q.trim()
@@ -2564,6 +3160,8 @@ private fun normalizeSearchQuery(q: String): String {
 }
 
 
+
+
 fun buildingDisplayName(id: String?): String {
     return when (id) {
         "H" -> "Building HOPE"
@@ -2572,17 +3170,21 @@ fun buildingDisplayName(id: String?): String {
     }
 }
 
+
 fun displayRoomCode(buildingId: String?, room: String): String {
     val clean = room.trim()
+
 
     return if (buildingId == "H" && clean.startsWith("H")) {
         "HP" + clean.removePrefix("H")
     } else clean
 }
 
+
 @Composable
 fun ErrorDialog(message: String?, onDismiss: () -> Unit) {
     if (message == null) return
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
