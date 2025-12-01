@@ -9,8 +9,13 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitProvider {
+
     val api: FunctionsApi by lazy {
-        val log = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+
+        val log = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
         val client = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
