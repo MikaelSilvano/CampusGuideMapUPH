@@ -1,4 +1,4 @@
-#Sat Nov 29 20:19:43 WIB 2025
+#Sun Nov 30 23:32:49 WIB 2025
 base.0=/Users/vano/Downloads/CampusGuideMapUPH/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
 base.1=/Users/vano/Downloads/CampusGuideMapUPH/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
 base.10=/Users/vano/Downloads/CampusGuideMapUPH/app/build/intermediates/dex/debug/mergeExtDexDebug/classes3.dex

@@ -182,7 +182,7 @@ object InMemoryCampusRepository: CampusRepository {
         )
     )
 
-    // Daftar ruangan contoh per building/floor
+    // Daftar ruangan per building/floor
     val rooms: List<CampusRoom> = buildList {
         buildings.forEach { b ->
             val allFloors = (1..b.floors).toList()

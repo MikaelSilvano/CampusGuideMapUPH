@@ -44,55 +44,35 @@ object ManualBuildingRoutes {
         ) {
             m[RouteKey(from, to, direction)] = steps
         }
-
-        // --------------------------------------------------------------------
-        //  BASE DIRECT ROUTES (exactly as in your spec)
-        // --------------------------------------------------------------------
-
-        // ---- From B ----
-        // B → D
         add("B", "D", CardinalDirection.NORTH, listOf("bb", "eagle", "cross", "bd"))
         add("B", "D", CardinalDirection.WEST,  listOf("gazebo", "cross", "bd"))
         add("B", "D", CardinalDirection.EAST,  listOf("statue", "eagle", "cross", "bd"))
 
-        // B → C
         add("B", "C", CardinalDirection.NORTH, listOf("bb", "statue", "bc"))
         add("B", "C", CardinalDirection.WEST,  listOf("statue", "bc"))
         add("B", "C", CardinalDirection.EAST,  listOf("gazebo", "eagle", "bb", "statue", "bc"))
 
-        // B → H
         add("B", "H", CardinalDirection.NORTH, listOf("bb", "statue", "bh"))
         add("B", "H", CardinalDirection.WEST,  listOf("statue", "bh"))
         add("B", "H", CardinalDirection.EAST,  listOf("gazebo", "eagle", "bb", "statue", "bh"))
 
-        // B → F
         add("B", "F", CardinalDirection.NORTH, listOf("bb", "eagle", "basketball", "cross", "flags", "bd", "bf"))
         add("B", "F", CardinalDirection.WEST,  listOf("statue", "bb", "eagle", "basketball", "cross", "flags", "bd", "bf"))
         add("B", "F", CardinalDirection.EAST,  listOf("gazebo", "eagle", "cross", "flags", "bd", "bf"))
 
-        // ---- From C ----
-        // C → H
         add("C", "H", CardinalDirection.SOUTH, listOf("statue", "bh"))
         add("C", "H", CardinalDirection.WEST,  listOf("statue", "bh"))
 
-        // C → D
         add("C", "D", CardinalDirection.SOUTH, listOf("eagle", "basketball", "cross", "bd"))
         add("C", "D", CardinalDirection.WEST,  listOf("eagle", "basketball", "cross", "bd"))
 
-        // C → F
         add("C", "F", CardinalDirection.SOUTH, listOf("eagle", "basketball", "cross", "bd", "bf"))
         add("C", "F", CardinalDirection.WEST,  listOf("eagle", "basketball", "cross", "bd", "bf"))
 
-        // ---- From H ----
-        // H → D
         add("H", "D", null, listOf("statue", "eagle", "basketball", "cross", "bd"))
-        // H → F
         add("H", "F", null, listOf("statue", "eagle", "basketball", "cross", "bd", "bf"))
-        // H -> C
         add("H", "C", null, listOf("bh", "statue"))
 
-        // ---- From D ----
-        // D → F
         add("D", "F", null, listOf("bd", "bf"))
 
         // --------------------------------------------------------------------

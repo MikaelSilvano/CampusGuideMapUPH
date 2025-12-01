@@ -427,7 +427,7 @@ fun CampusGuideApp() {
                         composable("home") {
                             HomeScreen(
                                 navController = navController,
-                                showPathButton = false
+                                showPathButton = true
                             )
                         }
                         composable("events") { EventsScreen(navController) }
@@ -1605,10 +1605,6 @@ fun SearchScreen(navController: NavHostController) {
                                 else ->
                                     r.subtitle
                             }
-
-
-
-
                             Column(
                                 Modifier
                                     .fillMaxWidth()
@@ -2650,7 +2646,7 @@ fun EventsScreen(navController: NavHostController) {
         }
     }
     ErrorDialog(error) { error = null }
-    DebugSeedButton()
+    //DebugSeedButton()
 }
 
 

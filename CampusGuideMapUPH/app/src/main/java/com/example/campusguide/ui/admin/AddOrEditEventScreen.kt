@@ -190,7 +190,6 @@ private fun isAllowedImage(ctx: Context, uri: Uri, displayName: String? = null):
     return false
 }
 
-// Kompres ke JPEG di cache dir
 private suspend fun compressImageToTempFile(
     ctx: Context,
     uri: Uri,
